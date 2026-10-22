@@ -1,0 +1,1 @@
+<b>Badge {{ $slot }}</b>
