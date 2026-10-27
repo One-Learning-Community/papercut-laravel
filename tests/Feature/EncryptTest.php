@@ -14,7 +14,8 @@ final class EncryptTest extends TestCase
 {
     private static function info(string $pdf, string $password = ''): string
     {
-        $file = tempnam(sys_get_temp_dir(), 'pc');
+        $file = tempnam(sys_get_temp_dir(), 'pc') . '.pdf'; // qpdf's AppArmor profile wants .pdf
+        rename(substr($file, 0, -4), $file);
         file_put_contents($file, $pdf);
         exec(sprintf('qpdf --show-encryption --password=%s %s 2>&1 < /dev/null', escapeshellarg($password), escapeshellarg($file)), $out);
         unlink($file);

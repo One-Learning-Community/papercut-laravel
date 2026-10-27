@@ -21,7 +21,8 @@ final class BookmarksTest extends TestCase
         } finally {
             unlink($path);
         }
-        $file = tempnam(sys_get_temp_dir(), 'pc');
+        $file = tempnam(sys_get_temp_dir(), 'pc') . '.pdf'; // qpdf's AppArmor profile wants .pdf
+        rename(substr($file, 0, -4), $file);
         file_put_contents($file, $pdf);
         exec(sprintf('qpdf --json --json-key=outlines %s 2>&1', escapeshellarg($file)), $out);
         unlink($file);
