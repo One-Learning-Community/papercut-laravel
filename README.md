@@ -44,7 +44,7 @@ use Papercut\Laravel\Facades\Papercut;
 Route::get('/hello', fn () => Papercut::view('pdf.hello', ['name' => 'Ada'])->pdf()->download('hello.pdf'));
 ```
 
-A view must have exactly one `<x-doc::document>` root. `Papercut::view($view, $data)` returns a `PendingDocument`; `->document()` gives the core `Document` and `->pdf()` a `PendingOutput` with `download($filename)`, `inline($filename)`, `save($path)`, `toString()` and `output()`. The filename defaults to `document.pdf`. A `PendingOutput` returned from a route renders inline. `Papercut::make($document)` wraps a `Document` you built in PHP the same way.
+A view must have exactly one `<x-doc::document>` root. `Papercut::view($view, $data)` returns a `PendingDocument`; `->document()` gives the core `Document` and `->pdf()` a `PendingOutput` with `download($filename)`, `inline($filename)`, `save($path)`, `store($path, $disk = null)` (a Laravel filesystem disk), `toString()` and `output()`. The filename defaults to `document.pdf`. A `PendingOutput` returned from a route renders inline. `Papercut::make($document)` wraps a `Document` you built in PHP the same way. `->encrypt('secret')` (or an `Encryption` with custom permissions) returns a copy whose PDF opens only with that password; HTML is not affected.
 
 Full examples: [`examples/laravel`](../../examples/laravel) (invoice, transcript, report). Content inside `<x-doc::document>` may also contain your own Blade components, which can themselves contain `<x-doc::*>` tags.
 
@@ -79,8 +79,9 @@ This publishes `config/papercut.php`:
 | `markup.images` | `null` | Class name implementing `Papercut\Laravel\Markup\ImageResolver`; `null` treats every `<img>` in markup as missing (see [Rich text](#rich-text-from-your-database)) |
 | `markup.styles` | `'theme'` | `'theme'` (HTML gives structure, the theme styles it) or `'original'` (inline `style=""` applied on top) |
 | `markup.blank_paragraphs` | `'drop'` | `'drop'` or `'keep'` paragraphs that hold only `&nbsp;` or `<br>` |
-| `image_path` | `null` | Base directory for relative `<x-doc::image src>`; `null` = `public_path()` |
-| `cache_dir` | `null` | Font kerning cache directory: `null` = `sys_get_temp_dir()/papercut-cache-<uid>`, `false` = no disk cache, or a path (see core's "Kerning cache") |
+| `bookmarks` | `true` | Headings and `bookmark="…"` build the PDF's bookmarks panel; `false` leaves it empty |
+| `image_path` | `null` | Base directory for relative `<x-doc::image src>` and `<x-doc::svg src>`; `null` = `public_path()` |
+| `cache_dir` | `null` | Parsed-font cache directory: `null` = `storage_path('framework/cache/papercut')`, `false` = no disk cache, or a path (see core's "Font cache") |
 | `preview.enabled` | `env('PAPERCUT_PREVIEW', false)` | Enable [preview routes](#preview-routes) |
 | `preview.path` | `'_papercut'` | URL prefix for preview routes |
 
@@ -174,14 +175,18 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | Tag | Own attributes | Notes |
 |---|---|---|
 | `<x-doc::document>` | `title`, `author`, `subject`, `keywords`, `lang` | Root. Children must be `<x-doc::page>`; with no page, content gets an implicit page. No style attributes. |
-| `<x-doc::page>` | `size` (a paper name or `"<width> <height>"`), `orientation` (`portrait`/`landscape`), `margin`, `header-gap`, `footer-gap` | Slots: `<x-slot:header>`, `<x-slot:footer>`, `<x-slot:background>`. No style attributes. |
+| `<x-doc::page>` | `size` (a paper name or `"<width> <height>"`), `orientation` (`portrait`/`landscape`), `margin`, `header-gap`, `footer-gap`, `template` or `template-data`, `template-page`, `template-password` | Slots: `<x-slot:header>`, `<x-slot:footer>`, `<x-slot:background>`, `<x-slot:overlay>`. `template` (a PDF under the image path) or `template-data` (its bytes) draws a page of a PDF behind the page and sizes the page from it, so `size` and `orientation` can't be used with it. No style attributes. |
+| `<x-doc::place>` | `x`, `y`, `anchor`, `width` | Only in `<x-slot:overlay>`. Puts its content at `x`, `y`: lengths from the page's top-left corner, or percentages of its width and height. `anchor` (`top-left` by default, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`) is the point of the content placed there. `width` is a length or a percentage of the page width. No style attributes. |
 | `<x-doc::view>` | `align` | Style. Generic container. |
 | `<x-doc::row>` | `align` | Style. Lays children out horizontally. |
 | `<x-doc::column>` | `align` | Style. Lays children out vertically. |
 | `<x-doc::text>` | `align`, `size` | Style. Inline markup allowed: `<b>`, `<i>`, `<u>`, `<s>`, `<a href>`, `<br>`, `<span>`. |
 | `<x-doc::h1>` ... `<x-doc::h4>` | `align`, `size` | Style. Heading presets. |
 | `<x-doc::p>` | `align`, `size` | Style. Paragraph preset. |
+| `<x-doc::qr-code>` | `value`, `level` (`L`/`M`/`Q`/`H`), `quiet-zone`, `shape` (`square`/`rounded`/`dots`; the last two raise `level` to at least `Q`), `eyes` (`square`/`dot`/`pointy`), `eye-color`, `gradient` (two colors), `gradient-type` | Style. A square QR code drawn as vectors in the text color; `width` sets its size (25mm by default). The styling attributes need `composer require bacon/bacon-qr-code`. No content. |
 | `<x-doc::image>` | `src`, `data`, `fit` (`contain`/`cover`/`fill`) | Style. Exactly one of `src` or `data` (raw bytes). PNG and JPEG; WebP, GIF, BMP and AVIF need `ext-gd`. An image taller than the page shrinks to fit unless it has an explicit `height`. Absolute and scheme paths (`/x.png`, `C:\x.png`, `file://`) are trusted as given; relative paths are contained to `papercut.image_path` (`..` cannot escape it). Remote URLs are not supported. Never pass untrusted input to `src`. |
+| `<x-doc::pdf-page>` | `src` or `data`, `page`, `password` | Style. A page of an existing PDF, drawn as it is and sized like an image; relative `src` follows the same rules as `<x-doc::image>`. Left out of HTML exports. |
+| `<x-doc::svg>` | `src`, `data`, or SVG markup inside the tag | Style. Exactly one source. Drawn as vector paths and sized like an image; relative `src` follows the same rules as `<x-doc::image>`. Untrusted SVG is checked before it is drawn. |
 | `<x-doc::link>` | `href` | Style. Required `href`. |
 | `<x-doc::table>` | `columns`, `repeat-header` | Style. Children: one optional `<x-doc::thead>` first, then `<x-doc::tr>`. `columns` is a track list such as `"3fr 25mm 20mm"`. `repeat-header` defaults to on. |
 | `<x-doc::thead>` | none | Contains `<x-doc::th>`/`<x-doc::td>` cells (one header row) or `<x-doc::tr>` rows. |
@@ -227,6 +232,8 @@ These attributes are accepted by every tag marked "style" above. Lengths are `pt
 | `keep-together`, `keep-with-next` | `keep-together` | boolean; do not split the block / stay on the page with the next block |
 | `break-before`, `break-after` | `break-before` | boolean; force a page break |
 | `min-lines` | `min-lines="2"` | integer 1 or more (widow/orphan control) |
+| `bookmark` | `bookmark="Summary"` | title for the PDF's bookmarks panel; headings get one automatically, `:bookmark="false"` removes it |
+| `bookmark-level` | `bookmark-level="2"` | integer 1 or more; nesting depth of the bookmark |
 
 Boolean values: bare attribute or `true`/`1`/`false`/`0`. Any attribute not listed here (or in the tag's own attributes) throws `UnknownAttribute`, with the tag named and a suggestion when one is close.
 
@@ -426,6 +433,8 @@ Inter (regular, bold, italic, bold italic) is bundled and always available. Regi
 'fallback_fonts' => ['Noto Sans'],
 'theme' => ['font_family' => 'Merriweather', 'font_size' => 10],
 ```
+
+`php artisan papercut:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
 
 `php artisan papercut:fonts` lists every available face and reports whether each file is `ok`, `missing` or `invalid`. A glyph missing from the primary family is looked up in `fallback_fonts`; if no family has it, a warning is logged (`[papercut] ...`).
 

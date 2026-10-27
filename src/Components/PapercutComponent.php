@@ -56,6 +56,11 @@ abstract class PapercutComponent extends Component
         $style = [];
         foreach ($all as $key => $value) {
             $key = (string) $key;
+            // Blade passes bound and echoed values through e() on their way into the bag; undo it,
+            // so a URL's "&" reaches a QR code or link as "&", not "&amp;".
+            if (is_string($value)) {
+                $value = htmlspecialchars_decode($value, ENT_QUOTES);
+            }
             if ($key === 'style' || in_array($key, $this->ownAttributes(), true)) {
                 $own[$key] = $value;
             } else {
@@ -75,7 +80,7 @@ abstract class PapercutComponent extends Component
     /**
      * Applies style attributes and a named style (string) or Style object, tagging errors with the tag.
      *
-     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Image|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
+     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Image|\Papercut\QrCode|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
      * @param T $node
      * @param array<string, mixed> $style
      * @return T
@@ -117,7 +122,7 @@ abstract class PapercutComponent extends Component
     }
 
     /**
-     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Image|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
+     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Image|\Papercut\QrCode|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
      * @param T $node
      * @param array<string, mixed> $data
      * @return T

@@ -13,11 +13,16 @@ use Papercut\Value\{Edges, Length};
 
 final class Page extends PapercutComponent
 {
-    private const array SLOTS = ['header', 'footer', 'background'];
+    private const array SLOTS = ['header', 'footer', 'background', 'overlay'];
+
+    /** Blade escapes bound attributes as text, which would corrupt the template's bytes; a constructor parameter reaches the tag as it is. */
+    public function __construct(private readonly mixed $templateData = null)
+    {
+    }
 
     protected function ownAttributes(): array
     {
-        return ['size', 'orientation', 'margin', 'header-gap', 'footer-gap'];
+        return ['size', 'orientation', 'margin', 'header-gap', 'footer-gap', 'template', 'template-data', 'template-page', 'template-password'];
     }
 
     protected function build(array $data): object
@@ -38,14 +43,28 @@ final class Page extends PapercutComponent
             }
         }
 
+        if ($this->templateData !== null) {
+            $own['template-data'] = $this->templateData;
+        }
         $page = self::configured($own);
         $registry = app(NodeRegistry::class);
         foreach (self::SLOTS as $name) {
-            if (isset($slots[$name])) {
-                $nodes = Segments::nodes($registry->segments($slots[$name]), 'page');
-                /** @var list<\Papercut\Node> $nodes */
-                $page = $page->{$name}(...$nodes);
+            if (!isset($slots[$name])) {
+                continue;
             }
+            if ($name === 'overlay') {
+                $places = [];
+                foreach (Segments::nodes($registry->segments($slots[$name]), 'page', [\Papercut\Place::class]) as $node) {
+                    $places[] = $node instanceof \Papercut\Place
+                        ? $node
+                        : throw new InvalidStructure('The overlay slot of ' . Tag::of('page') . ' takes only ' . Tag::of('place') . ' tags');
+                }
+                $page = $page->overlay(...$places);
+                continue;
+            }
+            $nodes = Segments::nodes($registry->segments($slots[$name]), 'page');
+            /** @var list<\Papercut\Node> $nodes */
+            $page = $page->{$name}(...$nodes);
         }
 
         /** @var list<\Papercut\Node> $body */
@@ -82,6 +101,14 @@ final class Page extends PapercutComponent
     private static function configured(array $own): \Papercut\Page
     {
         $location = 'on ' . Tag::of('page');
+        if (isset($own['template']) || isset($own['template-data'])) {
+            if (isset($own['size']) || isset($own['orientation'])) {
+                throw new InvalidStructure(Tag::of('page') . ' takes its size from the template; remove size and orientation');
+            }
+            $template = PdfPage::node($own, 'template', 'template-data', 'template-page', 'template-password', 'page');
+
+            return self::spaced(\Papercut\Page::template($template), $own);
+        }
         try {
             $size = $own['size'] ?? config('papercut.paper', 'a4');
             if (!is_string($size)) {
@@ -100,6 +127,17 @@ final class Page extends PapercutComponent
                 ->withContext('orientation')->within($location);
         }
 
+        return self::spaced($page, $own);
+    }
+
+    /**
+     * Margins and header and footer gaps, from the attributes or the config.
+     *
+     * @param array<string, mixed> $own
+     */
+    private static function spaced(\Papercut\Page $page, array $own): \Papercut\Page
+    {
+        $location = 'on ' . Tag::of('page');
         $margin = $own['margin'] ?? config('papercut.margin', '20mm');
         try {
             $page = $page->margin($margin instanceof Edges ? $margin : Edges::parse((string) (is_scalar($margin) ? $margin : '20mm')));

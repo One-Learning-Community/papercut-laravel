@@ -10,6 +10,7 @@ use Papercut\Laravel\Components\HeaderRows;
 use Papercut\Decorator\ChoiceOption;
 use Papercut\Decorator\KeyValuePair;
 use Papercut\ListItem;
+use Papercut\Place;
 use Papercut\TableCell;
 use Papercut\TableRow;
 use Papercut\Markup\Markup;
@@ -29,7 +30,7 @@ final class Segments
 
     /**
      * @param list<object|string> $segs
-     * @param list<class-string> $allow table-structure classes (TableCell, TableRow, HeaderRows) this parent accepts
+     * @param list<class-string> $allow structure classes (TableCell, TableRow, HeaderRows, Place, ...) this parent accepts
      * @return list<object>
      */
     public static function nodes(array $segs, string $tag, array $allow = []): array
@@ -41,6 +42,9 @@ final class Segments
                     $out[] = Text::markup(trim($seg));
                 }
             } else {
+                if ($seg instanceof Place && !in_array(Place::class, $allow, true)) {
+                    throw new InvalidStructure(Tag::of('place') . ' only works in the overlay slot of ' . Tag::of('page'));
+                }
                 foreach (self::PARENTS as $class => [$name, $parent]) {
                     if ($seg instanceof $class && !in_array($class, $allow, true)) {
                         throw new InvalidStructure(Tag::of($name) . ' must be inside ' . implode(' or ', array_map(Tag::of(...), explode('|', $parent))));

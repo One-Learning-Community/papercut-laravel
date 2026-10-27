@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Papercut\Html\{GoogleFonts, LocalFonts};
-use Papercut\Laravel\Console\FontsCommand;
+use Papercut\Laravel\Console\{FontsCommand, InstallFontCommand};
 use Papercut\Laravel\Preview\{PreviewController, PreviewRegistry};
 use Papercut\Laravel\Rendering\NodeRegistry;
 
@@ -63,7 +63,7 @@ final class PapercutServiceProvider extends ServiceProvider
         ], 'papercut-config');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([FontsCommand::class]);
+            $this->commands([FontsCommand::class, InstallFontCommand::class]);
         }
 
         Blade::componentNamespace('Papercut\\Laravel\\Components', Tag::prefix());

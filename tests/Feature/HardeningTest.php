@@ -217,7 +217,8 @@ final class HardeningTest extends TestCase
 
             return Papercut::pdfOptions();
         };
-        self::assertNull($options(null)->cacheDir());
+        // FPM and the CLI can see different temp dirs; storage/ is the same for both
+        self::assertSame(storage_path('framework/cache/papercut'), $options(null)->cacheDir());
         self::assertFalse($options(false)->cacheDir());
         self::assertSame('/tmp/pc-x', $options('/tmp/pc-x')->cacheDir());
     }

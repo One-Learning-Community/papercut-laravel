@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel;
 
+use Illuminate\Contracts\Filesystem\Factory as Filesystem;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Support\Str;
 use Papercut\Export\Output;
@@ -32,6 +33,22 @@ final class PendingOutput implements Responsable
     public function save(string $path): static
     {
         $this->output()->save($path);
+
+        return $this;
+    }
+
+    /**
+     * Writes the output to a Laravel filesystem disk.
+     *
+     * @param string|null $disk the disk name; null uses the default disk
+     * @param array<string, mixed>|string $options passed to the disk's put(), e.g. 'public' for visibility
+     * @throws \RuntimeException when the disk reports a failed write
+     */
+    public function store(string $path, ?string $disk = null, array|string $options = []): static
+    {
+        if (!app(Filesystem::class)->disk($disk)->put($path, $this->output()->bytes(), $options)) {
+            throw new \RuntimeException("Could not write '$path' to the " . ($disk === null ? 'default' : "'$disk'") . ' disk');
+        }
 
         return $this;
     }

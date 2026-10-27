@@ -160,6 +160,11 @@ final class PapercutManager
             default => app()->environment('local', 'testing') ? OverflowMode::Throw : OverflowMode::Clip,
         };
 
+        $bookmarks = config('papercut.bookmarks', true);
+        if (!is_bool($bookmarks)) {
+            throw new \InvalidArgumentException('Invalid papercut.bookmarks: ' . (is_scalar($bookmarks) ? var_export($bookmarks, true) : get_debug_type($bookmarks)) . '; expected true or false');
+        }
+
         $base = $this->exportOptions();
 
         return new PdfOptions(
@@ -169,6 +174,7 @@ final class PapercutManager
             strict: $base->strict(),
             overflow: $mode,
             cacheDir: self::cacheDir(),
+            bookmarks: $bookmarks,
         );
     }
 
@@ -278,10 +284,14 @@ final class PapercutManager
         return $strict;
     }
 
-    private static function cacheDir(): string|false|null
+    private static function cacheDir(): string|false
     {
         $dir = config('papercut.cache_dir');
-        if ($dir === null || $dir === false || (is_string($dir) && $dir !== '')) {
+        if ($dir === null) {
+            // not the temp dir: PHP-FPM and the CLI can each see a different one
+            return storage_path('framework/cache/papercut');
+        }
+        if ($dir === false || (is_string($dir) && $dir !== '')) {
             return $dir;
         }
         throw new \InvalidArgumentException('Invalid papercut.cache_dir: ' . (is_scalar($dir) ? var_export($dir, true) : get_debug_type($dir)) . '; expected a directory path, false or null');

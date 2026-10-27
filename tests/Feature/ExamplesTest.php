@@ -83,6 +83,14 @@ final class ExamplesTest extends TestCase
         self::assertStringContainsString('Course', $pages[1], 'table header repeats on page 2');
     }
 
+    public function testResponses(): void
+    {
+        $text = implode("\n", $this->pages($this->render('responses')));
+        foreach (['Response details', 'Before you continue', 'No response', 'About right', 'Strongly agree', 'Jane Smith, closing round'] as $expected) {
+            self::assertStringContainsString($expected, $text);
+        }
+    }
+
     public function testReport(): void
     {
         $pages = $this->pages($this->render('report'));
