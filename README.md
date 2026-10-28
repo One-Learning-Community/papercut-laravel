@@ -9,29 +9,15 @@ Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into
 
 **Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
 
-> **Status: 0.2, pre-release. Not yet published to Packagist.**
+> **Status: 0.3, early release.** Before 1.0 a minor version (0.4) may change the API; patch versions won't.
 
 ## Install
-
-Once published:
 
 ```
 composer require papercut/laravel
 ```
 
-To try it now, clone the monorepo and add path repositories to your app's `composer.json`:
-
-```json
-{
-  "repositories": [
-    { "type": "path", "url": "../php-pdf/packages/core" },
-    { "type": "path", "url": "../php-pdf/packages/laravel" }
-  ],
-  "minimum-stability": "dev"
-}
-```
-
-then `composer require papercut/laravel:@dev`. Requires PHP 8.4+, `ext-zlib`, `ext-mbstring`, `ext-dom` and Laravel 12 or 13. The service provider and the `Papercut` facade are auto-discovered.
+Requires PHP 8.4+, `ext-zlib`, `ext-mbstring`, `ext-dom` and Laravel 12 or 13. The service provider and the `Papercut` facade are auto-discovered.
 
 ## Quick start
 
