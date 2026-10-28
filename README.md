@@ -171,7 +171,18 @@ final class BrandFonts implements FontSource
 - **CSP.** If your site sends a Content-Security-Policy, allow: `style-src` for the stylesheet host (`fonts.googleapis.com` for Google, `fonts.bunny.net` for Bunny); `font-src` for the font domain (`fonts.gstatic.com` for Google, `fonts.bunny.net` for Bunny); and `font-src data:` for embedded faces (`local_fonts` in its default `embed` mode).
 - **Config is checked lazily.** `font_sources` is read only when `html.fonts` is `'sources'`, and `google_fonts` and `local_fonts` only when their class is in the list, at the first `->html()` export. Class names only: closures are rejected naming the key and index, for example `papercut.html.font_sources.1`.
 
-Preview routes accept `?format=pdf` (default) or `?format=html`; any other value is a 404.
+Preview routes accept `?format=pdf` (default), `?format=html` or `?format=docx` (with `papercut/docx`); any other value is a 404.
+
+
+## Word output (experimental)
+
+With [`papercut/docx`](../docx/README.md) installed (`composer require papercut/docx`), `->docx()` exports the same document as a Word file, sharing the theme, fonts, named styles and strict setting with `->pdf()`:
+
+```php
+return Papercut::view('pdf.invoice', $data)->docx()->download('invoice.docx');
+```
+
+It returns a `PendingOutput` (default name `document.docx`). Without the package, the export throws `MissingExporter` with the command to install it. Preview routes accept `?format=docx`. What Word can't show (corner radius, opacity, QR codes, SVG and more) is reported through the same warning log, and `strict` throws on anything left out.
 
 ## Tags
 

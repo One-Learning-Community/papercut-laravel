@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Papercut\Laravel;
 
 use Papercut\Document;
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
+use Papercut\Exception\{InvalidValue, MissingExporter, UnknownAttribute};
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Preview\PreviewRegistry;
 use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\OverflowMode;
-use Papercut\Export\{ExportOptions, FidelityLevel, FidelityReport, FontMode, HtmlOptions, PdfOptions};
+use Papercut\Export\{Exporter, ExportOptions, FidelityLevel, FidelityReport, FontMode, HtmlOptions, PdfOptions};
 use Papercut\Html\FontSource;
 use Papercut\Markup\{BlankParagraphs, MarkupOptions, StyleMode};
 use Papercut\Style\{Style, Theme};
 use Papercut\Text\{FontFace, FontSet};
 use Papercut\Value\Color;
 
-final class PapercutManager
+/** Not final only so tests can stand in a missing exporter; see docxExporterClass(). */
+class PapercutManager
 {
     private ?ExportOptions $export = null;
     private ?PdfOptions $pdf = null;
@@ -80,6 +81,26 @@ final class PapercutManager
     public function htmlOptions(): HtmlOptions
     {
         return $this->html ??= $this->buildHtmlOptions();
+    }
+
+    /**
+     * The Word exporter from papercut/docx, which is optional: the class is named as a string, never imported.
+     *
+     * @throws MissingExporter when papercut/docx is not installed
+     */
+    public function docxExporter(): Exporter
+    {
+        $class = static::docxExporterClass();
+        if (!class_exists($class) || !is_subclass_of($class, Exporter::class)) {
+            throw MissingExporter::for('docx', 'papercut/docx');
+        }
+
+        return new $class();
+    }
+
+    protected static function docxExporterClass(): string
+    {
+        return 'Papercut\\Docx\\DocxExporter';
     }
 
     /** Options for `<x-doc::markup>`, built from `papercut.markup` on first use. */

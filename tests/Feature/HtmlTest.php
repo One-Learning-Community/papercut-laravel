@@ -305,6 +305,6 @@ final class HtmlTest extends TestCase
 
         $this->get('/_papercut/pdf.hello?format=pdf')->assertHeader('Content-Type', 'application/pdf');
         $this->get('/_papercut/pdf.hello')->assertHeader('Content-Type', 'application/pdf');
-        $this->get('/_papercut/pdf.hello?format=docx')->assertNotFound();
+        $this->get('/_papercut/pdf.hello?format=odt')->assertNotFound();
     }
 }

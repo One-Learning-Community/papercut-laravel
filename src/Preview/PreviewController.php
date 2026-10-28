@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Laravel\Preview;
 
 use Illuminate\Http\Response as HttpResponse;
+use Papercut\Exception\MissingExporter;
 use Papercut\Laravel\PapercutManager;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -38,10 +39,23 @@ final class PreviewController
         abort_unless($this->registry->has($view), 404);
 
         $format = request()->query('format', 'pdf');
-        abort_unless($format === 'pdf' || $format === 'html', 404);
+        abort_unless(in_array($format, ['pdf', 'html', 'docx'], true), 404);
+
+        if ($format === 'docx') {
+            try {
+                $this->papercut->docxExporter();
+            } catch (MissingExporter $e) {
+                // Not found, with the install hint: the preview is local-only, so the reason is worth showing.
+                return new HttpResponse($e->getMessage(), 404, ['Content-Type' => 'text/plain; charset=UTF-8']);
+            }
+        }
 
         $pending = $this->papercut->view($view, $this->registry->data($view));
 
-        return $format === 'html' ? $pending->html()->toResponse(request()) : $pending->pdf()->inline();
+        return match ($format) {
+            'html' => $pending->html()->toResponse(request()),
+            'docx' => $pending->docx()->inline(),
+            default => $pending->pdf()->inline(),
+        };
     }
 }

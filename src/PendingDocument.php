@@ -12,6 +12,7 @@ final class PendingDocument
 {
     private ?PendingOutput $pdf = null;
     private ?PendingHtml $html = null;
+    private ?PendingOutput $docx = null;
 
     public function __construct(
         private readonly Document $document,
@@ -38,6 +39,14 @@ final class PendingDocument
     {
         return $this->pdf ??= new PendingOutput(
             fn (): \Papercut\Export\Output => $this->document->toPdf($this->manager->pdfOptions()->withEncryption($this->encryption)),
+        );
+    }
+
+    /** Word export; needs papercut/docx, and throws MissingExporter on output without it. */
+    public function docx(): PendingOutput
+    {
+        return $this->docx ??= new PendingOutput(
+            fn (): \Papercut\Export\Output => $this->document->export($this->manager->docxExporter(), $this->manager->exportOptions()),
         );
     }
 
