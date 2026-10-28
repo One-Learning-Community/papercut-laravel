@@ -9,7 +9,7 @@ Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into
 
 **Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
 
-> **Status: v0.1, pre-release. Not yet published to Packagist.**
+> **Status: 0.2, pre-release. Not yet published to Packagist.**
 
 ## Install
 
@@ -474,3 +474,8 @@ Set `PAPERCUT_PREVIEW=true`. Only in the `local` environment, `GET /_papercut` l
 - `Papercut\Exception\LayoutOverflow`: a block cannot fit on a page even after every permitted split. Controlled by `overflow`: throw (default in `local`/`testing`) or clip.
 
 Blade wraps exceptions thrown while rendering a view in `Illuminate\View\ViewException`; the original is its `getPrevious()`.
+
+## Credits
+
+The Blade tags compile to [`papercut/core`](../core), and every PDF is written by [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf), by Denis
+Skripchenko. Word output uses his [`dskripchenko/php-docx`](https://github.com/dskripchenko/php-docx). Thank you to both projects.
