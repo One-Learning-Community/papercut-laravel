@@ -35,7 +35,8 @@ final class PreCodeComponentsTest extends TestCase
     public function test_pre_tab_and_space_indents_share_nothing(): void
     {
         $t = $this->nodeFrom("<x-doc::pre>\n    x\n\ta\n    b\n</x-doc::pre>");
-        self::assertSame("x\n\ta\n    b", self::flat($t));
+        // The first line's indent counts too, and a tab and spaces share no prefix, so nothing is removed.
+        self::assertSame("    x\n\ta\n    b", self::flat($t));
     }
 
     public function test_pre_does_not_parse_tags(): void
