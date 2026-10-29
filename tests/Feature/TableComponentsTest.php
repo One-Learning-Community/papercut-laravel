@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Tests\Feature;
 
+use Papercut\Exception\InvalidValue;
 use Papercut\Table;
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Tests\TestCase;
@@ -58,6 +59,31 @@ BLADE;
         $t = $this->nodeFrom('<x-doc::table><x-doc::tr><x-doc::td colspan="2" align="right" padding="2mm">x</x-doc::td></x-doc::tr></x-doc::table>');
         self::assertInstanceOf(Table::class, $t);
         self::assertSame(2, $t->bodyRows()[0]->cells()[0]->span());
+    }
+
+    public function test_td_and_th_take_rowspan(): void
+    {
+        $t = $this->nodeFrom('<x-doc::table><x-doc::tr><x-doc::td rowspan="2">a</x-doc::td><x-doc::th rowspan="3">b</x-doc::th></x-doc::tr></x-doc::table>');
+        self::assertInstanceOf(Table::class, $t);
+        $cells = $t->bodyRows()[0]->cells();
+        self::assertSame(2, $cells[0]->rowsSpanned());
+        self::assertSame(3, $cells[1]->rowsSpanned());
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('badRowspans')]
+    public function test_bad_rowspan_throws(string $value, string $tag): void
+    {
+        $this->expectException(InvalidValue::class);
+        $this->expectExceptionMessage('rowspan');
+        $this->expectExceptionMessage($tag);
+        $this->nodeFrom("<x-doc::table><x-doc::tr><x-doc::$tag rowspan=\"$value\">x</x-doc::$tag></x-doc::tr></x-doc::table>");
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function badRowspans(): iterable
+    {
+        yield 'zero on td' => ['0', 'td'];
+        yield 'text on th' => ['x', 'th'];
     }
 
     /** @return iterable<string, array{string, string}> */

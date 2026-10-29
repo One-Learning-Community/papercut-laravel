@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
+use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Exception\InvalidValue;
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Tag;
@@ -29,7 +30,7 @@ class Ol extends PapercutComponent
         $items = [];
         foreach ($this->rawChildren($data, [ListItem::class]) as $child) {
             if (!$child instanceof ListItem) {
-                throw new InvalidStructure(Tag::of($this->tag()) . ' can only contain ' . Tag::of('li'));
+                throw new InvalidStructure(Tag::of($this->tag()) . ' can only contain ' . Tag::of('li') . NodeRegistry::staleHint($child));
             }
             $items[] = $child;
         }

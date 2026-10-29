@@ -29,6 +29,28 @@ abstract class TestCase extends Orchestra
         $app['config']->set('view.paths', [...(array) $app['config']->get('view.paths', []), __DIR__ . '/views']);
     }
 
+    /** @var list<string> */
+    private array $tempDirs = [];
+
+    /** A fresh directory in the system temp dir, removed in tearDown. */
+    protected function tempDir(string $prefix): string
+    {
+        $dir = sys_get_temp_dir() . '/' . $prefix . '-' . getmypid() . '-' . bin2hex(random_bytes(3));
+        mkdir($dir);
+        $this->tempDirs[] = $dir;
+
+        return $dir;
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tempDirs as $dir) {
+            \Illuminate\Support\Facades\File::deleteDirectory($dir);
+        }
+        $this->tempDirs = [];
+        parent::tearDown();
+    }
+
     /**
      * @param array<string, mixed> $data
      */
@@ -67,5 +89,23 @@ abstract class TestCase extends Orchestra
         self::assertNotNull($this->app);
 
         return $this->app;
+    }
+
+    /** The text of a PDF as poppler's pdftotext reads it; skips the test when pdftotext is not installed. */
+    protected function pdfText(string $pdf): string
+    {
+        $file = tempnam(sys_get_temp_dir(), 'papercut-text-');
+        file_put_contents($file, $pdf);
+        try {
+            exec('pdftotext ' . escapeshellarg($file) . ' - 2>/dev/null', $out, $code);
+            if ($code === 127) {
+                self::markTestSkipped('pdftotext (poppler) is not installed.');
+            }
+            self::assertSame(0, $code, 'pdftotext failed');
+
+            return implode("\n", $out);
+        } finally {
+            unlink($file);
+        }
     }
 }

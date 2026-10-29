@@ -63,7 +63,7 @@ final class Segments
         $text = '';
         foreach ($segs as $seg) {
             if (!is_string($seg)) {
-                throw new InvalidStructure(Tag::of($tag) . " can only contain text and inline tags (<b>, <i>, <u>, <s>, <a>, <br>, <span>, <mark>)");
+                throw new InvalidStructure(Tag::of($tag) . " can only contain text and inline tags (<b>, <i>, <u>, <s>, <a>, <br>, <span>, <mark>, <code>)");
             }
             $text .= $seg;
         }
@@ -95,7 +95,7 @@ final class Segments
             } elseif ($seg instanceof Text || $seg instanceof View) {
                 $out = $out->append(Markup::flatten($seg));
             } else {
-                throw new InvalidStructure(Tag::of($tag) . " can only contain text and inline tags (<b>, <i>, <u>, <s>, <a>, <br>, <span>, <mark>)");
+                throw new InvalidStructure(Tag::of($tag) . " can only contain text and inline tags (<b>, <i>, <u>, <s>, <a>, <br>, <span>, <mark>, <code>)");
             }
         }
 

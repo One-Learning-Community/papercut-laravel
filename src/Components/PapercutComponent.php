@@ -8,7 +8,10 @@ use Papercut\Laravel\Tag;
 use Closure;
 use Illuminate\View\Component;
 use Illuminate\View\ComponentSlot;
+use Papercut\Decorator\Decorator;
 use Papercut\Exception\InvalidValue;
+use Papercut\Exception\InvalidVariant;
+use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Style\Style;
 use Papercut\Exception\UnknownAttribute;
 use Papercut\Laravel\PapercutManager;
@@ -60,6 +63,8 @@ abstract class PapercutComponent extends Component
             // so a URL's "&" reaches a QR code or link as "&", not "&amp;".
             if (is_string($value)) {
                 $value = htmlspecialchars_decode($value, ENT_QUOTES);
+                // Pre's compile-time start mark lands in a string attribute that only mentions a pre tag.
+                $value = Pre::unmark($value);
             }
             if ($key === 'style' || in_array($key, $this->ownAttributes(), true)) {
                 $own[$key] = $value;
@@ -107,6 +112,9 @@ abstract class PapercutComponent extends Component
                 $node = $node->attributes($plain);
             }
             if (is_string($styleName)) {
+                if (str_contains($styleName, '?')) {
+                    throw InvalidValue::for('style', $styleName)->because('style names cannot contain "?"')->withContext('style');
+                }
                 app(PapercutManager::class)->pdfOptions()->theme()->named($styleName);
                 $node = $node->apply($styleName);
             } elseif ($styleName instanceof Style) {
@@ -130,6 +138,9 @@ abstract class PapercutComponent extends Component
     protected function styled(object $node, array $data): object
     {
         ['own' => $own, 'style' => $style] = $this->attrs($data);
+        if ($node instanceof Decorator && isset($own['variant'])) {
+            $node = $this->withVariants($node, $this->scalarOwn($own['variant'], 'variant'));
+        }
 
         return $this->applyStyle($node, $style, $own['style'] ?? null);
     }
@@ -259,6 +270,40 @@ abstract class PapercutComponent extends Component
     }
 
     /**
+     * Applies `variant="..."`, failing early when the theme styles none of the decorator's parts for a variant.
+     *
+     * @template T of Decorator
+     * @param T $decorator
+     * @return T
+     */
+    private function withVariants(Decorator $decorator, string $names): Decorator
+    {
+        $theme = app(PapercutManager::class)->pdfOptions()->theme();
+        $where = 'on ' . Tag::of($this->tag());
+        try {
+            $decorator = $decorator->variant($names);
+        } catch (InvalidVariant $e) {
+            throw new InvalidStructure($e->getMessage() . ' ' . $where . '.');
+        } catch (\InvalidArgumentException $e) {
+            throw InvalidValue::for('variant', $names)->because('expected lowercase words of a-z, 0-9 and hyphens')->withContext('variant')->within($where);
+        }
+        foreach ($decorator->variants() as $variant) {
+            $looked = array_map(static fn (string $part): string => "$part.$variant", $decorator->partNames());
+            foreach ($looked as $name) {
+                try {
+                    $theme->named($name);
+                    continue 2;
+                } catch (UnknownAttribute) {
+                    // try the next part
+                }
+            }
+            throw new InvalidStructure(sprintf('Variant "%s" %s styles nothing; define one of: %s.', $variant, $where, implode(', ', $looked)));
+        }
+
+        return $decorator;
+    }
+
+    /**
      * Fails early, tagged with this tag, when a theme style name does not exist.
      *
      * @param list<string> $names
@@ -268,6 +313,9 @@ abstract class PapercutComponent extends Component
         $theme = app(PapercutManager::class)->pdfOptions()->theme();
         try {
             foreach ($names as $name) {
+                if (str_contains($name, '?')) {
+                    throw UnknownAttribute::for($name, null, 'style');
+                }
                 $theme->named($name);
             }
         } catch (UnknownAttribute $e) {

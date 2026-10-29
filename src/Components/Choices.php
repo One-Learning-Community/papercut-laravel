@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
+use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Decorator\ChoiceList;
 use Papercut\Decorator\ChoiceOption;
 use Papercut\Exception\InvalidValue;
@@ -15,7 +16,7 @@ final class Choices extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['type', 'emphasize-selected'];
+        return ['type', 'emphasize-selected', 'variant'];
     }
 
     protected function build(array $data): object
@@ -31,7 +32,7 @@ final class Choices extends PapercutComponent
         $options = [];
         foreach ($this->rawChildren($data, [ChoiceOption::class]) as $child) {
             if (!$child instanceof ChoiceOption) {
-                throw new InvalidStructure(Tag::of('choices') . ' can only contain ' . Tag::of('choice'));
+                throw new InvalidStructure(Tag::of('choices') . ' can only contain ' . Tag::of('choice') . NodeRegistry::staleHint($child));
             }
             $options[] = $child;
         }

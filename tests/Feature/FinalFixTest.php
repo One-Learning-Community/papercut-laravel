@@ -53,6 +53,32 @@ final class FinalFixTest extends TestCase
         }
     }
 
+    public function test_mono_family_must_be_a_string(): void
+    {
+        foreach ([['Courier'], 12, true] as $value) {
+            config(['papercut.theme' => ['mono_family' => $value]]);
+            try {
+                (new PapercutManager($this->app()->make(NodeRegistry::class), $this->app()->make(\Papercut\Laravel\Preview\PreviewRegistry::class)))->pdfOptions();
+                self::fail('accepted mono_family=' . var_export($value, true));
+            } catch (\InvalidArgumentException $e) {
+                self::assertStringContainsString('Invalid papercut.theme.mono_family:', $e->getMessage());
+            }
+        }
+    }
+
+    public function test_mono_family_must_be_a_real_known_family(): void
+    {
+        foreach (['', 'monospace', 'Monospace', 'Nonesuch'] as $value) {
+            config(['papercut.theme' => ['mono_family' => $value]]);
+            try {
+                (new PapercutManager($this->app()->make(NodeRegistry::class), $this->app()->make(\Papercut\Laravel\Preview\PreviewRegistry::class)))->pdfOptions();
+                self::fail('accepted mono_family=' . var_export($value, true));
+            } catch (\InvalidArgumentException $e) {
+                self::assertStringContainsString('Invalid papercut.theme.mono_family:', $e->getMessage());
+            }
+        }
+    }
+
     public function test_altered_marker_in_slot_is_reported(): void
     {
         try {
@@ -74,11 +100,40 @@ final class FinalFixTest extends TestCase
         });
     }
 
-    public function test_foreign_nonce_marker_stays_literal(): void
+    public function test_foreign_nonce_marker_is_never_resolved(): void
     {
         $r = new NodeRegistry();
         $out = $r->scope(fn (): array => $r->segments('[[pc:0123456789abcdef:1]]'));
         self::assertSame(['[[pc:0123456789abcdef:1]]'], $out);
+    }
+
+    public function test_user_text_shaped_like_a_marker_renders_literally(): void
+    {
+        $n = $this->nodeFrom('<x-doc::text>Comment: {{ $c }}</x-doc::text>', ['c' => '[[pc:0123456789abcdef:1]]']);
+        self::assertStringContainsString('[[pc:0123456789abcdef:1]]', implode('', array_map(fn ($s) => $s->text, $n->spanList())));
+    }
+
+    public function test_a_wrong_component_child_gets_no_stale_hint(): void
+    {
+        foreach ([
+            '<x-doc::choices><x-doc::choice>a</x-doc::choice><x-doc::text>b</x-doc::text></x-doc::choices>',
+            '<x-doc::tr><x-doc::td>a</x-doc::td><x-doc::p>b</x-doc::p></x-doc::tr>',
+        ] as $blade) {
+            try {
+                $this->nodeFrom($blade);
+                self::fail('accepted');
+            } catch (InvalidStructure $e) {
+                self::assertStringContainsString('can only contain', $e->getMessage());
+                self::assertStringNotContainsString('node marker', $e->getMessage());
+            }
+        }
+    }
+
+    public function test_a_stale_marker_in_choices_names_the_cause(): void
+    {
+        $this->expectException(InvalidStructure::class);
+        $this->expectExceptionMessageMatches('/can only contain.*cache the data instead/');
+        $this->nodeFrom('<x-doc::choices>{{ $c }}</x-doc::choices>', ['c' => '[[pc:0123456789abcdef:1]]']);
     }
 
     public function test_output_twice_message(): void

@@ -56,11 +56,12 @@ This publishes `config/papercut.php`:
 | `margin` | `'20mm'` | Page margin when `<x-doc::page>` has no `margin` |
 | `fonts` | `[]` | Extra font families, see [Fonts](#fonts) |
 | `fallback_fonts` | `[]` | Family names tried, in order, for glyphs the primary font lacks |
-| `theme` | `[]` | Defaults: `font_family`, `font_size` (points, number), `color`, `line_height` (number) |
+| `font_word_names` | `[]` | The name Word uses for a family, as `'Family' => 'Word name'`. The family must be bundled or in `fonts`, and the match ignores case. Cousine is `Courier New` unless set here |
+| `theme` | `[]` | Defaults: `font_family`, `font_size` (points, number), `color`, `line_height` (number), `mono_family` (the family the `monospace` font keyword and the `pre` and `code` styles use; bundled or in `fonts`; default `Cousine`) |
 | `styles` | `[]` | [Named styles](#named-styles) |
 | `overflow` | `null` | `'throw'`, `'clip'`, or `null` = throw in `local`/`testing`, clip elsewhere |
 | `strict` | `false` | `true` makes an export throw `UnsupportedFeature` for content a format cannot render, instead of dropping it with a warning. Consider `true` in tests |
-| `html.fonts` | `'none'` | Fonts in HTML output: `'none'` (a `system-ui` fallback stack, small files), `'embed'` (base64 `@font-face`, large files), `'link'` (`@font-face` with URLs from `html.font_url`; requires it) or `'sources'` (see [Font sources](#font-sources)) |
+| `html.fonts` | `'none'` | Fonts in HTML output: `'none'` (a font stack ending in a generic family that matches the font's class, small files), `'embed'` (base64 `@font-face`, large files), `'link'` (`@font-face` with URLs from `html.font_url`; requires it) or `'sources'` (see [Font sources](#font-sources)) |
 | `html.image_url` | `null` | Class name implementing `Papercut\Laravel\Html\ImageUrlResolver`; `null` embeds images as data URIs (see [HTML URLs](#html-urls)) |
 | `html.font_url` | `null` | Class name implementing `Papercut\Laravel\Html\FontUrlResolver`; required when `html.fonts` is `'link'` |
 | `html.font_sources` | `[GoogleFonts::class]` | Used when `html.fonts` is `'sources'`: an ordered list of class names implementing `Papercut\Html\FontSource` |
@@ -179,12 +180,12 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | Tag | Own attributes | Notes |
 |---|---|---|
 | `<x-doc::document>` | `title`, `author`, `subject`, `keywords`, `lang` | Root. Children must be `<x-doc::page>`; with no page, content gets an implicit page. No style attributes. |
-| `<x-doc::page>` | `size` (a paper name or `"<width> <height>"`), `orientation` (`portrait`/`landscape`), `margin`, `header-gap`, `footer-gap`, `template` or `template-data`, `template-page`, `template-password` | Slots: `<x-slot:header>`, `<x-slot:footer>`, `<x-slot:background>`, `<x-slot:overlay>`. `template` (a PDF under the image path) or `template-data` (its bytes) draws a page of a PDF behind the page and sizes the page from it, so `size` and `orientation` can't be used with it. No style attributes. |
+| `<x-doc::page>` | `size` (a paper name or `"<width> <height>"`), `orientation` (`portrait`/`landscape`), `margin`, `header-gap`, `footer-gap`, `mirror`, `template` or `template-data`, `template-page`, `template-password` | Slots: `<x-slot:header>`, `<x-slot:footer>`, `<x-slot:first-header>`, `<x-slot:first-footer>`, `<x-slot:even-header>`, `<x-slot:even-footer>`, `<x-slot:background>`, `<x-slot:overlay>`. An empty `first-` or `even-` slot means nothing on that page. Slot names also accept camelCase (`<x-slot:firstHeader>`); if both spellings are given, the later one wins. `mirror` (boolean) mirrors the left and right margins on even pages. `template` (a PDF under the image path) or `template-data` (its bytes) draws a page of a PDF behind the page and sizes the page from it, so `size` and `orientation` can't be used with it. No style attributes. |
 | `<x-doc::place>` | `x`, `y`, `anchor`, `width` | Only in `<x-slot:overlay>`. Puts its content at `x`, `y`: lengths from the page's top-left corner, or percentages of its width and height. `anchor` (`top-left` by default, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`) is the point of the content placed there. `width` is a length or a percentage of the page width. No style attributes. |
 | `<x-doc::view>` | `align` | Style. Generic container. |
 | `<x-doc::row>` | `align` | Style. Lays children out horizontally. |
 | `<x-doc::column>` | `align` | Style. Lays children out vertically. |
-| `<x-doc::text>` | `align`, `size` | Style. Inline markup allowed: `<b>`, `<i>`, `<u>`, `<s>`, `<a href>`, `<br>`, `<span>`. |
+| `<x-doc::text>` | `align`, `size` | Style. Inline markup allowed: `<b>`, `<i>`, `<u>`, `<s>`, `<mark>`, `<code>`, `<a href>`, `<br>`, `<span>`. |
 | `<x-doc::h1>` ... `<x-doc::h4>` | `align`, `size` | Style. Heading presets. |
 | `<x-doc::p>` | `align`, `size` | Style. Paragraph preset. |
 | `<x-doc::qr-code>` | `value`, `level` (`L`/`M`/`Q`/`H`), `quiet-zone`, `shape` (`square`/`rounded`/`dots`; the last two raise `level` to at least `Q`), `eyes` (`square`/`dot`/`pointy`), `eye-color`, `gradient` (two colors), `gradient-type` | Style. A square QR code drawn as vectors in the text color; `width` sets its size (25mm by default). The styling attributes need `composer require bacon/bacon-qr-code`. No content. |
@@ -195,11 +196,13 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::table>` | `columns`, `repeat-header` | Style. Children: one optional `<x-doc::thead>` first, then `<x-doc::tr>`. `columns` is a track list such as `"3fr 25mm 20mm"`. `repeat-header` defaults to on. |
 | `<x-doc::thead>` | none | Contains `<x-doc::th>`/`<x-doc::td>` cells (one header row) or `<x-doc::tr>` rows. |
 | `<x-doc::tr>` | none | Style. Contains `<x-doc::td>`/`<x-doc::th>`. |
-| `<x-doc::td>` / `<x-doc::th>` | `colspan`, `align` (`left`/`right`/`center`/`justify`) | Style. `th` is a header cell. |
+| `<x-doc::td>` / `<x-doc::th>` | `colspan`, `rowspan`, `align` (`left`/`right`/`center`/`justify`) | Style. `th` is a header cell. |
 | `<x-doc::ol>` | `start`, `marker` | Style. Numbered list of `<x-doc::li>`. `marker` is any `ListMarker` value (`decimal`, `lower-alpha`, `upper-alpha`, `lower-roman`, `upper-roman`, `disc`, `circle`, `square`, `none`); unset follows nesting depth (`1.`, `a.`, `i.`). |
 | `<x-doc::ul>` | `marker` | Style. Bulleted list of `<x-doc::li>`. `marker` takes the same values as on `ol`; unset follows nesting depth (`•`, `◦`, `▪`). |
 | `<x-doc::li>` | `value` | Style. A list item; holds any block content, including nested lists. `value` sets its number. |
-| `<x-doc::markup>` | `html` or `text` (exactly one), `styles`, `blank-paragraphs` | Converts HTML or plain text to nodes, see [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). |
+| `<x-doc::markup>` | `html` or `text` (exactly one), `styles`, `blank-paragraphs`, `images` | Converts HTML or plain text to nodes, see [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. |
+| `<x-doc::pre>` | none | Style. A preformatted block in the `pre` style. The content is literal: tags are not parsed and entities are decoded. The first and last blank lines are dropped and the common leading indentation is removed. Components inside are an error. The tag is found by a compile step that runs on every Blade view in the app, so a PHP string holding a literal `<x-doc::pre>` tag in an ordinary (non-Papercut) view gets an invisible U+E000 character after it. |
+| `<x-doc::code>` | none | Style, applied to the span. Inline code in the `code` style, for use inside text tags. The content is literal text. |
 | `<x-doc::node>` | `node` | Embeds a PHP-built `Node` or `Component` (anything else throws `InvalidValue`). As a block among blocks. Inside a text tag a `Text` joins the line; a `View` is flattened into it like `Markup::flatten()` (block content approximated, images and other nodes dropped, each reported). |
 | `<x-doc::spacer>` | `size` | `size="10mm"` is a fixed gap; with no `size` it is flexible (`grow`, default 1). Only `grow` is accepted besides `size`/`style`. |
 | `<x-doc::page-number>` | `format`, `align`, `size` | Style. `format` uses `{page}` and `{total}`; no content allowed. |
@@ -259,7 +262,7 @@ The named style is the base; attributes written on the tag override it for any p
 
 ## Decorators
 
-Ready-made pieces that give content a look: `card`, `callout`, `blockquote`, `section`, `field`, `choices`, `key-value` and `badge`. They are plain Papercut components, so they work in PDF and HTML, take the usual [style attributes](#style-attributes) on their outer box, and get their look from [named styles](#named-styles) you can override. Decorator style names (`card`, `card.title`, `callout.*`, `section.*`, `field.*`, `choice.*`, `key-value.*`, `badge.*`, `blockquote.*`) belong to the decorators: a theme or config style with the same name replaces the built-in one, so pick other names for your own styles.
+Ready-made pieces that give content a look (each takes `variant="large"`, which also applies the theme's `<name>.large` styles for the parts it styles): `card`, `callout`, `blockquote`, `section`, `field`, `choices`, `key-value` and `badge`. They are plain Papercut components, so they work in PDF and HTML, take the usual [style attributes](#style-attributes) on their outer box, and get their look from [named styles](#named-styles) you can override. Decorator style names (`card`, `card.title`, `callout.*`, `section.*`, `field.*`, `choice.*`, `key-value.*`, `badge.*`, `blockquote.*`) belong to the decorators: a theme or config style with the same name replaces the built-in one, so pick other names for your own styles.
 
 ```blade
 <x-doc::card title="Respondent">
@@ -370,8 +373,9 @@ the tag on each side instead (`<b>x </b><x-doc::node :node="$t"/><b> y</b>`).
 
 ### Images
 
-Papercut never reads an `<img src>` itself. Name a resolver class in `papercut.markup.images`. It receives the raw
-decoded `src` and returns the image bytes, or `null` when the image is missing. The container builds it, so it can take
+Papercut never reads an `<img src>` itself. Name a resolver class in `papercut.markup.images`. It receives the trimmed
+decoded `src`, once per distinct value in a markup conversion (later images with the same `src` reuse the answer, a null
+included), and returns the image bytes, or `null` when the image is missing. The container builds it, so it can take
 dependencies. `src` is untrusted user input: the resolver decides what may be read, so never pass it to a disk or the
 filesystem unchecked. For example, an editor that stores uploads on the default disk and serves resized copies from
 `/public/images/{size}/files/uploaded/editor/...`:
@@ -438,7 +442,7 @@ Inter (regular, bold, italic, bold italic) is bundled and always available. Regi
 'theme' => ['font_family' => 'Merriweather', 'font_size' => 10],
 ```
 
-`php artisan papercut:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
+`php artisan papercut:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite), saves the family's licence beside them (`OFL.txt`, `LICENSE.txt` or `UFL.txt`, from Google's [fonts repository](https://github.com/google/fonts)) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
 
 `php artisan papercut:fonts` lists every available face and reports whether each file is `ok`, `missing` or `invalid`. A glyph missing from the primary family is looked up in `fallback_fonts`; if no family has it, a warning is logged (`[papercut] ...`).
 

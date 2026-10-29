@@ -53,8 +53,7 @@ final class TextComponentsTest extends TestCase
 
     public function test_image_src_resolution_and_errors(): void
     {
-        $dir = sys_get_temp_dir() . '/papercut-img-' . getmypid();
-        @mkdir($dir);
+        $dir = $this->tempDir('papercut-img');
         file_put_contents("$dir/logo.png", 'x');
         config(['papercut.image_path' => $dir]);
         $img = $this->nodeFrom('<x-doc::image src="logo.png" height="12mm" fit="cover" />');

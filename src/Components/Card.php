@@ -10,7 +10,7 @@ final class Card extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['title'];
+        return ['title', 'variant'];
     }
 
     protected function build(array $data): object

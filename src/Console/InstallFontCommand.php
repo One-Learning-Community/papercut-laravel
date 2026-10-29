@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\Http;
 use Papercut\Backend\PhpPdf\PhpPdfBackend;
 
 /**
- * Downloads a family's TrueType files from Google Fonts once, so PDFs can embed them like any local font.
- * Rendering never touches the network: the files live in the app and are registered in papercut.fonts.
+ * Downloads a family's TrueType files from Google Fonts once, so PDFs can embed them like any local font, and the
+ * family's licence beside them. Rendering never touches the network: the files live in the app and are registered
+ * in papercut.fonts.
  */
 final class InstallFontCommand extends Command
 {
@@ -25,6 +26,9 @@ final class InstallFontCommand extends Command
 
     private const string CSS = 'https://fonts.googleapis.com/css2';
     private const string FILES = 'https://fonts.gstatic.com/';
+    /** Google Fonts' source repository, which keeps each family's licence in a folder named for the licence. */
+    private const string LICENCES = 'https://raw.githubusercontent.com/google/fonts/main/';
+    private const array LICENCE_FILES = ['ofl' => 'OFL.txt', 'apache' => 'LICENSE.txt', 'ufl' => 'UFL.txt'];
 
     private const array NAMES = [
         100 => 'Thin', 200 => 'ExtraLight', 300 => 'Light', 400 => 'Regular', 500 => 'Medium',
@@ -107,14 +111,59 @@ final class InstallFontCommand extends Command
             $this->line("  <info>saved</info>   $relative/$file");
         }
 
+        $licence = $this->saveLicence($family, $dir, $relative);
+
         $this->newLine();
         $this->line('Add this to <comment>fonts</comment> in config/papercut.php:');
         $this->newLine();
         $this->line($this->snippet($family, $config));
         $this->newLine();
-        $this->line('Check the family\'s licence on fonts.google.com before you ship it. Most are under the SIL Open Font License.');
+        if ($licence !== null) {
+            $this->line("Keep $relative/$licence with the fonts: the licence asks for a copy wherever they go.");
+        } else {
+            $this->warn("Couldn't download $family's licence. Get it from fonts.google.com and keep it with the fonts; most are under the SIL Open Font License.");
+        }
 
         return self::SUCCESS;
+    }
+
+    /** Saves the family's licence beside its files and returns the file's name, or null when none was found. */
+    private function saveLicence(string $family, string $dir, string $relative): ?string
+    {
+        if (!$this->option('force')) {
+            foreach (self::LICENCE_FILES as $file) {
+                if (is_file("$dir/$file")) {
+                    $this->line("  <comment>exists</comment>  $relative/$file");
+
+                    return $file;
+                }
+            }
+        }
+        $slug = strtolower(str_replace(' ', '', $family));
+        foreach (self::LICENCE_FILES as $folder => $file) {
+            try {
+                $response = Http::timeout(30)->get(self::LICENCES . "$folder/$slug/$file");
+            } catch (\Throwable) {
+                return null;
+            }
+            $text = $response->body();
+            if (!$response->successful() || !self::isLicenceText($text)) {
+                continue;
+            }
+            file_put_contents("$dir/$file", $text);
+            $this->line("  <info>saved</info>   $relative/$file");
+
+            return $file;
+        }
+
+        return null;
+    }
+
+    /** Plain text of a sensible size, not an error page. */
+    private static function isLicenceText(string $text): bool
+    {
+        return $text !== '' && strlen($text) <= 256 * 1024 && mb_check_encoding($text, 'UTF-8')
+            && !str_contains($text, "\0") && !str_starts_with(ltrim($text), '<');
     }
 
     /** @return list<int>|null */

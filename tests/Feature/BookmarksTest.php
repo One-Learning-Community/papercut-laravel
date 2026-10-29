@@ -12,7 +12,7 @@ final class BookmarksTest extends TestCase
     /** @return array<int, mixed> each top-level entry as [title => children], decoded from qpdf's JSON */
     private function outline(string $blade): array
     {
-        $view = 'bookmarks-' . md5($blade);
+        $view = 'bookmarks-' . getmypid() . '-' . md5($blade); // per process, so parallel workers don't collide
         $path = sys_get_temp_dir() . "/$view.blade.php";
         file_put_contents($path, $blade);
         \Illuminate\Support\Facades\View::addLocation(sys_get_temp_dir());

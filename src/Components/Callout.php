@@ -12,7 +12,7 @@ final class Callout extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['type', 'title'];
+        return ['type', 'title', 'variant'];
     }
 
     protected function build(array $data): object

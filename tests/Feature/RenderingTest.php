@@ -73,4 +73,11 @@ final class RenderingTest extends TestCase
         self::assertSame(11.0, $theme->fontSize);
         self::assertSame(12.0, $theme->named('card')->padding?->top->points);
     }
+
+    public function test_theme_mono_family_from_config(): void
+    {
+        config(['papercut.theme' => ['mono_family' => 'Inter']]);
+        app()->forgetInstance(\Papercut\Laravel\PapercutManager::class);
+        self::assertSame('Inter', Papercut::pdfOptions()->theme()->monoFamily);
+    }
 }

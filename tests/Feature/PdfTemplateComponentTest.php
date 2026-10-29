@@ -108,7 +108,7 @@ final class PdfTemplateComponentTest extends TestCase
         self::assertEqualsWithDelta(400.0, $page->width(), 1e-6);
         self::assertEqualsWithDelta(300.0, $page->height(), 1e-6);
         self::assertSame(2, $page->templatePage()?->pageNumber());
-        self::assertStringContainsString('Second', $this->text(Document::make($page)->toPdf()->bytes()));
+        self::assertStringContainsString('Second', $this->pdfText(Document::make($page)->toPdf()->bytes()));
     }
 
     public function test_page_template_data_takes_bytes(): void
@@ -149,7 +149,7 @@ final class PdfTemplateComponentTest extends TestCase
         self::assertEquals(Percent::of(12), $places[1]->boxWidth());
         self::assertInstanceOf(QrCode::class, $places[1]->children()[0]);
 
-        $words = $this->text(Document::make($page)->toPdf()->bytes());
+        $words = $this->pdfText(Document::make($page)->toPdf()->bytes());
         self::assertStringContainsString('Ada Lovelace', $words);
         self::assertStringContainsString('First', $words);
     }
@@ -209,20 +209,5 @@ final class PdfTemplateComponentTest extends TestCase
         self::assertInstanceOf(Page::class, $page);
 
         return $page->overlayPlaces()[0];
-    }
-
-    private function text(string $pdf): string
-    {
-        $file = tempnam(sys_get_temp_dir(), 'papercut-template-');
-        file_put_contents($file, $pdf);
-        try {
-            exec('pdftotext ' . escapeshellarg($file) . ' - 2>&1', $out, $code);
-            if ($code !== 0) {
-                self::markTestSkipped('pdftotext (poppler) is not installed.');
-            }
-            return implode("\n", $out);
-        } finally {
-            unlink($file);
-        }
     }
 }

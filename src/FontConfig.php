@@ -69,6 +69,37 @@ final class FontConfig
         return $out;
     }
 
+    /**
+     * The `papercut.font_word_names` map: family => the name Word should use for it.
+     *
+     * @param list<string> $known families that may be named (bundled and registered), compared case-insensitively
+     * @return array<string, string>
+     */
+    public static function wordNames(array $known): array
+    {
+        $config = config('papercut.font_word_names', []);
+        if (!is_array($config)) {
+            throw self::invalid('papercut.font_word_names', 'expected a map of family => Word font name');
+        }
+        $known = array_map('strtolower', $known);
+        $out = [];
+        foreach ($config as $family => $name) {
+            $at = 'papercut.font_word_names.' . $family;
+            if (!is_string($family) || $family === '') {
+                throw self::invalid($at, 'family must be a non-empty string');
+            }
+            if (!is_string($name) || $name === '') {
+                throw self::invalid($at, 'Word font name must be a non-empty string');
+            }
+            if (!in_array(strtolower($family), $known, true)) {
+                throw self::invalid($at, 'family is neither bundled nor registered in papercut.fonts');
+            }
+            $out[$family] = $name;
+        }
+
+        return $out;
+    }
+
     private static function invalid(string $at, string $why): \InvalidArgumentException
     {
         return new \InvalidArgumentException(sprintf('Invalid font config %s: %s', $at, $why));

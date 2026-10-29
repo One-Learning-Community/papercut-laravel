@@ -62,13 +62,14 @@ final class FontsTest extends TestCase
 
     public function testRelativePathsResolveAgainstBasePath(): void
     {
-        copy(self::INTER . '/Inter-Regular.ttf', base_path('pc-relative.ttf'));
-        $this->configure(['Brand' => [400 => ['normal' => 'pc-relative.ttf']]]);
+        $name = 'pc-relative-' . getmypid() . '.ttf'; // per process, so parallel workers don't collide
+        copy(self::INTER . '/Inter-Regular.ttf', base_path($name));
+        $this->configure(['Brand' => [400 => ['normal' => $name]]]);
 
         try {
             $this->assertSame(0, Artisan::call('papercut:fonts'), Artisan::output());
         } finally {
-            unlink(base_path('pc-relative.ttf'));
+            unlink(base_path($name));
         }
     }
 
@@ -130,5 +131,36 @@ final class FontsTest extends TestCase
         $out = Artisan::output();
         $this->assertStringContainsString('Ghost', $out);
         $this->assertStringContainsString('not registered', $out);
+    }
+
+    public function testWordNamesApplyToBundledAndRegisteredFamilies(): void
+    {
+        $this->configure(['Brand' => [400 => ['normal' => __DIR__ . '/../../../core/resources/fonts/Inter/Inter-Regular.ttf']]]);
+        config(['papercut.font_word_names' => ['brand' => 'Arial', 'Cousine' => 'Consolas']]);
+
+        $fonts = Papercut::pdfOptions()->fonts();
+
+        $this->assertSame('Arial', $fonts->wordName('Brand'));
+        $this->assertSame('Consolas', $fonts->wordName('Cousine'));
+        $this->assertSame('Inter', $fonts->wordName('Inter'));
+    }
+
+    /** @return iterable<string, array{mixed, string}> */
+    public static function badWordNames(): iterable
+    {
+        yield 'unknown family' => [['Nope' => 'Arial'], 'papercut.font_word_names.Nope'];
+        yield 'non-string name' => [['Inter' => 12], 'papercut.font_word_names.Inter'];
+        yield 'empty name' => [['Inter' => ''], 'papercut.font_word_names.Inter'];
+        yield 'not a map' => ['Arial', 'papercut.font_word_names'];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('badWordNames')]
+    public function testBadWordNamesThrow(mixed $names, string $message): void
+    {
+        config(['papercut.font_word_names' => $names]);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid font config ' . $message);
+
+        Papercut::pdfOptions();
     }
 }

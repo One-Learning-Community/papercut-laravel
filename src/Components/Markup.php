@@ -23,7 +23,7 @@ final class Markup extends PapercutComponent
 
     protected function ownAttributes(): array
     {
-        return ['styles', 'blank-paragraphs'];
+        return ['styles', 'blank-paragraphs', 'images'];
     }
 
     protected function build(array $data): object
@@ -48,8 +48,9 @@ final class Markup extends PapercutComponent
     /** @param array<string, mixed> $own */
     private function options(array $own): MarkupOptions
     {
-        $base = app(PapercutManager::class)->markupOptions();
-        if (!isset($own['styles']) && !isset($own['blank-paragraphs'])) {
+        $manager = app(PapercutManager::class);
+        $base = $manager->markupOptions();
+        if (!isset($own['styles']) && !isset($own['blank-paragraphs']) && !isset($own['images'])) {
             return $base;
         }
         $styles = $base->styles;
@@ -63,7 +64,12 @@ final class Markup extends PapercutComponent
             $blank ?? throw new \InvalidArgumentException('Invalid ' . Tag::of('markup') . ' blank-paragraphs: ' . self::show($own['blank-paragraphs']) . "; expected 'drop' or 'keep'");
         }
 
-        return new MarkupOptions($styles, $base->images, $blank);
+        $images = $base->images;
+        if (isset($own['images'])) {
+            $images = $own['images'] === 'none' ? null : $manager->markupImageResolver($own['images']);
+        }
+
+        return new MarkupOptions($styles, $images, $blank);
     }
 
     private static function show(mixed $v): string

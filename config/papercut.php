@@ -11,7 +11,9 @@ return [
     // Font families: name => [weight => ['normal' => path, 'italic' => path]]. Inter is always available.
     'fonts' => [],
     'fallback_fonts' => [],
-    // Theme overrides: font_family, font_size (pt float), color, line_height
+    // The name Word uses for a family: family => name. Meant for metric-compatible pairs (Cousine => Courier New, the default for Cousine).
+    'font_word_names' => [],
+    // Theme overrides: font_family, mono_family (what the `monospace` font keyword means; default Cousine), font_size (pt float), color, line_height
     'theme' => [],
     // Named styles usable as style="card": name => attribute array (same keys as tag attributes)
     'styles' => [],

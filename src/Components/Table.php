@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
+use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Tag;
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\TableRow;
@@ -48,7 +49,7 @@ final class Table extends PapercutComponent
                 $table = $table->bodyRow($child);
             } else {
                 $name = $child instanceof HeaderRows ? 'thead' : (method_exists($child, 'debugName') ? $child->debugName() : get_debug_type($child));
-                throw new InvalidStructure(Tag::of('table') . ' can only contain ' . Tag::of('thead') . ' (once, first) and ' . Tag::of('tr') . ", found <$name>");
+                throw new InvalidStructure(Tag::of('table') . ' can only contain ' . Tag::of('thead') . ' (once, first) and ' . Tag::of('tr') . ", found <$name>" . NodeRegistry::staleHint($child));
             }
         }
 

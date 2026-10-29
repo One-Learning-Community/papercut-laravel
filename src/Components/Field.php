@@ -12,7 +12,7 @@ final class Field extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['label', 'placeholder', 'lines'];
+        return ['label', 'placeholder', 'lines', 'variant'];
     }
 
     protected function build(array $data): object

@@ -12,7 +12,7 @@ final class Badge extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['type'];
+        return ['type', 'variant'];
     }
 
     protected function build(array $data): object

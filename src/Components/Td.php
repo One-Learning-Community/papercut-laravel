@@ -13,7 +13,7 @@ class Td extends PapercutComponent
 {
     protected function ownAttributes(): array
     {
-        return ['colspan', 'align'];
+        return ['colspan', 'rowspan', 'align'];
     }
 
     /** @param array<string, mixed> $data */
@@ -25,12 +25,10 @@ class Td extends PapercutComponent
         $where = 'on ' . Tag::of($this->tag());
 
         if (isset($own['colspan'])) {
-            $raw = $own['colspan'];
-            $n = is_int($raw) ? $raw : (is_string($raw) && ctype_digit($raw) ? (int) $raw : 0);
-            if ($n < 1) {
-                throw InvalidValue::for('colspan', is_scalar($raw) ? (string) $raw : get_debug_type($raw))->because('expected an integer of at least 1')->withContext('colspan')->within($where);
-            }
-            $cell = $cell->colspan($n);
+            $cell = $cell->colspan($this->span('colspan', $own['colspan'], $where));
+        }
+        if (isset($own['rowspan'])) {
+            $cell = $cell->rowspan($this->span('rowspan', $own['rowspan'], $where));
         }
         if (isset($own['align'])) {
             $align = TextAlign::tryFrom((string) $own['align'])
@@ -39,6 +37,16 @@ class Td extends PapercutComponent
         }
 
         return $this->styled($cell, $data);
+    }
+
+    private function span(string $name, mixed $raw, string $where): int
+    {
+        $n = is_int($raw) ? $raw : (is_string($raw) && ctype_digit($raw) ? (int) $raw : 0);
+        if ($n < 1) {
+            throw InvalidValue::for($name, is_scalar($raw) ? (string) $raw : get_debug_type($raw))->because('expected an integer of at least 1')->withContext($name)->within($where);
+        }
+
+        return $n;
     }
 
     protected function build(array $data): object

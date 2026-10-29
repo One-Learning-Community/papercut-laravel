@@ -184,6 +184,14 @@ final class DecoratorComponentsTest extends TestCase
         self::assertSame('b', $highlighted[0]->text);
     }
 
+    public function test_text_tag_accepts_raw_code(): void
+    {
+        $t = $this->nodeFrom('<x-doc::text>run <code>make</code> now</x-doc::text>');
+        self::assertInstanceOf(Text::class, $t);
+        self::assertSame([null, 'code', null], array_map(static fn ($s) => $s->styleName, $t->spanList()));
+        self::assertSame('make', $t->spanList()[1]->text);
+    }
+
     public function test_inline_error_lists_mark(): void
     {
         $this->expectException(\Papercut\Laravel\Exception\InvalidStructure::class);

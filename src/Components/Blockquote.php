@@ -10,7 +10,7 @@ final class Blockquote extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['cite'];
+        return ['cite', 'variant'];
     }
 
     protected function build(array $data): object

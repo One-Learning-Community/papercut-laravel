@@ -163,8 +163,7 @@ final class HtmlTest extends TestCase
 
     private function useLogo(): void
     {
-        $dir = sys_get_temp_dir() . '/papercut-logo-' . getmypid();
-        @mkdir($dir);
+        $dir = $this->tempDir('papercut-logo');
         file_put_contents($dir . '/logo.png', (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='));
         config(['papercut.image_path' => $dir]);
     }

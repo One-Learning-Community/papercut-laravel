@@ -67,6 +67,7 @@ final class PapercutServiceProvider extends ServiceProvider
         }
 
         Blade::componentNamespace('Papercut\\Laravel\\Components', Tag::prefix());
+        Blade::prepareStringsForCompilationUsing(Components\Pre::markOpeningTags(...));
 
         if (config('papercut.preview.enabled') && $this->app->environment('local')) {
             Route::prefix((string) config('papercut.preview.path', '_papercut'))->group(static function (): void {

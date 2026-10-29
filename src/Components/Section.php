@@ -10,7 +10,7 @@ final class Section extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['title', 'number', 'rule'];
+        return ['title', 'number', 'rule', 'variant'];
     }
 
     protected function build(array $data): object
