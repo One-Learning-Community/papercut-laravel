@@ -62,6 +62,12 @@ final class PreCodeComponentsTest extends TestCase
         self::assertNull($spans[0]->styleName);
     }
 
+    public function test_code_component_matches_span_code(): void
+    {
+        $t = $this->nodeFrom('<x-doc::text><x-doc::code>toPdf()</x-doc::code></x-doc::text>');
+        self::assertEquals(\Papercut\Text::code('toPdf()')->spanList(), $t->spanList());
+    }
+
     public function test_code_round_trips_escaped_blade_output(): void
     {
         $t = $this->nodeFrom('<x-doc::text><x-doc::code>{{ $c }}</x-doc::code></x-doc::text>', ['c' => '<i> & "q"']);

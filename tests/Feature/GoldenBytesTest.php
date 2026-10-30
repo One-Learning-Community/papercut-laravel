@@ -28,6 +28,7 @@ final class GoldenBytesTest extends TestCase
         $app['config']->set('view.paths', [self::EXAMPLES . '/views']);
         // v0.1 had no bookmarks; with them off, everything drawn must still match its bytes.
         $app['config']->set('papercut.bookmarks', false);
+        $app['config']->set('papercut.image_path', self::EXAMPLES . '/../assets');
     }
 
     /** @return iterable<string, array{string}> */

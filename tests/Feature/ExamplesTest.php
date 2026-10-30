@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Tests\Feature;
 
+use Papercut\Export\PdfOptions;
 use Papercut\Laravel\Facades\Papercut;
 use Papercut\Laravel\Tests\TestCase;
 
@@ -28,6 +29,8 @@ final class ExamplesTest extends TestCase
     protected function defineEnvironment($app): void
     {
         $app['config']->set('view.paths', [self::EXAMPLES . '/views']);
+        // The certificate view names its template and signature by relative path.
+        $app['config']->set('papercut.image_path', self::EXAMPLES . '/../assets');
     }
 
     /**
@@ -105,6 +108,36 @@ final class ExamplesTest extends TestCase
         exec('pdfinfo -f 1 -l 3 ' . escapeshellarg($file) . ' 2>/dev/null', $info);
         self::assertStringContainsString('612 x 792', implode("\n", $info));
         self::assertStringContainsString('Page    2 size:  792 x 612', implode("\n", $info));
+    }
+
+    public function testCertificate(): void
+    {
+        $file = $this->render('certificate');
+        $pages = $this->pages($file);
+        self::assertCount(1, array_filter($pages, static fn (string $p): bool => trim($p) !== ''));
+        $text = $pages[0];
+        foreach (['C E R T I F I C A T E', 'This certifies that', 'Priya Raman', 'Introduction to Beekeeping', '12 March 2026', 'SIGNATURE'] as $expected) {
+            self::assertStringContainsString($expected, $text);
+        }
+        exec('pdfinfo ' . escapeshellarg($file) . ' 2>/dev/null', $info);
+        self::assertStringContainsString('792 x 612', implode("\n", $info));
+    }
+
+    public function testArticle(): void
+    {
+        $pages = $this->pages($this->render('article'));
+        self::assertCount(2, array_filter($pages, static fn (string $p): bool => trim($p) !== ''));
+        self::assertStringContainsString('Setting up two-factor sign-in', $pages[0]);
+        self::assertStringContainsString('plotline auth 2fa enable --method app', $pages[0]);
+        self::assertStringContainsString('If something goes wrong', $pages[1]);
+        self::assertStringContainsString('Page 2 of 2', $pages[1]);
+    }
+
+    public function testArticleConvertsWithoutWarnings(): void
+    {
+        // Strict mode throws on anything it can't convert, so reaching the assertion means there were no warnings.
+        $bytes = Papercut::view('article', self::data('article'))->document()->toPdf(new PdfOptions(strict: true))->bytes();
+        self::assertStringStartsWith('%PDF', $bytes);
     }
 
     public function testReport(): void
