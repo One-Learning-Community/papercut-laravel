@@ -91,6 +91,22 @@ final class ExamplesTest extends TestCase
         }
     }
 
+    public function testGuide(): void
+    {
+        $file = $this->render('guide');
+        $pages = $this->pages($file);
+        self::assertCount(3, $pages);
+        self::assertStringContainsString('Create and track shipments', $pages[0]);
+        self::assertStringContainsString('Endpoint reference', $pages[1]);
+        self::assertStringContainsString('Go-live checklist', $pages[2]);
+        foreach ([1, 2, 3] as $n) {
+            self::assertStringContainsString("Page $n of 3", $pages[$n - 1]);
+        }
+        exec('pdfinfo -f 1 -l 3 ' . escapeshellarg($file) . ' 2>/dev/null', $info);
+        self::assertStringContainsString('612 x 792', implode("\n", $info));
+        self::assertStringContainsString('Page    2 size:  792 x 612', implode("\n", $info));
+    }
+
     public function testReport(): void
     {
         $pages = $this->pages($this->render('report'));
