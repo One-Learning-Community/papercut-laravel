@@ -66,6 +66,17 @@ return [
         'styles' => 'theme',
         // 'drop' or 'keep' paragraphs that hold only &nbsp; or <br>.
         'blank_paragraphs' => 'drop',
+        // true turns <pre><code class="language-x"> into a highlighted code block; false keeps a plain pre.
+        'highlight' => true,
+    ],
+    // Code blocks (<x-doc::pre language>, markup): highlighting needs phiki/phiki.
+    'code' => [
+        'theme' => null, // null = papercut-light
+        'variant' => null, // null, 'strip' or 'caption'
+        'grammars' => [], // name => path to a TextMate grammar JSON
+        'themes' => [], // name => path to a TextMate theme JSON
+        'aliases' => [], // alias => language
+        'injections' => [], // list of ['path' => …, 'into' => ['source.x', …]]
     ],
     'preview' => [
         'enabled' => env('PAPERCUT_PREVIEW', false),

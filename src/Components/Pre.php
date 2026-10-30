@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
+use Papercut\Decorator\CodeBlock;
+use Papercut\Exception\InvalidValue;
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Rendering\NodeRegistry;
+use Papercut\Laravel\PapercutManager;
 use Papercut\Laravel\Tag;
 use Papercut\Span;
 use Papercut\Style\Style;
@@ -69,10 +72,32 @@ final class Pre extends PapercutComponent
         return preg_replace($pattern, '$1', $text) ?? $text;
     }
 
+    protected function ownAttributes(): array
+    {
+        return ['language', 'theme', 'label', 'variant'];
+    }
+
     protected function build(array $data): object
     {
+        $lines = self::lines(self::literal($this->rawSlot($data)));
+        ['own' => $own] = $this->attrs($data);
+        // An empty language or theme is the same as none (a Blade variable that came out blank).
+        foreach (['language', 'theme'] as $name) {
+            if (($own[$name] ?? null) === '') {
+                unset($own[$name]);
+            }
+        }
+        if (isset($own['language'])) {
+            return $this->codeBlock($lines, $own, $data);
+        }
+        foreach (['theme', 'label', 'variant'] as $name) {
+            if (isset($own[$name])) {
+                throw new InvalidStructure($name . ' on ' . Tag::of('pre') . ' needs a language');
+            }
+        }
+
         $spans = [];
-        foreach (self::lines(self::literal($this->rawSlot($data))) as $i => $line) {
+        foreach ($lines as $i => $line) {
             if ($i > 0) {
                 $spans[] = Span::break();
             }
@@ -88,6 +113,34 @@ final class Pre extends PapercutComponent
         $text = $this->applyStyle(Text::spans(...$spans), $style, is_string($name) ? 'pre ' . $name : 'pre');
 
         return $name instanceof Style ? $this->applyStyle($text, [], $name) : $text;
+    }
+
+    /**
+     * @param list<string> $lines
+     * @param array<string, mixed> $own
+     * @param array<string, mixed> $data
+     */
+    private function codeBlock(array $lines, array $own, array $data): object
+    {
+        $block = CodeBlock::make(implode("\n", $lines))
+            ->language($this->scalarOwn($own['language'], 'language'))
+            ->highlighting(app(PapercutManager::class)->codeHighlighting());
+        if (isset($own['theme'])) {
+            $block = $block->theme($this->scalarOwn($own['theme'], 'theme'));
+        }
+        if (isset($own['label'])) {
+            $label = $own['label'];
+            if ($label === true) {
+                throw InvalidValue::for('label', 'true')->because('expected text, or false to hide it')->withContext('label')->within('on ' . Tag::of('pre'));
+            }
+            $text = $label === false ? 'false' : $this->scalarOwn($label, 'label');
+            // an empty label keeps the language's default
+            if ($text !== '') {
+                $block = $block->label($text === 'false' ? false : $text);
+            }
+        }
+
+        return $this->styled($block, $data);
     }
 
     /** @param array<string, mixed> $data */

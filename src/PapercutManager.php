@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel;
 
+use Papercut\Code\{CodeHighlighting, CodeTheme, PhikiHighlighter};
 use Papercut\Document;
 use Papercut\Exception\{InvalidValue, MissingExporter, UnknownAttribute};
 use Papercut\Laravel\Exception\InvalidStructure;
@@ -24,6 +25,7 @@ class PapercutManager
     private ?PdfOptions $pdf = null;
     private ?HtmlOptions $html = null;
     private ?MarkupOptions $markup = null;
+    private ?CodeHighlighting $code = null;
 
     /** @var array<string, \Closure> markup image resolvers by class name without a leading backslash, one instance per class */
     private array $imageResolvers = [];
@@ -112,6 +114,12 @@ class PapercutManager
         return $this->markup ??= $this->buildMarkupOptions();
     }
 
+    /** Code block highlighting, built from `papercut.code` on first use. */
+    public function codeHighlighting(): CodeHighlighting
+    {
+        return $this->code ??= $this->buildCodeHighlighting();
+    }
+
     /**
      * The resolver for a markup tag's `images` attribute: the class is built through the container once per manager and
      * shared by every markup tag naming it, and by `papercut.markup.images` when that names the same class.
@@ -161,7 +169,95 @@ class PapercutManager
 
         $images = self::configuredClass('markup.images', Markup\ImageResolver::class);
 
-        return new MarkupOptions(styles: $mode, images: $images === null ? null : $this->sharedImageResolver($images, 'markup.images'), blankParagraphs: $paragraphs);
+        return new MarkupOptions(styles: $mode, images: $images === null ? null : $this->sharedImageResolver($images, 'markup.images'), blankParagraphs: $paragraphs, code: $this->markupCode());
+    }
+
+    /** What markup gets for code: the configured highlighting, or false when `papercut.markup.highlight` is off. */
+    public function markupCode(): CodeHighlighting|false
+    {
+        $highlight = config('papercut.markup.highlight', true);
+        if (!is_bool($highlight)) {
+            throw new \InvalidArgumentException('Invalid papercut.markup.highlight: ' . self::shown($highlight) . '; expected true or false');
+        }
+
+        return $highlight ? $this->codeHighlighting() : false;
+    }
+
+    private function buildCodeHighlighting(): CodeHighlighting
+    {
+        $theme = config('papercut.code.theme');
+        if ($theme !== null && (!is_string($theme) || $theme === '')) {
+            throw new \InvalidArgumentException('Invalid papercut.code.theme: ' . self::shown($theme) . '; expected a theme name or null');
+        }
+        $variant = config('papercut.code.variant');
+        if ($variant !== null && !in_array($variant, ['strip', 'caption'], true)) {
+            throw new \InvalidArgumentException('Invalid papercut.code.variant: ' . self::shown($variant) . "; expected 'strip', 'caption' or null");
+        }
+        $maps = [];
+        foreach (['grammars', 'themes', 'aliases'] as $key) {
+            $map = config("papercut.code.$key", []);
+            if (!is_array($map) || ($map !== [] && array_is_list($map))) {
+                throw new \InvalidArgumentException("Invalid papercut.code.$key: " . self::shown($map) . '; expected a map of name => ' . ($key === 'aliases' ? 'language' : 'file path'));
+            }
+            foreach ($map as $name => $value) {
+                if (!is_string($value) || $value === '') {
+                    throw new \InvalidArgumentException("Invalid papercut.code.$key.$name: " . self::shown($value) . '; expected a ' . ($key === 'aliases' ? 'language name' : 'file path'));
+                }
+            }
+            $maps[$key] = $map;
+        }
+        $injections = config('papercut.code.injections', []);
+        if (!is_array($injections) || !array_is_list($injections)) {
+            throw new \InvalidArgumentException('Invalid papercut.code.injections: ' . self::shown($injections) . "; expected a list of ['path' => …, 'into' => [scope, …]]");
+        }
+        foreach ($injections as $i => $entry) {
+            $into = is_array($entry) ? ($entry['into'] ?? null) : null;
+            if (!is_array($entry) || !is_string($entry['path'] ?? null) || !is_array($into) || !array_is_list($into) || $into === [] || array_filter($into, 'is_string') !== $into) {
+                throw new \InvalidArgumentException("Invalid papercut.code.injections.$i: " . self::shown($entry) . "; expected ['path' => file path, 'into' => [scope, …]]");
+            }
+        }
+
+        $custom = $maps['grammars'] !== [] || $maps['themes'] !== [] || $maps['aliases'] !== [] || $injections !== [];
+        $highlighter = null;
+        if ($custom && $this->phikiAvailable()) {
+            // Registration order matters: grammars before the injections that name them.
+            $highlighter = new PhikiHighlighter();
+            foreach ($maps['grammars'] as $name => $path) {
+                $highlighter = self::registering("grammars.$name", static fn () => $highlighter->grammar((string) $name, $path));
+            }
+            foreach ($maps['themes'] as $name => $path) {
+                $highlighter = self::registering("themes.$name", static fn () => $highlighter->theme((string) $name, $path));
+            }
+            foreach ($maps['aliases'] as $alias => $language) {
+                $highlighter = self::registering("aliases.$alias", static fn () => $highlighter->alias((string) $alias, $language));
+            }
+            foreach ($injections as $i => $entry) {
+                $highlighter = self::registering("injections.$i", static fn () => $highlighter->injection($entry['path'], $entry['into']));
+            }
+        }
+
+        return new CodeHighlighting($this->phikiAvailable() ? $highlighter : false, $theme ?? CodeTheme::DEFAULT, $variant);
+    }
+
+    /** Whether phiki/phiki is installed; without it custom code config is validated but not registered. */
+    protected function phikiAvailable(): bool
+    {
+        return PhikiHighlighter::available();
+    }
+
+    /** @param \Closure(): PhikiHighlighter $register */
+    private static function registering(string $key, \Closure $register): PhikiHighlighter
+    {
+        try {
+            return $register();
+        } catch (\InvalidArgumentException $e) {
+            throw new \InvalidArgumentException("Invalid papercut.code.$key: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    private static function shown(mixed $v): string
+    {
+        return is_scalar($v) ? var_export($v, true) : get_debug_type($v);
     }
 
     private function buildExportOptions(): ExportOptions

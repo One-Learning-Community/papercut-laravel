@@ -97,4 +97,19 @@ final class OptionsFromConfigTest extends TestCase
         $spy->shouldHaveReceived('debug')->with('[papercut] close')->once();
         $spy->shouldHaveReceived('warning')->with('[papercut] lost')->once();
     }
+
+    public function test_markup_highlight_and_code_theme_reach_the_options(): void
+    {
+        self::assertSame($this->fresh()->markupOptions()->code, app(PapercutManager::class)->codeHighlighting());
+
+        config(['papercut.markup.highlight' => false, 'papercut.code.theme' => 'github-dark']);
+        $m = $this->fresh();
+        self::assertFalse($m->markupOptions()->code);
+        self::assertSame('github-dark', $m->codeHighlighting()->theme);
+
+        config(['papercut.markup.highlight' => 'no']);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid papercut.markup.highlight: 'no'");
+        $this->fresh()->markupOptions();
+    }
 }

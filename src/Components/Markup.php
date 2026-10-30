@@ -69,7 +69,7 @@ final class Markup extends PapercutComponent
             $images = $own['images'] === 'none' ? null : $manager->markupImageResolver($own['images']);
         }
 
-        return new MarkupOptions($styles, $images, $blank);
+        return new MarkupOptions($styles, $images, $blank, $base->code);
     }
 
     private static function show(mixed $v): string
