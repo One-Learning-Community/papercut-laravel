@@ -171,6 +171,12 @@ final class PdfTemplateComponentTest extends TestCase
         $this->placeFrom('<x-doc::place x="10%">Hi</x-doc::place>');
     }
 
+    public function test_place_takes_the_other_anchor_names(): void
+    {
+        self::assertSame(Anchor::Top, $this->placeFrom('<x-doc::place x="50%" y="0" anchor="top-center">Hi</x-doc::place>')->anchorPoint());
+        self::assertSame(Anchor::Right, $this->placeFrom('<x-doc::place x="0" y="50%" anchor="center-right">Hi</x-doc::place>')->anchorPoint());
+    }
+
     public function test_place_refuses_an_unknown_anchor(): void
     {
         $this->expectException(InvalidValue::class);

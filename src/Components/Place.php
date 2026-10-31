@@ -49,11 +49,12 @@ final class Place extends PapercutComponent
             }
         }
         if (isset($own['anchor'])) {
-            $anchor = Anchor::tryFrom($value('anchor'))
-                ?? throw InvalidValue::for('anchor', $value('anchor'))
-                    ->because('expected one of ' . implode(', ', array_map(static fn (Anchor $a): string => $a->value, Anchor::cases())))
+            try {
+                $place = $place->anchor($value('anchor'));
+            } catch (InvalidValue $e) {
+                throw $e->because('expected one of ' . implode(', ', array_map(static fn (Anchor $a): string => $a->value, Anchor::cases())))
                     ->withContext('anchor')->within($location);
-            $place = $place->anchor($anchor);
+            }
         }
 
         return $place;
