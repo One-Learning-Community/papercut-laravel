@@ -25,7 +25,7 @@ final class Segments
         HeaderRows::class => ['thead', 'table'],
         ListItem::class => ['li', 'ol|ul'],
         ChoiceOption::class => ['choice', 'choices'],
-        KeyValuePair::class => ['kv', 'key-value'],
+        KeyValuePair::class => ['kv', 'key-value|totals'],
     ];
 
     /**

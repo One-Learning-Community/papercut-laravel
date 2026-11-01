@@ -15,7 +15,7 @@ final class Kv extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['label'];
+        return ['label', 'total'];
     }
 
     protected function build(array $data): object
@@ -33,6 +33,12 @@ final class Kv extends PapercutComponent
             default => View::make(...$nodes),
         };
 
-        return KeyValuePair::of($label, $value);
+        ['own' => $own] = $this->attrs($data);
+        $total = false;
+        if (isset($own['total'])) {
+            $total = $this->boolOwn($own['total'], 'total');
+        }
+
+        return KeyValuePair::of($label, $value, $total);
     }
 }

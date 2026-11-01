@@ -252,15 +252,61 @@ final class MarkupComponentTest extends TestCase
         self::assertSame(['1.5'], self::spans($text));
     }
 
-    public function test_exactly_one_of_html_or_text(): void
+    public function test_exactly_one_source(): void
     {
-        foreach (['<x-doc::markup :html="$h" :text="$h" />', '<x-doc::markup />'] as $blade) {
+        $cases = [
+            '<x-doc::markup :html="$h" :text="$h" />' => '<x-doc::markup> takes only one of html, text or HTML in its slot',
+            '<x-doc::markup :html="$h"><p>b</p></x-doc::markup>' => '<x-doc::markup> takes only one of html, text or HTML in its slot',
+            '<x-doc::markup :text="$h"><p>b</p></x-doc::markup>' => '<x-doc::markup> takes only one of html, text or HTML in its slot',
+            '<x-doc::markup />' => '<x-doc::markup> requires one of html, text or HTML in its slot',
+            "<x-doc::markup>\n   \n</x-doc::markup>" => '<x-doc::markup> requires one of html, text or HTML in its slot',
+        ];
+        foreach ($cases as $blade => $message) {
             try {
                 $this->nodeFrom($blade, ['h' => 'x']);
-                self::fail('expected InvalidStructure');
+                self::fail('expected InvalidStructure for ' . $blade);
             } catch (InvalidStructure $e) {
-                self::assertSame('<x-doc::markup> requires exactly one of html or text', $e->getMessage());
+                self::assertSame($message, $e->getMessage(), $blade);
             }
         }
+    }
+
+    public function test_slot_is_converted_like_the_html_attribute(): void
+    {
+        $html = '<h3>Results</h3><p>Intro <b>text</b>.</p><ul><li>one</li><li>two</li></ul>';
+        $fromSlot = $this->nodeFrom('<x-doc::markup>' . $html . '</x-doc::markup>');
+        $fromAttribute = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => $html]);
+        self::assertEquals($fromAttribute, $fromSlot);
+    }
+
+    public function test_slot_echoes_stay_text_and_loops_run(): void
+    {
+        $n = $this->nodeFrom(
+            '<x-doc::markup>@foreach ($items as $item)<p>{{ $item }}</p>@endforeach</x-doc::markup>',
+            ['items' => ['<b>not bold</b>', 'a & b']],
+        );
+        self::assertSame([['<b>not bold</b>'], ['a & b']], self::spans($n));
+    }
+
+    public function test_slot_takes_components_that_render_html(): void
+    {
+        $n = $this->nodeFrom('<x-doc::markup><table><x-price-row label="Design" amount="400" /><x-price-row label="Build" amount="900" /></table></x-doc::markup>');
+        $table = $n instanceof View ? $n->children()[0] ?? null : $n;
+        self::assertInstanceOf(\Papercut\Table::class, $table);
+        self::assertCount(2, $table->bodyRows());
+    }
+
+    public function test_slot_takes_the_tag_options(): void
+    {
+        $n = $this->nodeFrom('<x-doc::markup styles="original"><p style="text-align: center">x</p></x-doc::markup>');
+        self::assertInstanceOf(Text::class, $n);
+        self::assertSame(TextAlign::Center, $n->style()->textAlign);
+    }
+
+    public function test_papercut_tags_in_the_slot_are_an_error(): void
+    {
+        $this->expectException(InvalidStructure::class);
+        $this->expectExceptionMessage('<x-doc::markup> takes plain HTML in its slot, not <x-doc::*> tags; put those next to the markup tag instead');
+        $this->nodeFrom('<x-doc::markup><p>a</p><x-doc::text>b</x-doc::text></x-doc::markup>');
     }
 }

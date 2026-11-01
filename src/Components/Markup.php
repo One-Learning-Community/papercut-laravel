@@ -7,10 +7,11 @@ namespace Papercut\Laravel\Components;
 use Illuminate\Contracts\Support\Htmlable;
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\PapercutManager;
+use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Tag;
 use Papercut\Markup\{BlankParagraphs, Markup as Converter, MarkupOptions, StyleMode};
 
-/** `<x-doc::markup :html="$h" />` or `:text="$t"`: converts HTML or plain text to nodes. */
+/** `<x-doc::markup :html="$h" />`, `:text="$t"` or HTML in the slot: converts HTML or plain text to nodes. */
 final class Markup extends PapercutComponent
 {
     /**
@@ -28,11 +29,16 @@ final class Markup extends PapercutComponent
 
     protected function build(array $data): object
     {
-        $isHtml = $this->html !== MarkupAbsent::Value;
-        if ($isHtml === ($this->text !== MarkupAbsent::Value)) {
-            throw new InvalidStructure(Tag::of('markup') . ' requires exactly one of html or text');
+        $slot = $this->slotHtml($data);
+        $given = ($this->html !== MarkupAbsent::Value) + ($this->text !== MarkupAbsent::Value) + ($slot !== null);
+        if ($given !== 1) {
+            throw new InvalidStructure(Tag::of('markup') . ($given === 0 ? ' requires' : ' takes only') . ' one of html, text or HTML in its slot');
         }
         $options = $this->options($this->attrs($data)['own']);
+        if ($slot !== null) {
+            return Converter::html($slot, $options);
+        }
+        $isHtml = $this->html !== MarkupAbsent::Value;
         $source = $isHtml ? $this->html : $this->text;
         if ($source instanceof \Stringable || $source instanceof Htmlable) {
             $source = $source instanceof Htmlable ? $source->toHtml() : (string) $source;
@@ -43,6 +49,25 @@ final class Markup extends PapercutComponent
         }
 
         return $isHtml ? Converter::html($source, $options) : Converter::text($source, $options);
+    }
+
+    /**
+     * The slot as HTML, or null when it holds only whitespace. It takes plain HTML and components that
+     * render to HTML; papercut tags inside would arrive as nodes, which HTML can't hold.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function slotHtml(array $data): ?string
+    {
+        $html = '';
+        foreach (app(NodeRegistry::class)->segments((string) ($data['slot'] ?? '')) as $segment) {
+            if (!is_string($segment)) {
+                throw new InvalidStructure(Tag::of('markup') . ' takes plain HTML in its slot, not ' . Tag::any() . ' tags; put those next to the markup tag instead');
+            }
+            $html .= $segment;
+        }
+
+        return trim($html) === '' ? null : $html;
     }
 
     /** @param array<string, mixed> $own */

@@ -29,6 +29,9 @@ final class KeyValue extends PapercutComponent
             if (!$child instanceof KeyValuePair) {
                 throw new InvalidStructure(Tag::of('key-value') . ' can only contain ' . Tag::of('kv') . NodeRegistry::staleHint($child));
             }
+            if ($child->total) {
+                throw new InvalidStructure('<x-' . Tag::prefix() . '::kv total> is only for ' . Tag::of('totals') . '; rows in ' . Tag::of('key-value') . ' are all plain');
+            }
             $pairs[] = $child;
         }
         $list = KeyValueList::make(...$pairs);
