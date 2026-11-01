@@ -51,7 +51,7 @@ final class NodeRegistry
         }
         $this->scopes[] = ['nonce' => $nonce, 'view' => $view, 'nodes' => [], 'taken' => [], 'next' => 0];
         try {
-            return $fn();
+            return app(ThemeScope::class)->isolate(static fn (): mixed => $fn());
         } finally {
             array_pop($this->scopes);
         }
@@ -112,6 +112,7 @@ final class NodeRegistry
                 }
                 $this->scopes[$key]['taken'][$id] = true;
                 $node = $this->scopes[$key]['nodes'][$id];
+                app(ThemeScope::class)->inherit($node);
             }
             if ($node === null && !$keepStartMark) {
                 $part = Pre::unmark($part);

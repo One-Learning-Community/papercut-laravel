@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel;
 
+use Illuminate\Support\Traits\Macroable;
 use Papercut\Code\{CodeHighlighting, CodeTheme, PhikiHighlighter};
 use Papercut\Document;
 use Papercut\Exception\{InvalidValue, MissingExporter, UnknownAttribute};
@@ -16,11 +17,12 @@ use Papercut\Html\FontSource;
 use Papercut\Markup\{BlankParagraphs, MarkupOptions, StyleMode};
 use Papercut\Style\{Style, Theme};
 use Papercut\Text\{FontFace, FontSet};
-use Papercut\Value\Color;
 
 /** Not final only so tests can stand in a missing exporter; see docxExporterClass(). */
 class PapercutManager
 {
+    use Macroable;
+
     private ?ExportOptions $export = null;
     private ?PdfOptions $pdf = null;
     private ?HtmlOptions $html = null;
@@ -76,6 +78,12 @@ class PapercutManager
     public function exportOptions(): ExportOptions
     {
         return $this->export ??= $this->buildExportOptions();
+    }
+
+    /** @return list<string> the bundled and registered font family names */
+    public function fontFamilies(): array
+    {
+        return array_map(static fn (FontFace $face): string => $face->family, $this->exportOptions()->fonts()->effectiveFaces());
     }
 
     public function pdfOptions(): PdfOptions
@@ -272,28 +280,11 @@ class PapercutManager
         }
 
         $cfg = (array) config('papercut.theme', []);
-        try {
-            $color = isset($cfg['color']) ? Color::parse((string) $cfg['color']) : null;
-        } catch (InvalidValue $e) {
-            throw $e->within('in config papercut.theme.color');
-        }
-        $mono = $cfg['mono_family'] ?? null;
-        if ($mono !== null && !is_string($mono)) {
-            throw new \InvalidArgumentException('Invalid papercut.theme.mono_family: ' . (is_scalar($mono) ? var_export($mono, true) : get_debug_type($mono)) . '; expected a font family name');
-        }
-        if ($mono !== null && (trim($mono) === '' || strtolower(trim($mono)) === 'monospace')) {
-            throw new \InvalidArgumentException('Invalid papercut.theme.mono_family: ' . var_export($mono, true) . '; the keyword `monospace` stands for it, so name a real font family');
-        }
-        if ($mono !== null && !in_array(strtolower(trim($mono)), array_map('strtolower', $families), true)) {
-            throw new \InvalidArgumentException("Invalid papercut.theme.mono_family: '$mono' is neither bundled nor registered in papercut.fonts");
-        }
-        $theme = Theme::default()->with(
-            fontFamily: isset($cfg['font_family']) ? (string) $cfg['font_family'] : null,
-            fontSize: self::positive($cfg, 'font_size'),
-            color: $color,
-            lineHeight: self::positive($cfg, 'line_height'),
-            monoFamily: $mono,
-        );
+        $theme = Theme::default()->withOverride(ThemeConfig::override(
+            $cfg,
+            ThemeConfig::CONFIG,
+            $families,
+        ));
         /** @var array<string, array<string, mixed>> $styles */
         $styles = (array) config('papercut.styles', []);
         foreach ($styles as $name => $attrs) {
@@ -482,20 +473,6 @@ class PapercutManager
             return $dir;
         }
         throw new \InvalidArgumentException('Invalid papercut.cache_dir: ' . (is_scalar($dir) ? var_export($dir, true) : get_debug_type($dir)) . '; expected a directory path, false or null');
-    }
-
-    /** @param array<mixed> $cfg */
-    private static function positive(array $cfg, string $key): ?float
-    {
-        if (!isset($cfg[$key])) {
-            return null;
-        }
-        $v = $cfg[$key];
-        if (!is_numeric($v) || (float) $v <= 0) {
-            throw new \InvalidArgumentException("Invalid papercut.theme.$key: " . (is_scalar($v) ? var_export($v, true) : get_debug_type($v)) . '; expected a number greater than 0');
-        }
-
-        return (float) $v;
     }
 
     /** @param list<object|string> $segments */

@@ -1,6 +1,6 @@
 {
     "name": "papercut/laravel",
-    "description": "Blade components that compile to Papercut's PDF layout engine.",
+    "description": "Blade views to page-aware PDF, Word, and HTML documents, with Papercut's layout engine.",
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/One-Learning-Community/papercut",
@@ -22,7 +22,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/core": "0.5.x-dev"
+                    "papercut/core": "0.6.x-dev"
                 }
             }
         },
@@ -32,7 +32,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/docx": "0.5.x-dev"
+                    "papercut/docx": "0.6.x-dev"
                 }
             }
         }
@@ -41,15 +41,16 @@
         "php": "^8.4",
         "illuminate/console": "^12.0|^13.0",
         "illuminate/http": "^12.0|^13.0",
+        "illuminate/mail": "^12.0|^13.0",
         "illuminate/routing": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0",
         "illuminate/view": "^12.0|^13.0",
-        "papercut/core": "^0.5"
+        "papercut/core": "^0.6"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
         "orchestra/testbench": "^11.3",
-        "papercut/docx": "^0.5",
+        "papercut/docx": "^0.6",
         "phiki/phiki": "^2.2",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4"

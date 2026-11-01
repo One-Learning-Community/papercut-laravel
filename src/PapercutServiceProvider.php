@@ -19,6 +19,7 @@ final class PapercutServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/papercut.php', 'papercut');
 
         $this->app->singleton(NodeRegistry::class);
+        $this->app->singleton(Rendering\ThemeScope::class);
 
         $this->app->singleton(PreviewRegistry::class);
 

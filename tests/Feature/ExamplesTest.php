@@ -143,14 +143,18 @@ final class ExamplesTest extends TestCase
     public function testReport(): void
     {
         $pages = $this->pages($this->render('report'));
-        self::assertStringNotContainsString('Appendix A', $pages[0]);
+        // The table of contents on page 1 lists the appendix with its page number, and the heading itself is the last page that has it.
         $found = null;
         foreach ($pages as $i => $p) {
-            if (str_contains($p, 'Appendix A: Glossary')) {
+            if ($i > 0 && str_contains($p, 'Appendix A: Glossary')) {
                 $found = $i;
             }
         }
         self::assertNotNull($found);
         self::assertGreaterThan(0, $found);
+        if (preg_match('/Appendix A: Glossary\s*\.*\s*(\d+)/', $pages[0], $m) !== 1) {
+            self::fail('The table of contents on page 1 has no number for the appendix');
+        }
+        self::assertSame($found + 1, (int) $m[1]);
     }
 }

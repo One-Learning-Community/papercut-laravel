@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
-use Papercut\Laravel\Tag;
+use Papercut\Laravel\{Tag, ThemeConfig};
 use Closure;
 use Illuminate\View\Component;
 use Illuminate\View\ComponentSlot;
@@ -16,7 +16,8 @@ use Papercut\Style\Style;
 use Papercut\Exception\UnknownAttribute;
 use Papercut\Laravel\PapercutManager;
 use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Rendering\Segments;
+use Papercut\Laravel\Rendering\{Segments, ThemeScope};
+use Papercut\Style\{Theme, ThemeOverride};
 
 abstract class PapercutComponent extends Component
 {
@@ -28,7 +29,88 @@ abstract class PapercutComponent extends Component
     final public function resolveView(): Closure
     {
         /** @param array<string, mixed> $data */
-        return fn (array $data) => app(NodeRegistry::class)->register($this->build($data));
+        return function (array $data) {
+            $scope = app(ThemeScope::class);
+            $scope->begin();
+            $built = false;
+            try {
+                $node = $this->build($data);
+                $built = true;
+                $scope->finish($node, $this->settlesEarlyChecks());
+
+                return app(NodeRegistry::class)->register($node);
+            } catch (\Throwable $e) {
+                if (!$built) {
+                    $scope->abort();
+                }
+                throw $e;
+            } finally {
+                if ($this->themePushed) {
+                    $this->themePushed = false;
+                    app(ThemeScope::class)->pop();
+                }
+            }
+        };
+    }
+
+    private bool $themePushed = false;
+
+    /**
+     * Blade sets the attributes after resolveView() and before the children render, so this is where a
+     * document's or page's `:theme` becomes visible to the early style checks of its children;
+     * the closure from resolveView() takes it off again once the children are done.
+     *
+     * @param array<string, mixed> $attributes
+     */
+    public function withAttributes(array $attributes)
+    {
+        parent::withAttributes($attributes);
+        $this->themeParsed = false;
+        $override = $this->themeOverride();
+        if ($override !== null && !$override->isEmpty() && !$this->themePushed) {
+            app(ThemeScope::class)->push($override);
+            $this->themePushed = true;
+        }
+
+        return $this;
+    }
+
+    /** Whether this tag decides the early checks left open below it: null no, false it drops those its theme meets, true it fails on the rest. */
+    protected function settlesEarlyChecks(): ?bool
+    {
+        return null;
+    }
+
+    private bool $themeParsed = false;
+    private ?ThemeOverride $parsedTheme = null;
+
+    /** The tag's own `:theme` override, which applies to its children; only document and page take one. Parsed once per set of attributes. */
+    final protected function themeOverride(): ?ThemeOverride
+    {
+        if (!$this->themeParsed) {
+            $this->parsedTheme = $this->settlesEarlyChecks() !== null
+                ? $this->parseTheme($this->attrs(['attributes' => $this->attributes])['own']['theme'] ?? null)
+                : null;
+            $this->themeParsed = true;
+        }
+
+        return $this->parsedTheme;
+    }
+
+    /**
+     * Parses a `:theme` attribute into an override, naming this tag in every error.
+     */
+    final protected function parseTheme(mixed $value): ?ThemeOverride
+    {
+        if ($value === null) {
+            return null;
+        }
+        $where = 'on ' . Tag::of($this->tag());
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException('Invalid theme ' . $where . ': ' . (is_scalar($value) ? var_export($value, true) : get_debug_type($value)) . '; expected an array such as [\'font_size\' => 11]');
+        }
+
+        return ThemeConfig::override($value, $where, app(PapercutManager::class)->fontFamilies());
     }
 
     /** @param array<string, mixed> $data */
@@ -85,7 +167,7 @@ abstract class PapercutComponent extends Component
     /**
      * Applies style attributes and a named style (string) or Style object, tagging errors with the tag.
      *
-     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Image|\Papercut\QrCode|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
+     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Toc|\Papercut\Image|\Papercut\QrCode|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
      * @param T $node
      * @param array<string, mixed> $style
      * @return T
@@ -115,7 +197,13 @@ abstract class PapercutComponent extends Component
                 if (str_contains($styleName, '?')) {
                     throw InvalidValue::for('style', $styleName)->because('style names cannot contain "?"')->withContext('style');
                 }
-                app(PapercutManager::class)->pdfOptions()->theme()->named($styleName);
+                app(ThemeScope::class)->early(static function (Theme $theme) use ($styleName, $location): void {
+                    try {
+                        $theme->named($styleName);
+                    } catch (UnknownAttribute $e) {
+                        throw $e->within($location);
+                    }
+                });
                 $node = $node->apply($styleName);
             } elseif ($styleName instanceof Style) {
                 $node = $node->apply($styleName);
@@ -130,7 +218,7 @@ abstract class PapercutComponent extends Component
     }
 
     /**
-     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Image|\Papercut\QrCode|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
+     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Toc|\Papercut\Image|\Papercut\QrCode|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
      * @param T $node
      * @param array<string, mixed> $data
      * @return T
@@ -278,7 +366,6 @@ abstract class PapercutComponent extends Component
      */
     private function withVariants(Decorator $decorator, string $names): Decorator
     {
-        $theme = app(PapercutManager::class)->pdfOptions()->theme();
         $where = 'on ' . Tag::of($this->tag());
         try {
             $decorator = $decorator->variant($names);
@@ -287,18 +374,22 @@ abstract class PapercutComponent extends Component
         } catch (\InvalidArgumentException $e) {
             throw InvalidValue::for('variant', $names)->because('expected lowercase words of a-z, 0-9 and hyphens')->withContext('variant')->within($where);
         }
-        foreach ($decorator->variants() as $variant) {
-            $looked = array_map(static fn (string $part): string => "$part.$variant", $decorator->partNames());
-            foreach ($looked as $name) {
-                try {
-                    $theme->named($name);
-                    continue 2;
-                } catch (UnknownAttribute) {
-                    // try the next part
+        $parts = $decorator->partNames();
+        $variants = $decorator->variants();
+        app(ThemeScope::class)->early(static function (Theme $theme) use ($parts, $variants, $where): void {
+            foreach ($variants as $variant) {
+                $looked = array_map(static fn (string $part): string => "$part.$variant", $parts);
+                foreach ($looked as $name) {
+                    try {
+                        $theme->named($name);
+                        continue 2;
+                    } catch (UnknownAttribute) {
+                        // try the next part
+                    }
                 }
+                throw new InvalidStructure(sprintf('Variant "%s" %s styles nothing; define one of: %s.', $variant, $where, implode(', ', $looked)));
             }
-            throw new InvalidStructure(sprintf('Variant "%s" %s styles nothing; define one of: %s.', $variant, $where, implode(', ', $looked)));
-        }
+        });
 
         return $decorator;
     }
@@ -310,17 +401,19 @@ abstract class PapercutComponent extends Component
      */
     protected function requireThemeStyles(array $names): void
     {
-        $theme = app(PapercutManager::class)->pdfOptions()->theme();
-        try {
-            foreach ($names as $name) {
-                if (str_contains($name, '?')) {
-                    throw UnknownAttribute::for($name, null, 'style');
+        $where = 'on ' . Tag::of($this->tag());
+        app(ThemeScope::class)->early(static function (Theme $theme) use ($names, $where): void {
+            try {
+                foreach ($names as $name) {
+                    if (str_contains($name, '?')) {
+                        throw UnknownAttribute::for($name, null, 'style');
+                    }
+                    $theme->named($name);
                 }
-                $theme->named($name);
+            } catch (UnknownAttribute $e) {
+                throw $e->within($where);
             }
-        } catch (UnknownAttribute $e) {
-            throw $e->within('on ' . Tag::of($this->tag()));
-        }
+        });
     }
 
     /**

@@ -5,11 +5,11 @@
 
 # papercut/laravel
 
-Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into Papercut's layout engine and out to a PDF. Not HTML-to-PDF.
+Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into Papercut's layout engine and out to PDF, HTML or Word. Not HTML-to-PDF.
 
 **Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
 
-> **Status: 0.3, early release.** Before 1.0 a minor version (0.4) may change the API; patch versions won't.
+> **Status: 0.6, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
 
 ## Install
 
@@ -37,7 +37,7 @@ use Papercut\Laravel\Facades\Papercut;
 Route::get('/hello', fn () => Papercut::view('pdf.hello', ['name' => 'Ada'])->pdf()->download('hello.pdf'));
 ```
 
-A view must have exactly one `<x-doc::document>` root. `Papercut::view($view, $data)` returns a `PendingDocument`; `->document()` gives the core `Document` and `->pdf()` a `PendingOutput` with `download($filename)`, `inline($filename)`, `save($path)`, `store($path, $disk = null)` (a Laravel filesystem disk), `toString()` and `output()`. The filename defaults to `document.pdf`. A `PendingOutput` returned from a route renders inline. `Papercut::make($document)` wraps a `Document` you built in PHP the same way. `->encrypt('secret')` (or an `Encryption` with custom permissions) returns a copy whose PDF opens only with that password; HTML is not affected.
+A view must have exactly one `<x-doc::document>` root. `Papercut::view($view, $data)` returns a `PendingDocument`; `->document()` gives the core `Document` and `->pdf()` a `PendingOutput` with `download($filename)`, `streamDownload($filename)` (a streamed response that renders as it's sent; Livewire and Filament actions need it), `inline($filename)`, `save($path)`, `store($path, $disk = null)` (a Laravel filesystem disk), `toString()` and `output()`. The filename defaults to `document.pdf`. A `PendingOutput` returned from a route renders inline. `Papercut::make($document)` wraps a `Document` you built in PHP the same way. `->encrypt('secret')` (or an `Encryption` with custom permissions) returns a copy whose PDF opens only with that password; HTML is not affected.
 
 Full examples: [`examples/laravel`](../../examples/laravel) (invoice, transcript, report). Content inside `<x-doc::document>` may also contain your own Blade components, which can themselves contain `<x-doc::*>` tags.
 
@@ -57,7 +57,7 @@ This publishes `config/papercut.php`:
 | `fonts` | `[]` | Extra font families, see [Fonts](#fonts) |
 | `fallback_fonts` | `[]` | Family names tried, in order, for glyphs the primary font lacks |
 | `font_word_names` | `[]` | The name Word uses for a family, as `'Family' => 'Word name'`. The family must be bundled or in `fonts`, and the match ignores case. Cousine is `Courier New` unless set here |
-| `theme` | `[]` | Defaults: `font_family`, `font_size` (points, number), `color`, `line_height` (number), `mono_family` (the family the `monospace` font keyword and the `pre` and `code` styles use; bundled or in `fonts`; default `Cousine`) |
+| `theme` | `[]` | Defaults: `font_family`, `font_size` (points, number), `color`, `line_height` (number), `mono_family` (the family the `monospace` font keyword and the `pre` and `code` styles use; bundled or in `fonts`; default `Cousine`). The default code theme is `code.theme`. A document or page can override these, see [Theme per document or page](#theme-per-document-or-page) |
 | `styles` | `[]` | [Named styles](#named-styles) |
 | `overflow` | `null` | `'throw'`, `'clip'`, or `null` = throw in `local`/`testing`, clip elsewhere |
 | `strict` | `false` | `true` makes an export throw `UnsupportedFeature` for content a format cannot render, instead of dropping it with a warning. Consider `true` in tests |
@@ -163,7 +163,7 @@ final class BrandFonts implements FontSource
 Preview routes accept `?format=pdf` (default), `?format=html` or `?format=docx` (with `papercut/docx`); any other value is a 404.
 
 
-## Word output (experimental)
+## Word output
 
 With [`papercut/docx`](../docx/README.md) installed (`composer require papercut/docx`), `->docx()` exports the same document as a Word file, sharing the theme, fonts, named styles and strict setting with `->pdf()`:
 
@@ -206,6 +206,7 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::node>` | `node` | Embeds a PHP-built `Node` or `Component` (anything else throws `InvalidValue`). As a block among blocks. Inside a text tag a `Text` joins the line; a `View` is flattened into it like `Markup::flatten()` (block content approximated, images and other nodes dropped, each reported). |
 | `<x-doc::spacer>` | `size` | `size="10mm"` is a fixed gap; with no `size` it is flexible (`grow`, default 1). Only `grow` is accepted besides `size`/`style`. |
 | `<x-doc::page-number>` | `format`, `align`, `size` | Style. `format` uses `{page}` and `{total}`; no content allowed. |
+| `<x-doc::toc>` | `levels`, `title`, `leaders` | Table of contents. `levels="2"` or `"1-3"` (1 to 4); `title` is a line above the list; `leaders` (default on) draws dot leaders; no content allowed. Leave a heading out with `toc="false"`. |
 | `<x-doc::page-break>` | none | Forces a new page. |
 
 On `row`, `column` and `view`, `align` is a shorthand for `align-items`. On text tags, `align` is `text-align` and `size` is `font-size`. Every style-capable tag also accepts `style="name"` (a [named style](#named-styles)).
@@ -241,8 +242,25 @@ These attributes are accepted by every tag marked "style" above. Lengths are `pt
 | `min-lines` | `min-lines="2"` | integer 1 or more (widow/orphan control) |
 | `bookmark` | `bookmark="Summary"` | title for the PDF's bookmarks panel; headings get one automatically, `:bookmark="false"` removes it |
 | `bookmark-level` | `bookmark-level="2"` | integer 1 or more; nesting depth of the bookmark |
+| `toc` | `toc="false"` | boolean; `false` leaves a heading out of every `<x-doc::toc>` (it keeps its bookmark) |
 
 Boolean values: bare attribute or `true`/`1`/`false`/`0`. Any attribute not listed here (or in the tag's own attributes) throws `UnknownAttribute`, with the tag named and a suggestion when one is close.
+
+## Theme per document or page
+
+`<x-doc::document :theme="[...]">` and `<x-doc::page :theme="[...]">` override the theme for one document or one page, and `Papercut::view(...)->theme([...])` does it from a controller:
+
+```blade
+<x-doc::document :theme="['font_size' => 11]">
+    <x-doc::page :theme="['font_family' => 'Merriweather']">…</x-doc::page>
+</x-doc::document>
+```
+
+```php
+Papercut::view('pdf.invoice', $data)->theme(['color' => $customer->brand_color])->pdf();
+```
+
+Keys are `font_family`, `mono_family`, `font_size`, `color`, `line_height`, `code_theme` and `styles` (in the `papercut.styles` shape); the first five work as in `papercut.theme`. `Merriweather` must be bundled or registered in `fonts`. Order: config, the view's document, the controller's `->theme()`, then the page. Named styles merge onto the existing style (`papercut.styles` still replaces). `->theme()` can change values and restyle existing names, but a new style name the view uses must be defined in config or in a `:theme` in the view. Headings take their look from `h1` to `h4` styles when defined.
 
 ## Named styles
 

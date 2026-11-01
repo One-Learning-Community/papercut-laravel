@@ -37,7 +37,7 @@ final class Spacer extends PapercutComponent
                 throw $e->withContext('size')->within($location);
             }
 
-            return $this->applyStyle(\Papercut\Spacer::size($length), [], $own['style'] ?? null);
+            return $this->applyStyle(\Papercut\Spacer::fixed($length), [], $own['style'] ?? null);
         }
 
         $grow = $style['grow'] ?? 1;

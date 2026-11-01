@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel;
 
+use Illuminate\Support\Traits\Macroable;
 use Papercut\Document;
 use Papercut\Export\Encryption;
 
 /** A resolved document waiting to be exported; each format method returns a {@see PendingOutput}. */
 final class PendingDocument
 {
+    use Macroable;
+
     private ?PendingOutput $pdf = null;
     private ?PendingHtml $html = null;
     private ?PendingOutput $docx = null;
@@ -30,6 +33,20 @@ final class PendingDocument
         return new self($this->document, $this->manager, is_string($password) ? Encryption::password($password) : $password);
     }
 
+    /**
+     * A copy whose document has these theme values merged on top of the view's own (see {@see ThemeConfig::KEYS}).
+     * It runs after the view rendered: it can change values and restyle existing style names, but a new style
+     * name a view uses must come from config or the view's `:theme`.
+     *
+     * @param array<mixed> $values
+     */
+    public function theme(array $values): self
+    {
+        $override = ThemeConfig::override($values, 'in ->theme()', $this->manager->fontFamilies());
+
+        return new self($this->document->theme($override), $this->manager, $this->encryption);
+    }
+
     public function document(): Document
     {
         return $this->document;
@@ -39,6 +56,9 @@ final class PendingDocument
     {
         return $this->pdf ??= new PendingOutput(
             fn (): \Papercut\Export\Output => $this->document->toPdf($this->manager->pdfOptions()->withEncryption($this->encryption)),
+            'document',
+            'pdf',
+            'application/pdf',
         );
     }
 
@@ -47,6 +67,9 @@ final class PendingDocument
     {
         return $this->docx ??= new PendingOutput(
             fn (): \Papercut\Export\Output => $this->document->export($this->manager->docxExporter(), $this->manager->exportOptions()),
+            'document',
+            'docx',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         );
     }
 

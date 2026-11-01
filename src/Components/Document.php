@@ -12,7 +12,12 @@ final class Document extends PapercutComponent
 {
     protected function ownAttributes(): array
     {
-        return ['title', 'author', 'subject', 'keywords', 'lang'];
+        return ['title', 'author', 'subject', 'keywords', 'lang', 'theme'];
+    }
+
+    protected function settlesEarlyChecks(): ?bool
+    {
+        return true;
     }
 
     protected function build(array $data): object
@@ -38,6 +43,10 @@ final class Document extends PapercutComponent
         }
 
         $doc = \Papercut\Document::make(...$pages);
+        $theme = $this->themeOverride();
+        if ($theme !== null) {
+            $doc = $doc->theme($theme);
+        }
         foreach (['title', 'author', 'subject', 'keywords', 'lang'] as $key) {
             if (isset($own[$key])) {
                 if (!is_scalar($own[$key])) {

@@ -166,7 +166,8 @@ final class CodeBlockComponentTest extends TestCase
 
     private function hasCodeBlock(mixed $node): bool
     {
-        // markup renders the block to a view, so look for its language label
+        // markup keeps the block as a component until layout, so expand it and look for its language label
+        $node = $node instanceof \Papercut\Component ? \Papercut\Tree\Expander::expand($node) : $node;
         if ($node instanceof Text) {
             return array_map(static fn ($s): string => $s->text, $node->spanList()) === ['PHP'];
         }

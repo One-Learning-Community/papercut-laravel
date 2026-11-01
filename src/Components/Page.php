@@ -23,7 +23,12 @@ final class Page extends PapercutComponent
 
     protected function ownAttributes(): array
     {
-        return ['size', 'orientation', 'margin', 'header-gap', 'footer-gap', 'template', 'template-data', 'template-page', 'template-password', 'mirror'];
+        return ['size', 'orientation', 'margin', 'header-gap', 'footer-gap', 'template', 'template-data', 'template-page', 'template-password', 'mirror', 'theme'];
+    }
+
+    protected function settlesEarlyChecks(): ?bool
+    {
+        return false;
     }
 
     protected function build(array $data): object
@@ -54,6 +59,10 @@ final class Page extends PapercutComponent
             $own['template-data'] = $this->templateData;
         }
         $page = self::configured($own);
+        $theme = $this->themeOverride();
+        if ($theme !== null) {
+            $page = $page->theme($theme);
+        }
         if (isset($own['mirror'])) {
             $page = $page->mirrorMargins($this->boolOwn($own['mirror'], 'mirror'));
         }
