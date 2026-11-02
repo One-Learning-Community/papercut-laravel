@@ -289,4 +289,22 @@ final class ThemeOverrideTest extends TestCase
         file_put_contents("$dir/components/$name.blade.php", $blade);
         $this->app()->make('view')->addLocation($dir);
     }
+
+    public function test_a_render_leaves_no_unmet_checks_held_by_the_scope(): void
+    {
+        $scope = $this->app()->make(ThemeScope::class);
+        $pending = new \ReflectionProperty($scope, 'pending');
+        $node = new \stdClass();
+
+        $scope->isolate(static function () use ($scope, $node, $pending): void {
+            $scope->begin();
+            $scope->early(static function (): void {
+                throw new InvalidStructure('unmet');
+            });
+            $scope->finish($node, null);
+            self::assertCount(1, $pending->getValue($scope));
+        });
+
+        self::assertNull($pending->getValue($scope));
+    }
 }

@@ -27,8 +27,13 @@ final class ThemeScope
      */
     private array $collect = [];
 
-    /** @var \WeakMap<object, list<\Closure(Theme): void>>|null */
-    private ?\WeakMap $pending = null;
+    /**
+     * Unmet checks by the node that carries them. Held strongly (PHP 8.4 GC bug with weak maps, php/php-src#20001), so
+     * {@see self::isolate()} gives each render its own and drops it afterwards.
+     *
+     * @var \SplObjectStorage<object, list<\Closure(Theme): void>>|null
+     */
+    private ?\SplObjectStorage $pending = null;
 
     private ?Theme $base = null;
     private ?Theme $current = null;
@@ -116,7 +121,7 @@ final class ThemeScope
             $list = $left;
         }
         if ($list !== []) {
-            $this->pending ??= new \WeakMap();
+            $this->pending ??= new \SplObjectStorage();
             $this->pending[$node] = $list;
         }
     }
@@ -140,10 +145,11 @@ final class ThemeScope
      */
     public function isolate(\Closure $fn): mixed
     {
-        [$stack, $collect, $current] = [$this->stack, $this->collect, $this->current];
+        [$stack, $collect, $current, $pending] = [$this->stack, $this->collect, $this->current, $this->pending];
         $this->stack = [];
         $this->collect = [[]];
         $this->current = null;
+        $this->pending = null;
         try {
             $result = $fn();
             $theme = $this->current();
@@ -153,7 +159,7 @@ final class ThemeScope
 
             return $result;
         } finally {
-            [$this->stack, $this->collect, $this->current] = [$stack, $collect, $current];
+            [$this->stack, $this->collect, $this->current, $this->pending] = [$stack, $collect, $current, $pending];
         }
     }
 }
