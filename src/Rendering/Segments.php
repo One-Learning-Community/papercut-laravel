@@ -17,6 +17,7 @@ use Papercut\Markup\Markup;
 use Papercut\Text;
 use Papercut\View;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Segments
 {
     private const array PARENTS = [

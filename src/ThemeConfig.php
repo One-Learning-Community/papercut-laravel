@@ -10,7 +10,11 @@ use Papercut\Value\Color;
 
 use function Papercut\pt;
 
-/** Turns a theme array (config, a tag's `:theme`, `->theme()`) into a {@see ThemeOverride}, validating each value. */
+/**
+ * Turns a theme array (config, a tag's `:theme`, `->theme()`) into a {@see ThemeOverride}, validating each value.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class ThemeConfig
 {
     /** The `$where` of `papercut.theme`, whose messages name the config key rather than a call site. */

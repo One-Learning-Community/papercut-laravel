@@ -16,6 +16,8 @@ use Papercut\Text;
 /**
  * Inline code for use inside text tags: a span in the `code` style. Like `<x-doc::pre>`, its
  * content is literal text.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class Code extends PapercutComponent
 {

@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
-/** `<x-doc::signature name="…" role="…" date="…">`: the slot sits on the line (an image, a typed name, or nothing). */
+/**
+ * `<x-doc::signature name="…" role="…" date="…">`: the slot sits on the line (an image, a typed name, or nothing).
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Signature extends PapercutComponent
 {
     /** @return list<string> */

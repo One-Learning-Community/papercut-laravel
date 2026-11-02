@@ -10,6 +10,7 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Tag;
 use Papercut\Value\Color;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class QrCode extends PapercutComponent
 {
     protected function ownAttributes(): array

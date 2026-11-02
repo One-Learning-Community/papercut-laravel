@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
-/** `<x-doc::stat label="Revenue" note="Up 12%">$48,200</x-doc::stat>`: the slot is the value. */
+/**
+ * `<x-doc::stat label="Revenue" note="Up 12%">$48,200</x-doc::stat>`: the slot is the value.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Stat extends PapercutComponent
 {
     /** @return list<string> */

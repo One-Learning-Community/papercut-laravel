@@ -32,6 +32,7 @@ class PapercutManager
     /** @var array<string, \Closure> markup image resolvers by class name without a leading backslash, one instance per class */
     private array $imageResolvers = [];
 
+    /** @internal The container builds the manager. */
     public function __construct(private readonly NodeRegistry $registry, private readonly PreviewRegistry $previews)
     {
     }
@@ -100,6 +101,8 @@ class PapercutManager
      * The Word exporter from papercut/docx, which is optional: the class is named as a string, never imported.
      *
      * @throws MissingExporter when papercut/docx is not installed
+     *
+     * @internal
      */
     public function docxExporter(): Exporter
     {

@@ -6,6 +6,7 @@ namespace Papercut\Laravel\Preview;
 
 use Closure;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class PreviewRegistry
 {
     /** @var array<string, Closure|array<string, mixed>> */

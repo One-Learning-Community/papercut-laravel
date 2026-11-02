@@ -8,6 +8,7 @@ use Papercut\Decorator\ChoiceOption;
 use Papercut\Text;
 use Papercut\View;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Choice extends PapercutComponent
 {
     /** @return list<string> */

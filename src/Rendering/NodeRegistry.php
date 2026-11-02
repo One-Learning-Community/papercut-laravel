@@ -9,6 +9,7 @@ use Papercut\Laravel\Tag;
 use Illuminate\Support\HtmlString;
 use Papercut\Laravel\Exception\InvalidStructure;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class NodeRegistry
 {
     /** @var list<array{nonce: string, view: ?string, nodes: array<int, object>, taken: array<int, true>, next: int}> */

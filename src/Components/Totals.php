@@ -9,7 +9,11 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Tag;
 
-/** `<x-doc::totals>` holding `<x-doc::kv>` rows; `<x-doc::kv total>` marks an emphasised row. */
+/**
+ * `<x-doc::totals>` holding `<x-doc::kv>` rows; `<x-doc::kv total>` marks an emphasised row.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Totals extends PapercutComponent
 {
     /** @return list<string> */

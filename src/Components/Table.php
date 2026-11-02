@@ -10,6 +10,7 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\TableRow;
 use Papercut\Value\TrackList;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Table extends PapercutComponent
 {
     protected function ownAttributes(): array

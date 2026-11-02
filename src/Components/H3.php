@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel\Components;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class H3 extends PapercutComponent
 {
     protected function ownAttributes(): array

@@ -6,7 +6,11 @@ namespace Papercut\Laravel;
 
 use Papercut\Text\FontStyle;
 
-/** Reads the `papercut.fonts` config into flat, path-resolved face entries. */
+/**
+ * Reads the `papercut.fonts` config into flat, path-resolved face entries.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class FontConfig
 {
     /** @return list<array{family: string, weight: int, style: FontStyle, path: string}> */

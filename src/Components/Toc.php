@@ -8,6 +8,7 @@ use Papercut\Exception\InvalidValue;
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Tag;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Toc extends PapercutComponent
 {
     protected function ownAttributes(): array

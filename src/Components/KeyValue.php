@@ -13,6 +13,7 @@ use Papercut\Laravel\Tag;
 use Papercut\Value\Length;
 use Papercut\Value\Percent;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class KeyValue extends PapercutComponent
 {
     /** @return list<string> */

@@ -34,7 +34,7 @@ final class PendingDocument
     }
 
     /**
-     * A copy whose document has these theme values merged on top of the view's own (see {@see ThemeConfig::KEYS}).
+     * A copy whose document has these theme values merged on top of the view's own (the keys the `papercut.theme` config takes).
      * It runs after the view rendered: it can change values and restyle existing style names, but a new style
      * name a view uses must come from config or the view's `:theme`.
      *

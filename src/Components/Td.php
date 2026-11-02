@@ -9,6 +9,7 @@ use Papercut\Exception\InvalidValue;
 use Papercut\Style\TextAlign;
 use Papercut\TableCell;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 class Td extends PapercutComponent
 {
     protected function ownAttributes(): array

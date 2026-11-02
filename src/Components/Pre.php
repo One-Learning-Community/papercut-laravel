@@ -17,6 +17,8 @@ use Papercut\Text;
 /**
  * Preformatted text: the slot is literal (no tags are parsed, HTML entities are decoded), so
  * `{{ $code }}` comes out exactly as the variable's value.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class Pre extends PapercutComponent
 {

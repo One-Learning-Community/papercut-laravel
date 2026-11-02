@@ -11,7 +11,11 @@ use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Tag;
 use Papercut\Markup\{BlankParagraphs, Markup as Converter, MarkupOptions, StyleMode};
 
-/** `<x-doc::markup :html="$h" />`, `:text="$t"` or HTML in the slot: converts HTML or plain text to nodes. */
+/**
+ * `<x-doc::markup :html="$h" />`, `:text="$t"` or HTML in the slot: converts HTML or plain text to nodes.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Markup extends PapercutComponent
 {
     /**

@@ -6,7 +6,11 @@ namespace Papercut\Laravel;
 
 use InvalidArgumentException;
 
-/** Builds the Blade tag names (`<x-doc::page>`) shown in error messages, from `papercut.prefix`. */
+/**
+ * Builds the Blade tag names (`<x-doc::page>`) shown in error messages, from `papercut.prefix`.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Tag
 {
     /** Last validated raw config value and its prefix, so `of()` does not run a regex per component. */

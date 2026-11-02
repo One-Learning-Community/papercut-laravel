@@ -140,6 +140,21 @@ final class ExamplesTest extends TestCase
         self::assertStringStartsWith('%PDF', $bytes);
     }
 
+    public function testPaper(): void
+    {
+        $pages = $this->pages($this->render('paper'));
+        self::assertCount(2, array_filter($pages, static fn (string $p): bool => trim($p) !== ''));
+        self::assertStringContainsString('Abstract', $pages[0]);
+        self::assertStringContainsString('Data availability', $pages[1]);
+        self::assertStringContainsString('Page 2 of 2', $pages[1]);
+    }
+
+    public function testPaperConvertsWithoutWarnings(): void
+    {
+        $bytes = Papercut::view('paper', self::data('paper'))->document()->toPdf(new PdfOptions(strict: true))->bytes();
+        self::assertStringStartsWith('%PDF', $bytes);
+    }
+
     public function testReport(): void
     {
         $pages = $this->pages($this->render('report'));

@@ -9,6 +9,7 @@ use Papercut\Exception\MissingExporter;
 use Papercut\Laravel\PapercutManager;
 use Symfony\Component\HttpFoundation\Response;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class PreviewController
 {
     public function __construct(private readonly PreviewRegistry $registry, private readonly PapercutManager $papercut)

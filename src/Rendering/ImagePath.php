@@ -7,7 +7,11 @@ namespace Papercut\Laravel\Rendering;
 use Papercut\Exception\ImageUnreadable;
 use Papercut\PapercutException;
 
-/** Where an image, SVG or PDF src points, for the <image>, <svg> and <pdf-page> tags and page templates. */
+/**
+ * Where an image, SVG or PDF src points, for the <image>, <svg> and <pdf-page> tags and page templates.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class ImagePath
 {
     private function __construct()

@@ -12,6 +12,7 @@ use Papercut\ListItem;
 use Papercut\ListNode;
 use Papercut\Style\ListMarker;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 class Ol extends PapercutComponent
 {
     protected function ownAttributes(): array

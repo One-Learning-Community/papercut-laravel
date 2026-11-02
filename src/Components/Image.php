@@ -10,6 +10,7 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Rendering\ImagePath;
 use Papercut\Style\ImageFit;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Image extends PapercutComponent
 {
     /** Blade escapes bound attributes as text, which would corrupt binary data; a constructor parameter reaches the tag as it is. */

@@ -10,6 +10,7 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\TableCell;
 use Papercut\TableRow;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Tr extends PapercutComponent
 {
     protected function build(array $data): object

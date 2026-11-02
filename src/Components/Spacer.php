@@ -8,6 +8,7 @@ use Papercut\Laravel\Tag;
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
 use Papercut\Value\Length;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Spacer extends PapercutComponent
 {
     protected function ownAttributes(): array

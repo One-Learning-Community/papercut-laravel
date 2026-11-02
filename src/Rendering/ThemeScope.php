@@ -12,6 +12,8 @@ use Papercut\Style\{Theme, ThemeOverride};
 /**
  * The theme overrides of the document and page tags being rendered, innermost last, so the early style checks
  * see the styles a tag's `:theme` defines.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ThemeScope
 {

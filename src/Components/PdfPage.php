@@ -9,7 +9,11 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Rendering\ImagePath;
 use Papercut\Laravel\Tag;
 
-/** <x-doc::pdf-page>: a page of an existing PDF, from src (a file under the image path) or data (its bytes). */
+/**
+ * <x-doc::pdf-page>: a page of an existing PDF, from src (a file under the image path) or data (its bytes).
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class PdfPage extends PapercutComponent
 {
     /** Blade escapes bound attributes as text, which would corrupt binary data; a constructor parameter reaches the tag as it is. */

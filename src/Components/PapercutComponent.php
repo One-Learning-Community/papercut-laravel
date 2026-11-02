@@ -19,6 +19,7 @@ use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Rendering\{Segments, ThemeScope};
 use Papercut\Style\{Theme, ThemeOverride};
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 abstract class PapercutComponent extends Component
 {
     final public function render(): string

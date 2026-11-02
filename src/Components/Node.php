@@ -9,7 +9,11 @@ use Papercut\Exception\InvalidValue;
 use Papercut\Laravel\Tag;
 use Papercut\Node as PapercutNode;
 
-/** `<x-doc::node :node="$n" />` embeds a PHP-built node or component as is. */
+/**
+ * `<x-doc::node :node="$n" />` embeds a PHP-built node or component as is.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Node extends PapercutComponent
 {
     protected function ownAttributes(): array

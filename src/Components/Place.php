@@ -9,7 +9,11 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Tag;
 use Papercut\Style\Anchor;
 
-/** <x-doc::place>: content at a point on the page, for the overlay slot of <x-doc::page>. */
+/**
+ * <x-doc::place>: content at a point on the page, for the overlay slot of <x-doc::page>.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Place extends PapercutComponent
 {
     protected function ownAttributes(): array

@@ -9,7 +9,11 @@ use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Rendering\ImagePath;
 use Papercut\Laravel\Tag;
 
-/** <x-doc::svg>: an SVG from src (a file under the image path), data (markup) or markup inside the tag. */
+/**
+ * <x-doc::svg>: an SVG from src (a file under the image path), data (markup) or markup inside the tag.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Svg extends PapercutComponent
 {
     protected function ownAttributes(): array

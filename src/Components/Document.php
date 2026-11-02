@@ -8,6 +8,7 @@ use Papercut\Laravel\Tag;
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
 use Papercut\Laravel\Exception\InvalidStructure;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Document extends PapercutComponent
 {
     protected function ownAttributes(): array

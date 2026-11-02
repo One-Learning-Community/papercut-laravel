@@ -8,6 +8,7 @@ use Papercut\Exception\InvalidValue;
 use Papercut\Laravel\Tag;
 use Papercut\ListItem;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Li extends PapercutComponent
 {
     protected function ownAttributes(): array

@@ -9,6 +9,7 @@ use Papercut\Backend\PhpPdf\PhpPdfBackend;
 use Papercut\Laravel\FontConfig;
 use Papercut\Text\{FontRegistry, FontStyle};
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class FontsCommand extends Command
 {
     protected $signature = 'papercut:fonts';

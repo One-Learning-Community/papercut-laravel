@@ -9,7 +9,7 @@ Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into
 
 **Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
 
-> **Status: 0.6, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
+> **Status: 0.8, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
 
 ## Install
 
@@ -205,6 +205,8 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::code>` | none | Style, applied to the span. Inline code in the `code` style, for use inside text tags. The content is literal text. |
 | `<x-doc::node>` | `node` | Embeds a PHP-built `Node` or `Component` (anything else throws `InvalidValue`). As a block among blocks. Inside a text tag a `Text` joins the line; a `View` is flattened into it like `Markup::flatten()` (block content approximated, images and other nodes dropped, each reported). |
 | `<x-doc::spacer>` | `size` | `size="10mm"` is a fixed gap; with no `size` it is flexible (`grow`, default 1). Only `grow` is accepted besides `size`/`style`. |
+| `<x-doc::column-flow>` | `columns`, `widths`, `column-gap`, `rule` | Style. Text set in columns, like Word's: content fills each column, then the next page, and the last page ends level. `columns` is 1 to 45 (default 2); `widths="2 1"` sets unequal columns as ratios; `column-gap` is one length, or one per gap (default 36pt); `rule` draws a line in each gap, bare or `rule="1pt slate-400"`. `gap` spaces the children, as on any box. No border, background, padding or size: wrap it in a `view` for those. Not allowed inside a table cell, a row, another flow, or a header, footer, background or overlay. |
+| `<x-doc::column-break>` | none | Sends what follows to the next column (from the last column, to the next page). Only inside `<x-doc::column-flow>`. |
 | `<x-doc::page-number>` | `format`, `align`, `size` | Style. `format` uses `{page}` and `{total}`; no content allowed. |
 | `<x-doc::toc>` | `levels`, `title`, `leaders` | Table of contents. `levels="2"` or `"1-3"` (1 to 4); `title` is a line above the list; `leaders` (default on) draws dot leaders; no content allowed. Leave a heading out with `toc="false"`. |
 | `<x-doc::page-break>` | none | Forces a new page. |

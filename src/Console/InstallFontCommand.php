@@ -12,6 +12,8 @@ use Papercut\Backend\PhpPdf\PhpPdfBackend;
  * Downloads a family's TrueType files from Google Fonts once, so PDFs can embed them like any local font, and the
  * family's licence beside them. Rendering never touches the network: the files live in the app and are registered
  * in papercut.fonts.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class InstallFontCommand extends Command
 {

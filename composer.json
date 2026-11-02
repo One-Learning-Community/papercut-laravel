@@ -22,7 +22,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/core": "0.7.x-dev"
+                    "papercut/core": "0.8.x-dev"
                 }
             }
         },
@@ -32,7 +32,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/docx": "0.7.x-dev"
+                    "papercut/docx": "0.8.x-dev"
                 }
             }
         }
@@ -45,12 +45,12 @@
         "illuminate/routing": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0",
         "illuminate/view": "^12.0|^13.0",
-        "papercut/core": "^0.7"
+        "papercut/core": "^0.8"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
         "orchestra/testbench": "^11.3",
-        "papercut/docx": "^0.7",
+        "papercut/docx": "^0.8",
         "phiki/phiki": "^2.2",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4"

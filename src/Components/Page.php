@@ -12,6 +12,7 @@ use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Rendering\Segments;
 use Papercut\Value\{Edges, Length};
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Page extends PapercutComponent
 {
     private const array SLOTS = ['header', 'footer', 'first-header', 'first-footer', 'even-header', 'even-footer', 'background', 'overlay'];

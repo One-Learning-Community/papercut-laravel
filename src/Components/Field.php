@@ -7,6 +7,7 @@ namespace Papercut\Laravel\Components;
 use Papercut\Exception\InvalidValue;
 use Papercut\Laravel\Tag;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Field extends PapercutComponent
 {
     /** @return list<string> */

@@ -7,6 +7,7 @@ namespace Papercut\Laravel\Components;
 use Papercut\Laravel\Tag;
 use Papercut\Exception\UnknownAttribute;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class PageBreak extends PapercutComponent
 {
     protected function build(array $data): object
