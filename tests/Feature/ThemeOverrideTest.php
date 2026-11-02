@@ -162,7 +162,9 @@ final class ThemeOverrideTest extends TestCase
         $plain = $manager->make($this->document('<x-doc::document><x-doc::page>Same</x-doc::page></x-doc::document>'));
         $empty = $manager->make($this->document('<x-doc::document :theme="[]"><x-doc::page :theme="[]">Same</x-doc::page></x-doc::document>'))->theme([]);
 
-        self::assertSame($plain->pdf()->toString(), $empty->pdf()->toString());
+        // The two renders can straddle a second, so leave the creation time out of the comparison.
+        $undated = static fn (string $pdf): string => (string) preg_replace('/\/CreationDate \(D:\d{14}[^)]*\)/', '', $pdf);
+        self::assertSame($undated($plain->pdf()->toString()), $undated($empty->pdf()->toString()));
     }
 
     public function test_config_theme_still_validates_as_before(): void
