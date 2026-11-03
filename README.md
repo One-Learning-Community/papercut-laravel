@@ -9,7 +9,7 @@ Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into
 
 **Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
 
-> **Status: 0.8, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
+> **Status: 0.9, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
 
 ## Install
 
@@ -73,6 +73,7 @@ This publishes `config/papercut.php`:
 | `markup.images` | `null` | Class name implementing `Papercut\Laravel\Markup\ImageResolver`; `null` treats every `<img>` in markup as missing (see [Rich text](#rich-text-from-your-database)) |
 | `markup.styles` | `'theme'` | `'theme'` (HTML gives structure, the theme styles it) or `'original'` (inline `style=""` applied on top) |
 | `markup.blank_paragraphs` | `'drop'` | `'drop'` or `'keep'` paragraphs that hold only `&nbsp;` or `<br>` |
+| `markup.toc` | `true` | `false` keeps converted headings out of tables of contents; they keep their look and bookmarks |
 | `bookmarks` | `true` | Headings and `bookmark="…"` build the PDF's bookmarks panel; `false` leaves it empty |
 | `image_path` | `null` | Base directory for relative `<x-doc::image src>` and `<x-doc::svg src>`; `null` = `public_path()` |
 | `cache_dir` | `null` | Parsed-font cache directory: `null` = `storage_path('framework/cache/papercut')`, `false` = no disk cache, or a path (see core's "Font cache") |
@@ -200,7 +201,7 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::ol>` | `start`, `marker` | Style. Numbered list of `<x-doc::li>`. `marker` is any `ListMarker` value (`decimal`, `lower-alpha`, `upper-alpha`, `lower-roman`, `upper-roman`, `disc`, `circle`, `square`, `none`); unset follows nesting depth (`1.`, `a.`, `i.`). |
 | `<x-doc::ul>` | `marker` | Style. Bulleted list of `<x-doc::li>`. `marker` takes the same values as on `ol`; unset follows nesting depth (`•`, `◦`, `▪`). |
 | `<x-doc::li>` | `value` | Style. A list item; holds any block content, including nested lists. `value` sets its number. |
-| `<x-doc::markup>` | `html` or `text` (exactly one), `styles`, `blank-paragraphs`, `images` | Converts HTML or plain text to nodes, see [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. |
+| `<x-doc::markup>` | `html` or `text` (exactly one), `styles`, `blank-paragraphs`, `images`, `toc` | Converts HTML or plain text to nodes, see [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. `toc="false"` keeps every heading it converts out of tables of contents (`markup.toc` sets the default). |
 | `<x-doc::pre>` | none | Style. A preformatted block in the `pre` style. The content is literal: tags are not parsed and entities are decoded. The first and last blank lines are dropped and the common leading indentation is removed. Components inside are an error. The tag is found by a compile step that runs on every Blade view in the app, so a PHP string holding a literal `<x-doc::pre>` tag in an ordinary (non-Papercut) view gets an invisible U+E000 character after it. |
 | `<x-doc::code>` | none | Style, applied to the span. Inline code in the `code` style, for use inside text tags. The content is literal text. |
 | `<x-doc::node>` | `node` | Embeds a PHP-built `Node` or `Component` (anything else throws `InvalidValue`). As a block among blocks. Inside a text tag a `Text` joins the line; a `View` is flattened into it like `Markup::flatten()` (block content approximated, images and other nodes dropped, each reported). |

@@ -210,6 +210,61 @@ final class MarkupComponentTest extends TestCase
         self::assertCount(3, $keep->children());
     }
 
+    public function test_toc_false_keeps_converted_headings_out(): void
+    {
+        $html = '<h2>Warm-up</h2><p>a</p>';
+        $toc = static function (View $v): ?bool {
+            $h = $v->children()[0];
+            self::assertInstanceOf(Text::class, $h);
+            self::assertSame('h2', $h->preset());
+            return $h->style()->toc;
+        };
+        $default = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => $html]);
+        $off = $this->nodeFrom('<x-doc::markup :html="$h" toc="false" />', ['h' => $html]);
+        $bound = $this->nodeFrom('<x-doc::markup :html="$h" :toc="false" />', ['h' => $html]);
+        $slot = $this->nodeFrom('<x-doc::markup toc="false"><h2>Warm-up</h2><p>a</p></x-doc::markup>');
+        foreach ([$default, $off, $bound, $slot] as $n) {
+            self::assertInstanceOf(View::class, $n);
+        }
+        self::assertNull($toc($default));
+        self::assertFalse($toc($off));
+        self::assertFalse($toc($bound));
+        self::assertFalse($toc($slot));
+        self::assertNull($off->style()->toc); // an option, not a style on the wrapper
+    }
+
+    public function test_toc_config_default_and_tag_override(): void
+    {
+        config(['papercut.markup.toc' => false]);
+        $this->fresh();
+        self::assertFalse(Papercut::markupOptions()->toc);
+        $off = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => '<h2>x</h2><p>a</p>']);
+        $on = $this->nodeFrom('<x-doc::markup :html="$h" toc="true" />', ['h' => '<h2>x</h2><p>a</p>']);
+        self::assertInstanceOf(View::class, $off);
+        self::assertInstanceOf(View::class, $on);
+        $offHeading = $off->children()[0];
+        $onHeading = $on->children()[0];
+        self::assertInstanceOf(Text::class, $offHeading);
+        self::assertInstanceOf(Text::class, $onHeading);
+        self::assertFalse($offHeading->style()->toc);
+        self::assertNull($onHeading->style()->toc);
+    }
+
+    public function test_bad_toc_values(): void
+    {
+        try {
+            $this->nodeFrom('<x-doc::markup :html="$h" toc="maybe" />', ['h' => '<p>a</p>']);
+            self::fail('expected exception');
+        } catch (\Throwable $e) {
+            self::assertStringContainsString('toc', $e->getMessage());
+            self::assertStringContainsString('<x-doc::markup>', $e->getMessage());
+        }
+        config(['papercut.markup.toc' => 'no']);
+        $this->fresh();
+        $this->expectExceptionMessage("Invalid papercut.markup.toc: 'no'; expected true or false");
+        Papercut::markupOptions();
+    }
+
     public function test_config_errors_surface_at_first_use(): void
     {
         config(['papercut.markup.styles' => 'fancy']);

@@ -68,6 +68,8 @@ return [
         'blank_paragraphs' => 'drop',
         // true turns <pre><code class="language-x"> into a highlighted code block; false keeps a plain pre.
         'highlight' => true,
+        // false keeps converted h1–h4 headings out of tables of contents (they keep their look and bookmarks).
+        'toc' => true,
     ],
     // Code blocks (<x-doc::pre language>, markup): highlighting needs phiki/phiki.
     'code' => [

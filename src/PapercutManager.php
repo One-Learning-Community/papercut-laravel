@@ -180,7 +180,12 @@ class PapercutManager
 
         $images = self::configuredClass('markup.images', Markup\ImageResolver::class);
 
-        return new MarkupOptions(styles: $mode, images: $images === null ? null : $this->sharedImageResolver($images, 'markup.images'), blankParagraphs: $paragraphs, code: $this->markupCode());
+        $toc = config('papercut.markup.toc', true);
+        if (!is_bool($toc)) {
+            throw new \InvalidArgumentException('Invalid papercut.markup.toc: ' . self::shown($toc) . '; expected true or false');
+        }
+
+        return new MarkupOptions(styles: $mode, images: $images === null ? null : $this->sharedImageResolver($images, 'markup.images'), blankParagraphs: $paragraphs, code: $this->markupCode(), toc: $toc);
     }
 
     /** What markup gets for code: the configured highlighting, or false when `papercut.markup.highlight` is off. */

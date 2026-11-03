@@ -28,7 +28,7 @@ final class Markup extends PapercutComponent
 
     protected function ownAttributes(): array
     {
-        return ['styles', 'blank-paragraphs', 'images'];
+        return ['styles', 'blank-paragraphs', 'images', 'toc'];
     }
 
     protected function build(array $data): object
@@ -79,7 +79,7 @@ final class Markup extends PapercutComponent
     {
         $manager = app(PapercutManager::class);
         $base = $manager->markupOptions();
-        if (!isset($own['styles']) && !isset($own['blank-paragraphs']) && !isset($own['images'])) {
+        if (!isset($own['styles']) && !isset($own['blank-paragraphs']) && !isset($own['images']) && !isset($own['toc'])) {
             return $base;
         }
         $styles = $base->styles;
@@ -98,7 +98,9 @@ final class Markup extends PapercutComponent
             $images = $own['images'] === 'none' ? null : $manager->markupImageResolver($own['images']);
         }
 
-        return new MarkupOptions($styles, $images, $blank, $base->code);
+        $toc = isset($own['toc']) ? $this->boolOwn($own['toc'], 'toc') : $base->toc;
+
+        return new MarkupOptions($styles, $images, $blank, $base->code, $toc);
     }
 
     private static function show(mixed $v): string
