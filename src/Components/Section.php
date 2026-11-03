@@ -10,7 +10,7 @@ final class Section extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['title', 'number', 'rule', 'variant'];
+        return ['title', 'number', 'rule', 'heading', 'variant'];
     }
 
     protected function build(array $data): object
@@ -24,6 +24,9 @@ final class Section extends PapercutComponent
         if (isset($own['number'])) {
             $number = $own['number'];
             $section = $section->number(is_int($number) ? $number : $this->scalarOwn($number, 'number'));
+        }
+        if (isset($own['heading'])) {
+            $section = $section->heading($this->headingOwn($own['heading']));
         }
         if (isset($own['rule'])) {
             $section = $section->rule($this->boolOwn($own['rule'], 'rule'));

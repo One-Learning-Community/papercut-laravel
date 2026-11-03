@@ -10,12 +10,16 @@ final class Card extends PapercutComponent
     /** @return list<string> */
     protected function ownAttributes(): array
     {
-        return ['title', 'variant'];
+        return ['title', 'heading', 'variant'];
     }
 
     protected function build(array $data): object
     {
+        ['own' => $own] = $this->attrs($data);
         $card = \Papercut\Decorator\Card::make(...$this->children($data));
+        if (isset($own['heading'])) {
+            $card = $card->heading($this->headingOwn($own['heading']));
+        }
         $title = $this->slotOrAttribute($data, 'title');
         if ($title !== null) {
             $card = $card->title($title);

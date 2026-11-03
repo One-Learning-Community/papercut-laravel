@@ -127,6 +127,32 @@ final class DecoratorComponentsTest extends TestCase
         self::assertSame('danger', $b->toneName());
     }
 
+    public function test_section_and_card_heading(): void
+    {
+        $heading = static function (object $decorator): ?int {
+            $found = null;
+            $walk = static function (object $n) use (&$walk, &$found): void {
+                if ($n instanceof \Papercut\Text && $n->headingLevel() !== null) {
+                    $found ??= $n->headingLevel();
+                } elseif ($n instanceof \Papercut\View) {
+                    foreach ($n->children() as $c) {
+                        $walk($c);
+                    }
+                }
+            };
+            self::assertTrue($decorator instanceof Section || $decorator instanceof Card);
+            $walk($decorator->render());
+            return $found;
+        };
+        self::assertSame(1, $heading($this->nodeFrom('<x-doc::section title="Units" heading="1">x</x-doc::section>')));
+        self::assertSame(2, $heading($this->nodeFrom('<x-doc::section heading="2"><x-slot:title>Unit one</x-slot:title> x</x-doc::section>')));
+        self::assertSame(3, $heading($this->nodeFrom('<x-doc::card title="Card" :heading="3">x</x-doc::card>')));
+        self::assertNull($heading($this->nodeFrom('<x-doc::card title="Card">x</x-doc::card>')));
+
+        $this->expectExceptionMessage('on <x-doc::card>');
+        $this->nodeFrom('<x-doc::card title="Card" heading="5">x</x-doc::card>');
+    }
+
     public function test_section_number_and_rule(): void
     {
         $s = $this->nodeFrom('<x-doc::section title="T" number="3" rule>x</x-doc::section>');

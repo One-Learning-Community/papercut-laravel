@@ -349,6 +349,17 @@ abstract class PapercutComponent extends Component
         }
     }
 
+    /** Parses a `heading` attribute: a level from 1 to 4. */
+    protected function headingOwn(mixed $value): int
+    {
+        $raw = is_int($value) ? (string) $value : trim($this->scalarOwn($value, 'heading'));
+        if (preg_match('/^[1-4]$/', $raw) !== 1) {
+            throw InvalidValue::for('heading', $raw)->because('expected a heading level from 1 to 4')->withContext('heading')->within('on ' . Tag::of($this->tag()));
+        }
+
+        return (int) $raw;
+    }
+
     protected function scalarOwn(mixed $value, string $name): string
     {
         if (!is_scalar($value)) {

@@ -312,6 +312,8 @@ A bordered box with an optional title strip. `callout` and `badge` share tone na
 
 A section keeps its heading with the first of its content. The number is a string and Papercut adds no punctuation. The heading is always laid out as a row (number beside title); a `direction` in the `section.heading` style has no effect. An empty title or number is treated as unset.
 
+`heading="1"` to `heading="4"` on a section or card makes its title a real heading (bookmark, table of contents entry, `h` tag in HTML, Heading style in Word) without changing its look. A numbered section's entry reads "3 Search terms". A heading tag inside the title slot doesn't do this, because the slot is joined into one line of text.
+
 ```blade
 <x-doc::field label="Comments" placeholder="No response" lines="3">{{ $text }}</x-doc::field>
 ```
