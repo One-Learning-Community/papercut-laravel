@@ -50,6 +50,35 @@ final class DocxTest extends TestCase
         $manager->make(Document::make(Page::a4()->body(Text::make('x'))))->docx()->toString();
     }
 
+    public function testTocPageNumbersConfig(): void
+    {
+        $doc = Document::make(Page::a4()->body(\Papercut\Toc::make(), Text::h1('Alpha')));
+        $passes = [self::layoutPasses()];
+        Papercut::make($doc)->docx()->toString();
+        $passes[] = self::layoutPasses();
+
+        config(['papercut.docx.toc_page_numbers' => false]);
+        app()->forgetInstance(PapercutManager::class);
+        Papercut::clearResolvedInstances();
+        Papercut::make($doc)->docx()->toString();
+        $passes[] = self::layoutPasses();
+        $this->assertSame([$passes[0], $passes[0] + 1, $passes[0] + 1], $passes);
+    }
+
+    private static function layoutPasses(): int
+    {
+        return \Papercut\Docx\DocxExporter::$layoutPasses;
+    }
+
+    public function testBadTocPageNumbersConfig(): void
+    {
+        config(['papercut.docx.toc_page_numbers' => 'no']);
+        app()->forgetInstance(PapercutManager::class);
+        Papercut::clearResolvedInstances();
+        $this->expectExceptionMessage("Invalid papercut.docx.toc_page_numbers: 'no'; expected true or false");
+        Papercut::make(Document::make(Page::a4()->body(Text::make('x'))))->docx()->toString();
+    }
+
     /** @param \Illuminate\Foundation\Application $app */
     protected function strict($app): void
     {

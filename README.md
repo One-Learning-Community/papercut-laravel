@@ -74,6 +74,7 @@ This publishes `config/papercut.php`:
 | `markup.styles` | `'theme'` | `'theme'` (HTML gives structure, the theme styles it) or `'original'` (inline `style=""` applied on top) |
 | `markup.blank_paragraphs` | `'drop'` | `'drop'` or `'keep'` paragraphs that hold only `&nbsp;` or `<br>` |
 | `markup.toc` | `true` | `false` keeps converted headings out of tables of contents; they keep their look and bookmarks |
+| `docx.toc_page_numbers` | `true` | Word export lays out the pages to fill in a table of contents' page numbers (about the cost of a PDF export); `false` skips that, and entries show without numbers until the reader updates the field |
 | `bookmarks` | `true` | Headings and `bookmark="…"` build the PDF's bookmarks panel; `false` leaves it empty |
 | `image_path` | `null` | Base directory for relative `<x-doc::image src>` and `<x-doc::svg src>`; `null` = `public_path()` |
 | `cache_dir` | `null` | Parsed-font cache directory: `null` = `storage_path('framework/cache/papercut')`, `false` = no disk cache, or a path (see core's "Font cache") |

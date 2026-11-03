@@ -66,7 +66,7 @@ final class PendingDocument
     public function docx(): PendingOutput
     {
         return $this->docx ??= new PendingOutput(
-            fn (): \Papercut\Export\Output => $this->document->export($this->manager->docxExporter(), $this->manager->exportOptions()),
+            fn (): \Papercut\Export\Output => $this->document->export($this->manager->docxExporter(), $this->manager->docxOptions()),
             'document',
             'docx',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

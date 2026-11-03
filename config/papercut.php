@@ -27,6 +27,11 @@ return [
     'image_path' => null, // null = public_path()
     // Parsed-font cache directory: null = storage_path('framework/cache/papercut'), false = disabled, string = path
     'cache_dir' => null,
+    'docx' => [
+        // Fill in a table of contents' page numbers by laying out the pages, which costs about as much as a PDF export.
+        // false skips that: entries show without numbers until the reader updates the field in Word.
+        'toc_page_numbers' => true,
+    ],
     'html' => [
         // Fonts in HTML output: none (system-ui fallback stack) | embed (base64 @font-face, large)
         // | link (@font-face with URLs from font_url; needs font_url)

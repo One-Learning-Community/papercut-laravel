@@ -25,6 +25,7 @@ class PapercutManager
 
     private ?ExportOptions $export = null;
     private ?PdfOptions $pdf = null;
+    private ?ExportOptions $docx = null;
     private ?HtmlOptions $html = null;
     private ?MarkupOptions $markup = null;
     private ?CodeHighlighting $code = null;
@@ -85,6 +86,30 @@ class PapercutManager
     public function fontFamilies(): array
     {
         return array_map(static fn (FontFace $face): string => $face->family, $this->exportOptions()->fonts()->effectiveFaces());
+    }
+
+    /**
+     * Options for Word export: the export options, as papercut/docx's DocxOptions with `papercut.docx` applied when
+     * that package is installed. The class is named as a string, like the exporter.
+     *
+     * @internal
+     */
+    public function docxOptions(): ExportOptions
+    {
+        if ($this->docx !== null) {
+            return $this->docx;
+        }
+        $pageNumbers = config('papercut.docx.toc_page_numbers', true);
+        if (!is_bool($pageNumbers)) {
+            throw new \InvalidArgumentException('Invalid papercut.docx.toc_page_numbers: ' . self::shown($pageNumbers) . '; expected true or false');
+        }
+        $base = $this->exportOptions();
+        $class = 'Papercut\\Docx\\DocxOptions';
+        if (!class_exists($class)) {
+            return $this->docx = $base;
+        }
+
+        return $this->docx = new $class(theme: $base->theme(), fonts: $base->fonts(), onWarning: $base->onWarning(), strict: $base->strict(), tocPageNumbers: $pageNumbers);
     }
 
     public function pdfOptions(): PdfOptions
