@@ -28,6 +28,16 @@
         },
         {
             "type": "path",
+            "url": "../math",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "papercut/math": "0.10.x-dev"
+                }
+            }
+        },
+        {
+            "type": "path",
             "url": "../docx",
             "options": {
                 "symlink": true,
@@ -45,7 +55,8 @@
         "illuminate/routing": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0",
         "illuminate/view": "^12.0|^13.0",
-        "papercut/core": "^0.10"
+        "papercut/core": "^0.10",
+        "papercut/math": "^0.10"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",

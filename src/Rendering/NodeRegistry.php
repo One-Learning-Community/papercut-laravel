@@ -12,7 +12,7 @@ use Papercut\Laravel\Exception\InvalidStructure;
 /** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class NodeRegistry
 {
-    /** @var list<array{nonce: string, view: ?string, nodes: array<int, object>, taken: array<int, true>, next: int}> */
+    /** @var list<array{nonce: string, view: ?string, nodes: array<int, object>, taken: array<int, true>, next: int, inline: \SplObjectStorage<object, true>}> */
     private array $scopes = [];
 
     private const int REMEMBERED = 1000;
@@ -50,12 +50,28 @@ final class NodeRegistry
         if (count($this->issued) > self::REMEMBERED) {
             unset($this->issued[array_key_first($this->issued)]);
         }
-        $this->scopes[] = ['nonce' => $nonce, 'view' => $view, 'nodes' => [], 'taken' => [], 'next' => 0];
+        $this->scopes[] = ['nonce' => $nonce, 'view' => $view, 'nodes' => [], 'taken' => [], 'next' => 0, 'inline' => new \SplObjectStorage()];
         try {
             return app(ThemeScope::class)->isolate(static fn (): mixed => $fn());
         } finally {
             array_pop($this->scopes);
         }
+    }
+
+    /** Marks a node as one that may sit inline in text (an `<x-doc::math>` equation), for the rest of this scope. */
+    public function markInline(object $node): void
+    {
+        $key = array_key_last($this->scopes);
+        if ($key !== null) {
+            $this->scopes[$key]['inline'][$node] = true;
+        }
+    }
+
+    public function isInline(object $node): bool
+    {
+        $key = array_key_last($this->scopes);
+
+        return $key !== null && isset($this->scopes[$key]['inline'][$node]);
     }
 
     public function register(object $node): HtmlString

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Laravel;
 
+use Papercut\Math\Font\TrueTypeFont;
 use Papercut\Text\FontStyle;
 
 /**
@@ -53,6 +54,26 @@ final class FontConfig
         }
 
         return $out;
+    }
+
+    /** The `papercut.math_font` path (resolved like a face path), checked to be a TrueType math font; null = bundled. */
+    public static function mathFont(): ?string
+    {
+        $path = config('papercut.math_font');
+        if ($path === null) {
+            return null;
+        }
+        if (!is_string($path) || $path === '') {
+            throw self::invalid('papercut.math_font', 'expected the path of a TrueType math font, or null for the bundled one');
+        }
+        $path = self::resolve($path);
+        try {
+            TrueTypeFont::fromFile($path);
+        } catch (\Throwable $e) {
+            throw self::invalid('papercut.math_font', $e->getMessage());
+        }
+
+        return $path;
     }
 
     /** @return list<string> */

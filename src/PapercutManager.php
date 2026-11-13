@@ -307,6 +307,10 @@ class PapercutManager
             static fn (array $face): FontFace => new FontFace($face['family'], $face['path'], $face['weight'], $face['style']),
             FontConfig::faces(),
         )))->withFallbacks(...FontConfig::fallbacks());
+        $mathFont = FontConfig::mathFont();
+        if ($mathFont !== null) {
+            $fonts = $fonts->withMathFont($mathFont);
+        }
         $families = array_map(static fn (FontFace $face): string => $face->family, $fonts->effectiveFaces());
         foreach (FontConfig::wordNames($families) as $family => $wordName) {
             $fonts = $fonts->withWordName($family, $wordName);

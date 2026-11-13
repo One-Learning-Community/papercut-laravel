@@ -10,6 +10,9 @@ return [
     'margin' => '20mm',
     // Font families: name => [weight => ['normal' => path, 'italic' => path]]. Inter is always available.
     'fonts' => [],
+    // Font for equations: path of a TrueType math font (with a MATH table; CFF/.otf fonts are not read yet). null = bundled
+    // STIX Two Math. Affects PDF and HTML only; Word equations always use Cambria Math.
+    'math_font' => null,
     'fallback_fonts' => [],
     // The name Word uses for a family: family => name. Meant for metric-compatible pairs (Cousine => Courier New, the default for Cousine).
     'font_word_names' => [],
