@@ -79,6 +79,30 @@ final class DocxTest extends TestCase
         Papercut::make(Document::make(Page::a4()->body(Text::make('x'))))->docx()->toString();
     }
 
+    public function testRsvgConvertConfigReachesTheOptions(): void
+    {
+        config(['papercut.docx.rsvg_convert' => '/usr/local/bin/rsvg-convert']);
+        app()->forgetInstance(PapercutManager::class);
+        $options = app(PapercutManager::class)->docxOptions();
+        $this->assertInstanceOf(\Papercut\Docx\DocxOptions::class, $options);
+        $this->assertSame('/usr/local/bin/rsvg-convert', $options->rsvgConvert);
+
+        config(['papercut.docx.rsvg_convert' => '']);
+        app()->forgetInstance(PapercutManager::class);
+        $options = app(PapercutManager::class)->docxOptions();
+        $this->assertInstanceOf(\Papercut\Docx\DocxOptions::class, $options);
+        $this->assertNull($options->rsvgConvert);
+    }
+
+    public function testBadRsvgConvertConfig(): void
+    {
+        config(['papercut.docx.rsvg_convert' => true]);
+        app()->forgetInstance(PapercutManager::class);
+        Papercut::clearResolvedInstances();
+        $this->expectExceptionMessage('Invalid papercut.docx.rsvg_convert: true; expected null or the path to rsvg-convert');
+        Papercut::make(Document::make(Page::a4()->body(Text::make('x'))))->docx()->toString();
+    }
+
     /** @param \Illuminate\Foundation\Application $app */
     protected function strict($app): void
     {

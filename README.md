@@ -9,7 +9,7 @@ Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into
 
 **Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
 
-> **Status: 0.11, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
+> **Status: 0.12, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
 
 ## Install
 

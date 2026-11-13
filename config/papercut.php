@@ -34,6 +34,9 @@ return [
         // Fill in a table of contents' page numbers by laying out the pages, which costs about as much as a PDF export.
         // false skips that: entries show without numbers until the reader updates the field in Word.
         'toc_page_numbers' => true,
+        // Absolute path to librsvg's rsvg-convert (e.g. /usr/bin/rsvg-convert) to draw SVG pictures with it rather than Imagick,
+        // whose SVG quality depends on how it was built. null = Imagick only.
+        'rsvg_convert' => env('PAPERCUT_RSVG_CONVERT'),
     ],
     'html' => [
         // Fonts in HTML output: none (system-ui fallback stack) | embed (base64 @font-face, large)

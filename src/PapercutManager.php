@@ -103,13 +103,19 @@ class PapercutManager
         if (!is_bool($pageNumbers)) {
             throw new \InvalidArgumentException('Invalid papercut.docx.toc_page_numbers: ' . self::shown($pageNumbers) . '; expected true or false');
         }
+        // An empty PAPERCUT_RSVG_CONVERT= in .env reads as '': off, like null.
+        $rsvg = config('papercut.docx.rsvg_convert');
+        $rsvg = $rsvg === '' ? null : $rsvg;
+        if ($rsvg !== null && !is_string($rsvg)) {
+            throw new \InvalidArgumentException('Invalid papercut.docx.rsvg_convert: ' . self::shown($rsvg) . '; expected null or the path to rsvg-convert');
+        }
         $base = $this->exportOptions();
         $class = 'Papercut\\Docx\\DocxOptions';
         if (!class_exists($class)) {
             return $this->docx = $base;
         }
 
-        return $this->docx = new $class(theme: $base->theme(), fonts: $base->fonts(), onWarning: $base->onWarning(), strict: $base->strict(), tocPageNumbers: $pageNumbers);
+        return $this->docx = new $class(theme: $base->theme(), fonts: $base->fonts(), onWarning: $base->onWarning(), strict: $base->strict(), tocPageNumbers: $pageNumbers, rsvgConvert: $rsvg);
     }
 
     public function pdfOptions(): PdfOptions
