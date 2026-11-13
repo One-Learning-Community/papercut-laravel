@@ -56,6 +56,7 @@ This publishes `config/papercut.php`:
 | `margin` | `'20mm'` | Page margin when `<x-doc::page>` has no `margin` |
 | `fonts` | `[]` | Extra font families, see [Fonts](#fonts) |
 | `fallback_fonts` | `[]` | Family names tried, in order, for glyphs the primary font lacks |
+| `math_font` | `null` | Path of the TrueType math font equations use in PDF and HTML; `null` is the bundled STIX Two Math. Relative paths start at `base_path()`. A CFF font throws an error |
 | `font_word_names` | `[]` | The name Word uses for a family, as `'Family' => 'Word name'`. The family must be bundled or in `fonts`, and the match ignores case. Cousine is `Courier New` unless set here |
 | `theme` | `[]` | Defaults: `font_family`, `font_size` (points, number), `color`, `line_height` (number), `mono_family` (the family the `monospace` font keyword and the `pre` and `code` styles use; bundled or in `fonts`; default `Cousine`). The default code theme is `code.theme`. A document or page can override these, see [Theme per document or page](#theme-per-document-or-page) |
 | `styles` | `[]` | [Named styles](#named-styles) |
@@ -75,6 +76,14 @@ This publishes `config/papercut.php`:
 | `markup.blank_paragraphs` | `'drop'` | `'drop'` or `'keep'` paragraphs that hold only `&nbsp;` or `<br>` |
 | `markup.toc` | `true` | `false` keeps converted headings out of tables of contents; they keep their look and bookmarks |
 | `docx.toc_page_numbers` | `true` | Word export lays out the pages to fill in a table of contents' page numbers (about the cost of a PDF export); `false` skips that, and entries show without numbers until the reader updates the field |
+| `markup.highlight` | `true` | `false` keeps `<pre><code class="language-x">` as plain `pre` blocks instead of code blocks |
+| `code.theme` | `null` | Default code theme. `null` is `papercut-light`; otherwise a name from Phiki's bundled themes or `code.themes` |
+| `code.variant` | `null` | `null`, `'strip'` or `'caption'`: the look of code blocks that don't set a `variant` |
+| `code.grammars` | `[]` | `'name' => path` to a TextMate grammar JSON file |
+| `code.themes` | `[]` | `'name' => path` to a TextMate theme JSON file |
+| `code.aliases` | `[]` | `'alias' => 'language'` |
+| `code.injections` | `[]` | A list of `['path' => …, 'into' => ['source.x', …]]`: a VS Code style injection grammar, merged into the grammars with those scope names. Grammars are registered first, so `into` can name one from `code.grammars` |
+| `docx.rsvg_convert` | `env('PAPERCUT_RSVG_CONVERT')` | Absolute path to `rsvg-convert`, which then draws SVG in Word export, so Imagick isn't needed for it. `null` or empty uses Imagick |
 | `bookmarks` | `true` | Headings and `bookmark="…"` build the PDF's bookmarks panel; `false` leaves it empty |
 | `image_path` | `null` | Base directory for relative `<x-doc::image src>` and `<x-doc::svg src>`; `null` = `public_path()` |
 | `cache_dir` | `null` | Parsed-font cache directory: `null` = `storage_path('framework/cache/papercut')`, `false` = no disk cache, or a path (see core's "Font cache") |
@@ -173,7 +182,7 @@ With [`papercut/docx`](../docx/README.md) installed (`composer require papercut/
 return Papercut::view('pdf.invoice', $data)->docx()->download('invoice.docx');
 ```
 
-It returns a `PendingOutput` (default name `document.docx`). Without the package, the export throws `MissingExporter` with the command to install it. Preview routes accept `?format=docx`. What Word can't show (corner radius, opacity, QR codes, SVG and more) is reported through the same warning log, and `strict` throws on anything left out.
+It returns a `PendingOutput` (default name `document.docx`). Without the package, the export throws `MissingExporter` with the command to install it. Preview routes accept `?format=docx`. Opacity is blended onto what lies beneath. QR codes and SVG are drawn into pictures: SVG with `rsvg-convert` (recommended; set `docx.rsvg_convert`) or Imagick, and styled QR codes need Imagick. What Word can't show (corner radius and more) is reported through the same warning log, and `strict` throws on anything left out. See the [Word export guide](https://one-learning-community.github.io/papercut/guide/word-export).
 
 ## Tags
 
@@ -187,7 +196,7 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::view>` | `align` | Style. Generic container. |
 | `<x-doc::row>` | `align` | Style. Lays children out horizontally. |
 | `<x-doc::column>` | `align` | Style. Lays children out vertically. |
-| `<x-doc::text>` | `align`, `size` | Style. Inline markup allowed: `<b>`, `<i>`, `<u>`, `<s>`, `<mark>`, `<code>`, `<a href>`, `<br>`, `<span>`. |
+| `<x-doc::text>` | `align`, `size` | Style. Inline markup allowed: `<b>`, `<i>`, `<u>`, `<s>`, `<mark>`, `<code>`, `<a href>`, `<br>`, `<span>`, `<badge type variant>`. |
 | `<x-doc::h1>` ... `<x-doc::h4>` | `align`, `size` | Style. Heading presets. |
 | `<x-doc::p>` | `align`, `size` | Style. Paragraph preset. |
 | `<x-doc::qr-code>` | `value`, `level` (`L`/`M`/`Q`/`H`), `quiet-zone`, `shape` (`square`/`rounded`/`dots`; the last two raise `level` to at least `Q`), `eyes` (`square`/`dot`/`pointy`), `eye-color`, `gradient` (two colors), `gradient-type` | Style. A square QR code drawn as vectors in the text color; `width` sets its size (25mm by default). The styling attributes need `composer require bacon/bacon-qr-code`. No content. |
@@ -202,13 +211,19 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::ol>` | `start`, `marker` | Style. Numbered list of `<x-doc::li>`. `marker` is any `ListMarker` value (`decimal`, `lower-alpha`, `upper-alpha`, `lower-roman`, `upper-roman`, `disc`, `circle`, `square`, `none`); unset follows nesting depth (`1.`, `a.`, `i.`). |
 | `<x-doc::ul>` | `marker` | Style. Bulleted list of `<x-doc::li>`. `marker` takes the same values as on `ol`; unset follows nesting depth (`•`, `◦`, `▪`). |
 | `<x-doc::li>` | `value` | Style. A list item; holds any block content, including nested lists. `value` sets its number. |
-| `<x-doc::markup>` | `html` or `text` (exactly one), `styles`, `blank-paragraphs`, `images`, `toc` | Converts HTML or plain text to nodes, see [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. `toc="false"` keeps every heading it converts out of tables of contents (`markup.toc` sets the default). |
+| `<x-doc::kv>` | `label`, `total` | A row of `<x-doc::key-value>` or `<x-doc::totals>`. A label is required, as an attribute or a slot. `total` (a boolean) marks an emphasised row and is only allowed inside `<x-doc::totals>`. No style. |
+| `<x-doc::totals>` | `variant` | Style. Holds only `<x-doc::kv>` rows: labels on the left, amounts right-aligned. 45% wide at the right by default. See [Decorators](#decorators). |
+| `<x-doc::stat>` | `label`, `note`, `variant` | Style. The content is the value, with inline tags. `label` and `note` also work as slots. |
+| `<x-doc::signature>` | `name`, `role`, `date`, `variant` | Style. The content sits on the line (an image, a typed name, or nothing). `name`, `role` and `date` also work as slots. |
+| `<x-doc::markup>` | `html` or `text`, or HTML in the slot (exactly one of the three; two sources throw), `styles`, `blank-paragraphs`, `images`, `toc` | Converts HTML or plain text to nodes. Papercut tags in the slot are an error; components that render HTML are fine. See [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. `toc="false"` keeps every heading it converts out of tables of contents (`markup.toc` sets the default). |
 | `<x-doc::pre>` | none | Style. A preformatted block in the `pre` style. The content is literal: tags are not parsed and entities are decoded. The first and last blank lines are dropped and the common leading indentation is removed. Components inside are an error. The tag is found by a compile step that runs on every Blade view in the app, so a PHP string holding a literal `<x-doc::pre>` tag in an ordinary (non-Papercut) view gets an invisible U+E000 character after it. |
 | `<x-doc::code>` | none | Style, applied to the span. Inline code in the `code` style, for use inside text tags. The content is literal text. |
 | `<x-doc::node>` | `node` | Embeds a PHP-built `Node` or `Component` (anything else throws `InvalidValue`). As a block among blocks. Inside a text tag a `Text` joins the line; a `View` is flattened into it like `Markup::flatten()` (block content approximated, images and other nodes dropped, each reported). |
 | `<x-doc::spacer>` | `size` | `size="10mm"` is a fixed gap; with no `size` it is flexible (`grow`, default 1). Only `grow` is accepted besides `size`/`style`. |
 | `<x-doc::column-flow>` | `columns`, `widths`, `column-gap`, `rule` | Style. Text set in columns, like Word's: content fills each column, then the next page, and the last page ends level. `columns` is 1 to 45 (default 2); `widths="2 1"` sets unequal columns as ratios; `column-gap` is one length, or one per gap (default 36pt); `rule` draws a line in each gap, bare or `rule="1pt slate-400"`. `gap` spaces the children, as on any box. No border, background, padding or size: wrap it in a `view` for those. Not allowed inside a table cell, a row, another flow, or a header, footer, background or overlay. |
 | `<x-doc::column-break>` | none | Sends what follows to the next column (from the last column, to the next page). Only inside `<x-doc::column-flow>`. |
+| `<x-doc::equation>` | `math` | Style. A block equation. `math` is a string or a node built with `Papercut\Math\Math`. No content. Inside a text tag it is an error; use `<x-doc::math>`. |
+| `<x-doc::math>` | `math` | Inside a text tag, an inline equation (`Span::math()`), with no style attributes. Anywhere else it is a block equation, like `<x-doc::equation>`. No content. It can't sit inside a raw inline HTML tag (`<b>`, `<a>`); that throws. |
 | `<x-doc::page-number>` | `format`, `align`, `size` | Style. `format` uses `{page}` and `{total}`; no content allowed. |
 | `<x-doc::toc>` | `levels`, `title`, `leaders` | Table of contents. `levels="2"` or `"1-3"` (1 to 4); `title` is a line above the list; `leaders` (default on) draws dot leaders; no content allowed. Leave a heading out with `toc="false"`. |
 | `<x-doc::page-break>` | none | Forces a new page. |
@@ -284,7 +299,7 @@ The named style is the base; attributes written on the tag override it for any p
 
 ## Decorators
 
-Ready-made pieces that give content a look (each takes `variant="large"`, which also applies the theme's `<name>.large` styles for the parts it styles): `card`, `callout`, `blockquote`, `section`, `field`, `choices`, `key-value` and `badge`. They are plain Papercut components, so they work in PDF and HTML, take the usual [style attributes](#style-attributes) on their outer box, and get their look from [named styles](#named-styles) you can override. Decorator style names (`card`, `card.title`, `callout.*`, `section.*`, `field.*`, `choice.*`, `key-value.*`, `badge.*`, `blockquote.*`) belong to the decorators: a theme or config style with the same name replaces the built-in one, so pick other names for your own styles.
+Ready-made pieces that give content a look (each takes a `variant`, which also applies the theme's `<name>.<variant>` styles for the parts it styles; built in are `line` on `field`, `outline` on `badge`, `flat` on `card` and `large` on `section`): `card`, `callout`, `blockquote`, `section`, `field`, `choices`, `key-value`, `badge`, `stat`, `totals` and `signature`. They are plain Papercut components, so they work in PDF and HTML, take the usual [style attributes](#style-attributes) on their outer box, and get their look from [named styles](#named-styles) you can override. Decorator style names (`card`, `card.title`, `callout.*`, `section.*`, `field.*`, `choice.*`, `key-value.*`, `badge.*`, `blockquote.*`, `stat.*`, `totals.*`, `signature.*`) belong to the decorators: a theme or config style with the same name replaces the built-in one, so pick other names for your own styles.
 
 ```blade
 <x-doc::card title="Respondent">
@@ -300,7 +315,7 @@ A bordered box with an optional title strip. `callout` and `badge` share tone na
 <x-doc::badge type="tip">Agree</x-doc::badge>
 ```
 
-`callout` types: `note` (default), `tip`, `warning`, `danger`. `badge` types: `neutral` (default), `note`, `tip`, `warning`, `danger`. A badge is a block that hugs its text; it cannot sit inside a line.
+`callout` types: `note` (default), `tip`, `warning`, `danger`. `badge` types: `neutral` (default), `note`, `tip`, `warning`, `danger`. A badge is a block that hugs its text. Inside a text tag it is an inline badge instead (`<badge type="tip">` in markup; `variant` works too), with a plain-text label.
 
 ```blade
 <x-doc::blockquote cite="Jane Smith, 2024">Quoted words.</x-doc::blockquote>
@@ -341,6 +356,20 @@ A bordered box that shows `placeholder` when its content is empty (no children, 
 
 Aligned label and value rows. `label-width` fixes the first column so long labels wrap.
 
+```blade
+<x-doc::stat label="Revenue" note="vs last month">$12,400</x-doc::stat>
+
+<x-doc::totals>
+  <x-doc::kv label="Subtotal">$100.00</x-doc::kv>
+  <x-doc::kv label="Tax">$8.00</x-doc::kv>
+  <x-doc::kv label="Total" total>$108.00</x-doc::kv>
+</x-doc::totals>
+
+<x-doc::signature name="Jane Smith" role="Director" date="13 November 2026" />
+```
+
+`stat` is a panel with a small label, a large value and an optional note. `totals` is a block of label and amount rows, 45% wide at the right, where `total` marks an emphasised row. `signature` is a line to sign on, with the name, role and date beneath it; its content (an image, a typed name) sits on the line.
+
 `<mark>` works in any text tag and in `<x-doc::markup>`: `<x-doc::text>a <mark>key</mark> word</x-doc::text>` paints a `yellow-200` background behind the run. In `<x-doc::markup :html>`, `<span style="background-color: ...">` keeps its own colour only when `markup.styles` is `'original'`; in `'theme'` mode inline styles are ignored.
 
 ### Built-in styles
@@ -356,9 +385,13 @@ Each decorator reads these names. Colours are palette names.
 | `field`, `field.label`, `field.placeholder` | 1pt `slate-300` border, 3pt radius; `0.9em` `slate-600` label; italic `slate-400` placeholder |
 | `choice`, `choice.option`, `choice.marker`, `choice.marker.radio`, `choice.marker.selected`, `choice.mark`, `choice.mark.radio`, `choice.label.selected` | `0.75em` marker with 1pt `slate-400` border, round for radio; selected border `slate-800` and a `0.42em` inner mark; selected label bold; 6pt between marker and label |
 | `key-value`, `key-value.label`, `key-value.value` | no borders; `slate-600` label |
-| `badge`, `badge.<tone>` | `0.9em` bold pill in `slate`, `sky`, `emerald`, `amber` or `red` (background `-100`, text `-800`), aligned to the start so it hugs its text |
+| `badge`, `badge.<tone>` | `0.9em` bold pill in `slate`, `sky`, `emerald`, `amber` or `red` (background `-100`, text `-800`, border `-300`, which shows only with `outline`), aligned to the start so it hugs its text |
+| `stat`, `stat.label`, `stat.value`, `stat.note` | `slate-50` panel, 6pt corners, 10pt 12pt padding; label `0.75em` bold `slate-500`; value `1.8em` bold `slate-900`; note `0.8em` `slate-600` |
+| `totals`, `totals.label`, `totals.value`, `totals.total-label`, `totals.total-value` | 45% wide, aligned to the end, doesn't shrink; `slate-600` labels, right-aligned values, 12pt between columns; total rows bold `slate-900` `1.1em` with a 1pt `slate-300` rule above |
+| `signature`, `signature.line`, `signature.name`, `signature.role`, `signature.date` | 216pt (3in) wide, kept together; line at least 30pt high with a 0.75pt `slate-700` rule beneath; bold name; `0.85em` `slate-600` role and date |
+| `field.line`, `badge.outline`, `card.flat`, `card.title.flat`, `section.large`, `section.title.large`, `section.number.large` | The built-in variants: `field.line` keeps only a 1pt `slate-400` bottom rule; `badge.outline` has no fill and a 0.75pt border in the tone's colour; `card.flat` is a `slate-50` panel with no border; `section.large` sets the title and number at `1.35em` |
 
-Every value is listed in section 6 of the [decorators design](../../docs/superpowers/specs/2026-10-19-decorators-design.md).
+Every value is listed in the [decorator styles reference](https://one-learning-community.github.io/papercut/reference/decorator-styles.html).
 
 ### Restyle or add a tone
 
