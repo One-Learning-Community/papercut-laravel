@@ -128,4 +128,30 @@ final class DocxTest extends TestCase
         $response->assertNotFound();
         $response->assertSee('composer require papercut/docx');
     }
+    public function testTextTagIndentationCollapsesInWord(): void
+    {
+        $node = $this->nodeFrom("<x-doc::text>\n    plain\n    <b>bold</b>\n    end\n</x-doc::text>");
+        $this->assertInstanceOf(Text::class, $node);
+        $this->assertSame('plain bold end', self::wordText($node));
+
+        $blade = "<x-doc::text>\n    <x-doc::badge>New</x-doc::badge>\n    @if (\$show)\n        <span>tail</span>\n    @endif\n</x-doc::text>";
+        $node = $this->nodeFrom($blade, ['show' => true]);
+        $this->assertInstanceOf(Text::class, $node);
+        $this->assertSame("\u{00A0}\u{00A0}New\u{00A0}\u{00A0} tail", self::wordText($node));
+    }
+
+    /** The paragraph text of a one-node document's Word export. */
+    private static function wordText(\Papercut\Node $node): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'docx');
+        file_put_contents($path, Papercut::make(Document::make(Page::a4()->body($node)))->docx()->toString());
+        $zip = new \ZipArchive();
+        $zip->open($path);
+        $xml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        unlink($path);
+        preg_match_all('~<w:t(?: [^>]*)?>([^<]*)</w:t>~', $xml, $m);
+
+        return html_entity_decode(implode('', $m[1]), ENT_XML1);
+    }
 }
