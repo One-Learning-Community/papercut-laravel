@@ -124,6 +124,12 @@ abstract class PapercutComponent extends Component
         return strtolower((string) preg_replace('/(?<!^)[A-Z]/', '-$0', $short));
     }
 
+    /** Whether a string is MathML (`<math…`) or its safeXml form (`«math…`), as the equation and math components accept. */
+    protected static function isMathml(string $s): bool
+    {
+        return preg_match('/^\s*(<|«)([\w-]+:)?math[\s>»:]/iu', $s) === 1;
+    }
+
     /** @return list<string> */
     protected function ownAttributes(): array
     {
@@ -145,7 +151,10 @@ abstract class PapercutComponent extends Component
             // Blade passes bound and echoed values through e() on their way into the bag; undo it,
             // so a URL's "&" reaches a QR code or link as "&", not "&amp;".
             if (is_string($value)) {
-                $value = htmlspecialchars_decode($value, ENT_QUOTES);
+                // A literal MathML string keeps its entities (&lt; inside mtext is text), so only other values are decoded.
+                if (!($key === 'math' && self::isMathml($value))) {
+                    $value = htmlspecialchars_decode($value, ENT_QUOTES);
+                }
                 // Pre's compile-time start mark lands in a string attribute that only mentions a pre tag.
                 $value = Pre::unmark($value);
             }

@@ -6,6 +6,7 @@ namespace Papercut\Laravel\Components;
 
 use Papercut\Laravel\Exception\InvalidStructure;
 use Papercut\Laravel\Tag;
+use Papercut\Math\Math;
 use Papercut\Math\Node\Node as MathNode;
 
 /**
@@ -30,6 +31,10 @@ trait BuildsEquation
         $math = $own['math'] ?? null;
         if (!is_string($math) && !$math instanceof MathNode) {
             throw new InvalidStructure("$tag requires a math attribute: a string, or a node built with Papercut\\Math\\Math");
+        }
+
+        if (is_string($math) && self::isMathml($math)) {
+            $math = Math::mathml($math);
         }
 
         return $this->styled(\Papercut\Equation::of($math), $data);

@@ -10,6 +10,7 @@ use Papercut\Laravel\Components\HeaderRows;
 use Papercut\Decorator\Badge;
 use Papercut\Decorator\ChoiceOption;
 use Papercut\Decorator\KeyValuePair;
+use Papercut\Document;
 use Papercut\ListItem;
 use Papercut\Place;
 use Papercut\TableCell;
@@ -48,6 +49,9 @@ final class Segments
                     $out[] = Text::markup(trim($seg));
                 }
             } else {
+                if ($seg instanceof Document) {
+                    throw new InvalidStructure(Tag::of('document') . ' must be the outermost tag; it cannot go inside ' . Tag::of($tag));
+                }
                 if ($seg instanceof Place && !in_array(Place::class, $allow, true)) {
                     throw new InvalidStructure(Tag::of('place') . ' only works in the overlay slot of ' . Tag::of('page'));
                 }

@@ -99,7 +99,7 @@ final class BlockComponentsTest extends TestCase
     {
         $this->expectException(UnknownAttribute::class);
         $this->expectExceptionMessage('Unknown attribute "align" on <x-doc::link>');
-        $this->nodeFrom('<x-doc::link href="x" align="center">go</x-doc::link>');
+        $this->nodeFrom('<x-doc::link href="https://example.com" align="center">go</x-doc::link>');
     }
 
     public function test_named_style_and_style_object(): void

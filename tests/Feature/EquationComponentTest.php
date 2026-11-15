@@ -166,4 +166,100 @@ final class EquationComponentTest extends TestCase
             rmdir($dir);
         }
     }
+
+    private const string MML_FRAC = '<math><mfrac><mi>a</mi><mi>b</mi></mfrac></math>';
+
+    public function test_equation_with_mathml_string(): void
+    {
+        $n = $this->nodeFrom('<x-doc::equation :math="$m" />', ['m' => self::MML_FRAC]);
+
+        self::assertInstanceOf(Equation::class, $n);
+        self::assertTrue($this->containsFraction($n->math()));
+        self::assertEquals(Math::mathml(self::MML_FRAC), $n->math());
+    }
+
+    public function test_inline_math_with_mathml_string_stays_inline_even_with_display_block(): void
+    {
+        $mml = '<math display="block"><mfrac><mi>a</mi><mi>b</mi></mfrac></math>';
+        $t = $this->nodeFrom('<x-doc::p>Ratio <x-doc::math :math="$m" /> here.</x-doc::p>', ['m' => $mml]);
+
+        self::assertInstanceOf(Text::class, $t);
+        $spans = $t->spanList();
+        self::assertCount(3, $spans);
+        self::assertNotNull($spans[1]->math);
+        self::assertTrue($this->containsFraction($spans[1]->math));
+    }
+
+    public function test_safexml_string(): void
+    {
+        $safe = '«math»«mfrac»«mi»a«/mi»«mi»b«/mi»«/mfrac»«/math»';
+        $n = $this->nodeFrom('<x-doc::equation :math="$m" />', ['m' => $safe]);
+
+        self::assertTrue($this->containsFraction($n->math()));
+    }
+
+    public function test_prefixed_mathml_string(): void
+    {
+        $mml = '<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mfrac><mml:mi>a</mml:mi><mml:mi>b</mml:mi></mml:mfrac></mml:math>';
+        $n = $this->nodeFrom('<x-doc::equation :math="$m" />', ['m' => "  \n" . $mml]);
+
+        self::assertTrue($this->containsFraction($n->math()));
+    }
+
+    public function test_plain_string_still_tokenized(): void
+    {
+        self::assertEquals(Equation::of('x² + 1')->math(), $this->nodeFrom('<x-doc::equation math="x² + 1" />')->math());
+        self::assertEquals(Equation::of('math is fun')->math(), $this->nodeFrom('<x-doc::equation math="math is fun" />')->math());
+    }
+
+    public function test_mtable_note_reported_once(): void
+    {
+        $mml = '<math><mtable><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
+        $n = $this->nodeFrom('<x-doc::equation :math="$m" />', ['m' => $mml]);
+        $warnings = [];
+        $options = new \Papercut\Export\PdfOptions(onWarning: static function (string $msg) use (&$warnings): void {
+            $warnings[] = $msg;
+        });
+        \Papercut\Document::make(\Papercut\Page::named('a4')->body($n))->toPdf($options);
+
+        self::assertCount(1, $warnings);
+    }
+
+    public function test_mtable_note_reported_once_through_a_view_export(): void
+    {
+        $spy = \Illuminate\Support\Facades\Log::spy();
+        $mml = '<math><mtable><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
+        $pdf = Papercut::view('pdf.mathml', ['m' => $mml])->pdf()->toString();
+
+        self::assertStringStartsWith('%PDF-', $pdf);
+        $spy->shouldHaveReceived('debug')->withArgs(fn (string $m): bool => str_contains($m, 'math <mtable>'))->once();
+    }
+
+    public function test_literal_mathml_attribute_keeps_its_entities(): void
+    {
+        $n = $this->nodeFrom('<x-doc::equation math="<math><mtext>x &lt;b&gt; &amp; y</mtext></math>" />');
+
+        self::assertEquals(Math::mathml('<math><mtext>x &lt;b&gt; &amp; y</mtext></math>'), $n->math());
+        self::assertSame('x <b> & y', \Papercut\Math\Render\TextWriter::write($n->math()));
+        self::assertSame([], Math::notes($n->math()));
+    }
+
+    public function test_literal_plain_attribute_still_decodes_entities(): void
+    {
+        self::assertEquals(Equation::of('a < b & c')->math(), $this->nodeFrom('<x-doc::equation math="a &lt; b &amp; c" />')->math());
+    }
+
+    private function containsFraction(\Papercut\Math\Node\Node $node): bool
+    {
+        if ($node instanceof \Papercut\Math\Node\Fraction) {
+            return true;
+        }
+        foreach ($node->children() as $c) {
+            if ($this->containsFraction($c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
