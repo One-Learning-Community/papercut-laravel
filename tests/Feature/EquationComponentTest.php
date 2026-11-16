@@ -214,7 +214,7 @@ final class EquationComponentTest extends TestCase
 
     public function test_mtable_note_reported_once(): void
     {
-        $mml = '<math><mtable><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
+        $mml = '<math><mtable rowlines="solid"><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
         $n = $this->nodeFrom('<x-doc::equation :math="$m" />', ['m' => $mml]);
         $warnings = [];
         $options = new \Papercut\Export\PdfOptions(onWarning: static function (string $msg) use (&$warnings): void {
@@ -228,7 +228,7 @@ final class EquationComponentTest extends TestCase
     public function test_mtable_note_reported_once_through_a_view_export(): void
     {
         $spy = \Illuminate\Support\Facades\Log::spy();
-        $mml = '<math><mtable><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
+        $mml = '<math><mtable rowlines="solid"><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
         $pdf = Papercut::view('pdf.mathml', ['m' => $mml])->pdf()->toString();
 
         self::assertStringStartsWith('%PDF-', $pdf);
