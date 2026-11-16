@@ -20,7 +20,7 @@ final class Image extends PapercutComponent
 
     protected function ownAttributes(): array
     {
-        return ['src', 'data', 'fit'];
+        return ['src', 'data', 'fit', 'alt'];
     }
 
     protected function build(array $data): object
@@ -35,6 +35,8 @@ final class Image extends PapercutComponent
             throw new InvalidStructure(Tag::of('image') . ' src must be a string path');
         }
 
+        $alt = $this->altOwn($own);
+
         if ($src !== null) {
             try {
                 $node = \Papercut\Image::file(ImagePath::resolve($src));
@@ -45,6 +47,9 @@ final class Image extends PapercutComponent
             $node = \Papercut\Image::bytes((string) $bytes);
         }
 
+        if ($alt !== null) {
+            $node = $node->alt($alt);
+        }
         if (isset($own['fit'])) {
             $fit = ImageFit::tryFrom((string) $own['fit'])
                 ?? throw InvalidValue::for('fit', (string) $own['fit'])->because('expected contain, cover or fill')->withContext('fit')->within('on ' . Tag::of('image'));

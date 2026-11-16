@@ -413,6 +413,7 @@ class PapercutManager
             imageUrl: $imageUrl,
             fontUrl: $fontUrl,
             fontSources: $sources,
+            inlineSvgs: (bool) config('papercut.html.inline_svgs', false),
         );
     }
 

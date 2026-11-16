@@ -48,6 +48,8 @@ return [
         'image_url' => null,
         // Class name implementing Papercut\Laravel\Html\FontUrlResolver, built by the container. Needed when fonts is link.
         'font_url' => null,
+        // Write SVGs as inline markup so their text uses the page's fonts; false keeps them as img. Use only for trusted SVG.
+        'inline_svgs' => false,
         // Used when fonts is sources: an ordered list of classes implementing Papercut\Html\FontSource, built by the container.
         // Each font family goes to the first source that accepts it: list specific sources first, catch-all hosts such as Google last.
         // PRIVACY: with GoogleFonts the visitor's browser fetches the CSS and fonts from the host and sends it their IP address

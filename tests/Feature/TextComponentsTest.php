@@ -12,6 +12,28 @@ use Papercut\Style\{ImageFit, TextAlign};
 
 final class TextComponentsTest extends TestCase
 {
+    public function test_image_alt_sets_the_alt_text(): void
+    {
+        $n = $this->nodeFrom('<x-doc::image :data="$b" alt="Chart" />', ['b' => 'raw']);
+
+        self::assertInstanceOf(Image::class, $n);
+        self::assertSame('Chart', $n->altText());
+    }
+
+    public function test_an_empty_image_alt_is_decorative(): void
+    {
+        $n = $this->nodeFrom('<x-doc::image :data="$b" alt="" />', ['b' => 'raw']);
+
+        self::assertInstanceOf(Image::class, $n);
+        self::assertSame('', $n->altText());
+    }
+
+    public function test_a_non_string_image_alt_is_rejected(): void
+    {
+        $this->expectException(InvalidStructure::class);
+        $this->nodeFrom('<x-doc::image :data="$b" :alt="$a" />', ['b' => 'raw', 'a' => ['x']]);
+    }
+
     public function test_text_with_inline_markup_and_style(): void
     {
         $t = $this->nodeFrom("<x-doc::text size=\"18pt\" bold align=\"right\">\n  Hello <i>there</i>\n</x-doc::text>");

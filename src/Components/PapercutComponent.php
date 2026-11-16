@@ -369,6 +369,22 @@ abstract class PapercutComponent extends Component
         return (int) $raw;
     }
 
+    /**
+     * The alt attribute, or null when absent.
+     *
+     * @param array<string, mixed> $own
+     * @throws InvalidStructure when alt is not a string
+     */
+    protected function altOwn(array $own): ?string
+    {
+        $alt = $own['alt'] ?? null;
+        if ($alt !== null && !is_string($alt)) {
+            throw new InvalidStructure(Tag::of($this->tag()) . ' alt must be a string');
+        }
+
+        return $alt;
+    }
+
     protected function scalarOwn(mixed $value, string $name): string
     {
         if (!is_scalar($value)) {

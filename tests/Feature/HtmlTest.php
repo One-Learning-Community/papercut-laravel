@@ -154,6 +154,14 @@ final class HtmlTest extends TestCase
         $this->app()->make(PapercutManager::class)->htmlOptions();
     }
 
+    public function test_html_inline_svgs_config(): void
+    {
+        $this->assertFalse($this->app()->make(PapercutManager::class)->htmlOptions()->inlineSvgs());
+
+        config(['papercut.html.inline_svgs' => true]);
+        $this->assertTrue($this->fresh()->htmlOptions()->inlineSvgs());
+    }
+
     private function fresh(): PapercutManager
     {
         $this->app()->forgetInstance(PapercutManager::class); // @phpstan-ignore method.notFound
