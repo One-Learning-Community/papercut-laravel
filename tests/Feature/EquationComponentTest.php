@@ -78,6 +78,20 @@ final class EquationComponentTest extends TestCase
         }
     }
 
+    public function test_cff_math_font_config_applied(): void
+    {
+        $fira = __DIR__ . '/../../vendor/quoin/math/tests/fixtures/FiraMath-Regular.otf';
+        if (!is_file($fira)) {
+            self::markTestSkipped('the math package test fixtures are not installed');
+        }
+        config(['quoin.math_font' => $fira]);
+        $this->fresh();
+
+        self::assertSame($fira, Quoin::pdfOptions()->fonts()->mathFontPath());
+        $pdf = \Quoin\Document::make(\Quoin\Page::a4()->body(\Quoin\Equation::of(\Quoin\Math\Math::tex('\\sqrt{x^2 + 1}'))))->toPdf(Quoin::pdfOptions())->bytes();
+        self::assertStringContainsString('/FontFile3', $pdf); // the CFF font program
+    }
+
     public function test_bad_math_font_config_message(): void
     {
         config(['quoin.math_font' => self::INTER]);

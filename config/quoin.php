@@ -10,7 +10,7 @@ return [
     'margin' => '20mm',
     // Font families: name => [weight => ['normal' => path, 'italic' => path]]. Inter is always available.
     'fonts' => [],
-    // Font for equations: path of a TrueType math font (with a MATH table; CFF/.otf fonts are not read yet). null = bundled
+    // Font for equations: path of an OpenType math font with a MATH table (TrueType or CFF/.otf; not a collection, CFF2 or CID-keyed font). null = bundled
     // STIX Two Math. Affects PDF and HTML only; Word equations always use Cambria Math.
     'math_font' => null,
     'fallback_fonts' => [],

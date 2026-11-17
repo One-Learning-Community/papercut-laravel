@@ -56,7 +56,7 @@ This publishes `config/quoin.php`:
 | `margin` | `'20mm'` | Page margin when `<x-doc::page>` has no `margin` |
 | `fonts` | `[]` | Extra font families, see [Fonts](#fonts) |
 | `fallback_fonts` | `[]` | Family names tried, in order, for glyphs the primary font lacks |
-| `math_font` | `null` | Path of the TrueType math font equations use in PDF and HTML; `null` is the bundled STIX Two Math. Relative paths start at `base_path()`. A CFF font throws an error |
+| `math_font` | `null` | Path of the OpenType math font (TrueType or CFF outlines) equations use in PDF and HTML; `null` is the bundled STIX Two Math. Relative paths start at `base_path()`. A CFF font is embedded whole, which can add a few hundred KB to each PDF |
 | `font_word_names` | `[]` | The name Word uses for a family, as `'Family' => 'Word name'`. The family must be bundled or in `fonts`, and the match ignores case. Cousine is `Courier New` unless set here |
 | `theme` | `[]` | Defaults: `font_family`, `font_size` (points, number), `color`, `line_height` (number), `mono_family` (the family the `monospace` font keyword and the `pre` and `code` styles use; bundled or in `fonts`; default `Cousine`). The default code theme is `code.theme`. A document or page can override these, see [Theme per document or page](#theme-per-document-or-page) |
 | `styles` | `[]` | [Named styles](#named-styles) |
