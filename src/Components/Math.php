@@ -7,8 +7,8 @@ namespace Papercut\Laravel\Components;
 use Papercut\Laravel\Rendering\NodeRegistry;
 
 /**
- * An equation inside running text: `<x-doc::math :math="$node" />` or `<x-doc::math math="x²" />` within a text
- * tag such as `<x-doc::p>` becomes an inline equation (Span::math). Outside a text tag it is the same as the block
+ * An equation inside running text: `<x-doc::math :math="$node" />`, `<x-doc::math math="x²" />` or
+ * `<x-doc::math tex="\frac{a}{b}" />` within a text tag such as `<x-doc::p>` becomes an inline equation (Span::math). Outside a text tag it is the same as the block
  * `<x-doc::equation>`, so a lone `<x-doc::math>` is a displayed equation. Inside a text tag it takes no style
  * attributes; set size and colour on the surrounding text.
  *

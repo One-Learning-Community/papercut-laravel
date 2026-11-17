@@ -152,6 +152,7 @@ abstract class PapercutComponent extends Component
             // so a URL's "&" reaches a QR code or link as "&", not "&amp;".
             if (is_string($value)) {
                 // A literal MathML string keeps its entities (&lt; inside mtext is text), so only other values are decoded.
+                // That includes `tex`: a literal "&" (aligned columns) decodes to itself, and a bound one, escaped by Blade, is restored.
                 if (!($key === 'math' && self::isMathml($value))) {
                     $value = htmlspecialchars_decode($value, ENT_QUOTES);
                 }
