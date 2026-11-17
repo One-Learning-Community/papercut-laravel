@@ -162,8 +162,8 @@ final class ThemeOverrideTest extends TestCase
         $plain = $manager->make($this->document('<x-doc::document><x-doc::page>Same</x-doc::page></x-doc::document>'));
         $empty = $manager->make($this->document('<x-doc::document :theme="[]"><x-doc::page :theme="[]">Same</x-doc::page></x-doc::document>'))->theme([]);
 
-        // The two renders can straddle a second, so leave the creation time out of the comparison.
-        $undated = static fn (string $pdf): string => (string) preg_replace('/\/CreationDate \(D:\d{14}[^)]*\)/', '', $pdf);
+        // The two renders can straddle a second, so leave out the creation time and the file ID derived from it.
+        $undated = static fn (string $pdf): string => (string) preg_replace(['/\/CreationDate \(D:\d{14}[^)]*\)/', '/\/ID \[<[0-9a-f]+> <[0-9a-f]+>\]/'], '', $pdf);
         self::assertSame($undated($plain->pdf()->toString()), $undated($empty->pdf()->toString()));
     }
 
