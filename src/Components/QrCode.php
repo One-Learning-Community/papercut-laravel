@@ -24,7 +24,7 @@ final class QrCode extends PapercutComponent
             throw new InvalidStructure(Tag::of('qr-code') . ' must not have content; use the value attribute');
         }
         ['own' => $own, 'style' => $style] = $this->attrs($data);
-        // A misspelt value or level would otherwise reach the style check, which only suggests style names.
+        // A misspelled value or level would otherwise reach the style check, which only suggests style names.
         foreach (array_keys($style) as $key) {
             foreach ($this->ownAttributes() as $candidate) {
                 if (levenshtein((string) $key, $candidate) <= 2) {

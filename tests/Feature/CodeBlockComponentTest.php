@@ -43,7 +43,7 @@ final class CodeBlockComponentTest extends TestCase
     }
 
     /** @return list<string> */
-    private static function colours(View $view): array
+    private static function colors(View $view): array
     {
         $out = [];
         foreach ($view->children() as $child) {
@@ -63,7 +63,7 @@ final class CodeBlockComponentTest extends TestCase
     {
         $view = $this->rendered('<x-doc::pre language="php">' . "\n    // hi\n    \$a = 1;\n" . '</x-doc::pre>');
         self::assertSame('PHP', self::texts($view)[0]);
-        self::assertNotSame([], self::colours($view));
+        self::assertNotSame([], self::colors($view));
     }
 
     public function test_theme_label_and_variant_attributes(): void
@@ -119,8 +119,8 @@ final class CodeBlockComponentTest extends TestCase
         $this->fresh();
         $view = $this->rendered('<x-doc::pre language="dm">demo {{ $s }}</x-doc::pre>', ['s' => '@@x']);
         self::assertSame('#101010', (string) $view->style()->background);
-        self::assertContains('#00ff00', self::colours($view));
-        self::assertContains('#ff00ff', self::colours($view));
+        self::assertContains('#00ff00', self::colors($view));
+        self::assertContains('#ff00ff', self::colors($view));
         self::assertSame('strip', app(PapercutManager::class)->codeHighlighting()->variant);
         self::assertInstanceOf(View::class, $view->children()[0], 'the configured variant is applied');
     }
@@ -199,7 +199,7 @@ final class CodeBlockComponentTest extends TestCase
         });
 
         $view = $this->rendered('<x-doc::pre language="demo">demo</x-doc::pre>');
-        self::assertSame([], self::colours($view));
+        self::assertSame([], self::colors($view));
         self::assertSame('demo', self::texts($view)[1]);
         self::assertStringContainsString('install phiki/phiki', implode('|', array_map(static fn ($n): string => $n->feature, $view->notes())));
 

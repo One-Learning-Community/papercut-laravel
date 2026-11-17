@@ -211,7 +211,7 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::ol>` | `start`, `marker` | Style. Numbered list of `<x-doc::li>`. `marker` is any `ListMarker` value (`decimal`, `lower-alpha`, `upper-alpha`, `lower-roman`, `upper-roman`, `disc`, `circle`, `square`, `none`); unset follows nesting depth (`1.`, `a.`, `i.`). |
 | `<x-doc::ul>` | `marker` | Style. Bulleted list of `<x-doc::li>`. `marker` takes the same values as on `ol`; unset follows nesting depth (`•`, `◦`, `▪`). |
 | `<x-doc::li>` | `value` | Style. A list item; holds any block content, including nested lists. `value` sets its number. |
-| `<x-doc::kv>` | `label`, `total` | A row of `<x-doc::key-value>` or `<x-doc::totals>`. A label is required, as an attribute or a slot. `total` (a boolean) marks an emphasised row and is only allowed inside `<x-doc::totals>`. No style. |
+| `<x-doc::kv>` | `label`, `total` | A row of `<x-doc::key-value>` or `<x-doc::totals>`. A label is required, as an attribute or a slot. `total` (a boolean) marks an emphasized row and is only allowed inside `<x-doc::totals>`. No style. |
 | `<x-doc::totals>` | `variant` | Style. Holds only `<x-doc::kv>` rows: labels on the left, amounts right-aligned. 45% wide at the right by default. See [Decorators](#decorators). |
 | `<x-doc::stat>` | `label`, `note`, `variant` | Style. The content is the value, with inline tags. `label` and `note` also work as slots. |
 | `<x-doc::signature>` | `name`, `role`, `date`, `variant` | Style. The content sits on the line (an image, a typed name, or nothing). `name`, `role` and `date` also work as slots. |
@@ -340,12 +340,12 @@ A bordered box that shows `placeholder` when its content is empty (no children, 
 
 ```blade
 <x-doc::choices type="checkbox" emphasize-selected>
-  <x-doc::choice selected>Library catalogue</x-doc::choice>
+  <x-doc::choice selected>Library catalog</x-doc::choice>
   <x-doc::choice>Web search</x-doc::choice>
 </x-doc::choices>
 ```
 
-`type` is `checkbox` (default) or `radio`. Markers are drawn shapes, not glyphs, so they look the same in every font. Markers are sized from the text (`0.75em`) and centred in a slot one line tall, so they sit level with the first line of a label at any font size. `<x-doc::choice>` is only valid inside `<x-doc::choices>`.
+`type` is `checkbox` (default) or `radio`. Markers are drawn shapes, not glyphs, so they look the same in every font. Markers are sized from the text (`0.75em`) and centered in a slot one line tall, so they sit level with the first line of a label at any font size. `<x-doc::choice>` is only valid inside `<x-doc::choices>`.
 
 ```blade
 <x-doc::key-value label-width="30%">
@@ -368,13 +368,13 @@ Aligned label and value rows. `label-width` fixes the first column so long label
 <x-doc::signature name="Jane Smith" role="Director" date="13 November 2026" />
 ```
 
-`stat` is a panel with a small label, a large value and an optional note. `totals` is a block of label and amount rows, 45% wide at the right, where `total` marks an emphasised row. `signature` is a line to sign on, with the name, role and date beneath it; its content (an image, a typed name) sits on the line.
+`stat` is a panel with a small label, a large value and an optional note. `totals` is a block of label and amount rows, 45% wide at the right, where `total` marks an emphasized row. `signature` is a line to sign on, with the name, role and date beneath it; its content (an image, a typed name) sits on the line.
 
-`<mark>` works in any text tag and in `<x-doc::markup>`: `<x-doc::text>a <mark>key</mark> word</x-doc::text>` paints a `yellow-200` background behind the run. In `<x-doc::markup :html>`, `<span style="background-color: ...">` keeps its own colour only when `markup.styles` is `'original'`; in `'theme'` mode inline styles are ignored.
+`<mark>` works in any text tag and in `<x-doc::markup>`: `<x-doc::text>a <mark>key</mark> word</x-doc::text>` paints a `yellow-200` background behind the run. In `<x-doc::markup :html>`, `<span style="background-color: ...">` keeps its own color only when `markup.styles` is `'original'`; in `'theme'` mode inline styles are ignored.
 
 ### Built-in styles
 
-Each decorator reads these names. Colours are palette names.
+Each decorator reads these names. Colors are palette names.
 
 | Style | Default |
 |---|---|
@@ -389,7 +389,7 @@ Each decorator reads these names. Colours are palette names.
 | `stat`, `stat.label`, `stat.value`, `stat.note` | `slate-50` panel, 6pt corners, 10pt 12pt padding; label `0.75em` bold `slate-500`; value `1.8em` bold `slate-900`; note `0.8em` `slate-600` |
 | `totals`, `totals.label`, `totals.value`, `totals.total-label`, `totals.total-value` | 45% wide, aligned to the end, doesn't shrink; `slate-600` labels, right-aligned values, 12pt between columns; total rows bold `slate-900` `1.1em` with a 1pt `slate-300` rule above |
 | `signature`, `signature.line`, `signature.name`, `signature.role`, `signature.date` | 216pt (3in) wide, kept together; line at least 30pt high with a 0.75pt `slate-700` rule beneath; bold name; `0.85em` `slate-600` role and date |
-| `field.line`, `badge.outline`, `card.flat`, `card.title.flat`, `section.large`, `section.title.large`, `section.number.large` | The built-in variants: `field.line` keeps only a 1pt `slate-400` bottom rule; `badge.outline` has no fill and a 0.75pt border in the tone's colour; `card.flat` is a `slate-50` panel with no border; `section.large` sets the title and number at `1.35em` |
+| `field.line`, `badge.outline`, `card.flat`, `card.title.flat`, `section.large`, `section.title.large`, `section.number.large` | The built-in variants: `field.line` keeps only a 1pt `slate-400` bottom rule; `badge.outline` has no fill and a 0.75pt border in the tone's color; `card.flat` is a `slate-50` panel with no border; `section.large` sets the title and number at `1.35em` |
 
 Every value is listed in the [decorator styles reference](https://one-learning-community.github.io/papercut/reference/decorator-styles.html).
 
@@ -470,7 +470,7 @@ final class EditorImages implements ImageResolver
 ],
 ```
 
-A missing image (`null`, a throw, or bytes that are not a recognised image format) shows its `alt` text in italics, or
+A missing image (`null`, a throw, or bytes that are not a recognized image format) shows its `alt` text in italics, or
 nothing without `alt`, and is reported. Invalid `markup.*` config is reported at first use.
 
 ### What is converted and reported
@@ -481,8 +481,8 @@ The element mapping, style modes, supported CSS properties and the full report-l
 drawn are reported through `onWarning` and the fidelity report. `approximated` ones (an iframe shown as a link, a missing
 image shown as alt text, an unknown tag removed with its content kept) never fail a strict export. `dropped` ones (a
 missing image without alt text, an unsupported link, an unsupported CSS declaration) do. Nesting deeper than 256
-levels is flattened to text with one report. Known gap in `original` mode: CSS colour keywords such as `red` and
-`hsl()` are not recognised yet (`!important` is ignored).
+levels is flattened to text with one report. Known gap in `original` mode: CSS color keywords such as `red` and
+`hsl()` are not recognized yet (`!important` is ignored).
 
 ## Fonts
 
@@ -499,7 +499,7 @@ Inter (regular, bold, italic, bold italic) is bundled and always available. Regi
 'theme' => ['font_family' => 'Merriweather', 'font_size' => 10],
 ```
 
-`php artisan papercut:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite), saves the family's licence beside them (`OFL.txt`, `LICENSE.txt` or `UFL.txt`, from Google's [fonts repository](https://github.com/google/fonts)) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
+`php artisan papercut:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite), saves the family's license beside them (`OFL.txt`, `LICENSE.txt` or `UFL.txt`, from Google's [fonts repository](https://github.com/google/fonts)) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
 
 `php artisan papercut:fonts` lists every available face and reports whether each file is `ok`, `missing` or `invalid`. A glyph missing from the primary family is looked up in `fallback_fonts`; if no family has it, a warning is logged (`[papercut] ...`).
 

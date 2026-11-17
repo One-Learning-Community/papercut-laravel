@@ -10,7 +10,7 @@ use Papercut\Backend\PhpPdf\PhpPdfBackend;
 
 /**
  * Downloads a family's TrueType files from Google Fonts once, so PDFs can embed them like any local font, and the
- * family's licence beside them. Rendering never touches the network: the files live in the app and are registered
+ * family's license beside them. Rendering never touches the network: the files live in the app and are registered
  * in papercut.fonts.
  *
  * @internal Part of Papercut's engine, not its public API. It may change in any release.
@@ -28,9 +28,9 @@ final class InstallFontCommand extends Command
 
     private const string CSS = 'https://fonts.googleapis.com/css2';
     private const string FILES = 'https://fonts.gstatic.com/';
-    /** Google Fonts' source repository, which keeps each family's licence in a folder named for the licence. */
-    private const string LICENCES = 'https://raw.githubusercontent.com/google/fonts/main/';
-    private const array LICENCE_FILES = ['ofl' => 'OFL.txt', 'apache' => 'LICENSE.txt', 'ufl' => 'UFL.txt'];
+    /** Google Fonts' source repository, which keeps each family's license in a folder named for the license. */
+    private const string LICENSES = 'https://raw.githubusercontent.com/google/fonts/main/';
+    private const array LICENSE_FILES = ['ofl' => 'OFL.txt', 'apache' => 'LICENSE.txt', 'ufl' => 'UFL.txt'];
 
     private const array NAMES = [
         100 => 'Thin', 200 => 'ExtraLight', 300 => 'Light', 400 => 'Regular', 500 => 'Medium',
@@ -113,27 +113,27 @@ final class InstallFontCommand extends Command
             $this->line("  <info>saved</info>   $relative/$file");
         }
 
-        $licence = $this->saveLicence($family, $dir, $relative);
+        $license = $this->saveLicense($family, $dir, $relative);
 
         $this->newLine();
         $this->line('Add this to <comment>fonts</comment> in config/papercut.php:');
         $this->newLine();
         $this->line($this->snippet($family, $config));
         $this->newLine();
-        if ($licence !== null) {
-            $this->line("Keep $relative/$licence with the fonts: the licence asks for a copy wherever they go.");
+        if ($license !== null) {
+            $this->line("Keep $relative/$license with the fonts: the license asks for a copy wherever they go.");
         } else {
-            $this->warn("Couldn't download $family's licence. Get it from fonts.google.com and keep it with the fonts; most are under the SIL Open Font License.");
+            $this->warn("Couldn't download $family's license. Get it from fonts.google.com and keep it with the fonts; most are under the SIL Open Font License.");
         }
 
         return self::SUCCESS;
     }
 
-    /** Saves the family's licence beside its files and returns the file's name, or null when none was found. */
-    private function saveLicence(string $family, string $dir, string $relative): ?string
+    /** Saves the family's license beside its files and returns the file's name, or null when none was found. */
+    private function saveLicense(string $family, string $dir, string $relative): ?string
     {
         if (!$this->option('force')) {
-            foreach (self::LICENCE_FILES as $file) {
+            foreach (self::LICENSE_FILES as $file) {
                 if (is_file("$dir/$file")) {
                     $this->line("  <comment>exists</comment>  $relative/$file");
 
@@ -142,14 +142,14 @@ final class InstallFontCommand extends Command
             }
         }
         $slug = strtolower(str_replace(' ', '', $family));
-        foreach (self::LICENCE_FILES as $folder => $file) {
+        foreach (self::LICENSE_FILES as $folder => $file) {
             try {
-                $response = Http::timeout(30)->get(self::LICENCES . "$folder/$slug/$file");
+                $response = Http::timeout(30)->get(self::LICENSES . "$folder/$slug/$file");
             } catch (\Throwable) {
                 return null;
             }
             $text = $response->body();
-            if (!$response->successful() || !self::isLicenceText($text)) {
+            if (!$response->successful() || !self::isLicenseText($text)) {
                 continue;
             }
             file_put_contents("$dir/$file", $text);
@@ -162,7 +162,7 @@ final class InstallFontCommand extends Command
     }
 
     /** Plain text of a sensible size, not an error page. */
-    private static function isLicenceText(string $text): bool
+    private static function isLicenseText(string $text): bool
     {
         return $text !== '' && strlen($text) <= 256 * 1024 && mb_check_encoding($text, 'UTF-8')
             && !str_contains($text, "\0") && !str_starts_with(ltrim($text), '<');

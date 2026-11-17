@@ -121,7 +121,7 @@ final class ThemeOverrideTest extends TestCase
     {
         try {
             $this->document('<x-doc::document><x-doc::page :theme="[\'color\' => \'not-a-color\']">A</x-doc::page></x-doc::document>');
-            self::fail('accepted a bad colour');
+            self::fail('accepted a bad color');
         } catch (InvalidValue $e) {
             self::assertStringContainsString('<x-doc::page>', $e->getMessage());
         }

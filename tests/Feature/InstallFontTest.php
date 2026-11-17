@@ -32,18 +32,18 @@ final class InstallFontTest extends TestCase
     }
 
     /**
-     * Fakes Google: each listed "weight,ital" pair has a TrueType file, and $licences maps paths under the
+     * Fakes Google: each listed "weight,ital" pair has a TrueType file, and $licenses maps paths under the
      * google/fonts repository (such as "ofl/opensans/OFL.txt") to their text; everything else answers 400.
      *
      * @param list<string> $faces
-     * @param array<string, string> $licences
+     * @param array<string, string> $licenses
      */
-    private function fakeGoogle(string $family, array $faces, ?string $bytes = null, array $licences = []): void
+    private function fakeGoogle(string $family, array $faces, ?string $bytes = null, array $licenses = []): void
     {
         $bytes ??= (string) file_get_contents(self::INTER);
-        Http::fake(function (Request $request) use ($family, $faces, $bytes, $licences) {
+        Http::fake(function (Request $request) use ($family, $faces, $bytes, $licenses) {
             $url = $request->url();
-            foreach ($licences as $path => $text) {
+            foreach ($licenses as $path => $text) {
                 if ($url === 'https://raw.githubusercontent.com/google/fonts/main/' . $path) {
                     return Http::response($text);
                 }
@@ -88,9 +88,9 @@ final class InstallFontTest extends TestCase
         Http::assertSent(fn (Request $r) => str_contains($r->url(), 'googleapis') && $r->header('User-Agent') === ['Papercut']);
     }
 
-    public function test_saves_the_licence_beside_the_fonts(): void
+    public function test_saves_the_license_beside_the_fonts(): void
     {
-        $this->fakeGoogle('Open Sans', ['400,0'], licences: ['ofl/opensans/OFL.txt' => "SIL OPEN FONT LICENSE Version 1.1\n"]);
+        $this->fakeGoogle('Open Sans', ['400,0'], licenses: ['ofl/opensans/OFL.txt' => "SIL OPEN FONT LICENSE Version 1.1\n"]);
 
         [$code, $out] = $this->install(['family' => 'Open Sans', '--weights' => '400']);
 
@@ -99,9 +99,9 @@ final class InstallFontTest extends TestCase
         $this->assertStringContainsString('Keep ' . $this->dir . '/OpenSans/OFL.txt with the fonts', $out);
     }
 
-    public function test_finds_an_apache_licence_when_there_is_no_ofl(): void
+    public function test_finds_an_apache_license_when_there_is_no_ofl(): void
     {
-        $this->fakeGoogle('Roboto Slab', ['400,0'], licences: ['ofl/robotoslab/OFL.txt' => '<html>not found</html>', 'apache/robotoslab/LICENSE.txt' => "Apache License\n"]);
+        $this->fakeGoogle('Roboto Slab', ['400,0'], licenses: ['ofl/robotoslab/OFL.txt' => '<html>not found</html>', 'apache/robotoslab/LICENSE.txt' => "Apache License\n"]);
 
         [$code, $out] = $this->install(['family' => 'Roboto Slab', '--weights' => '400']);
 
@@ -110,7 +110,7 @@ final class InstallFontTest extends TestCase
         $this->assertSame("Apache License\n", file_get_contents(base_path($this->dir . '/RobotoSlab/LICENSE.txt')));
     }
 
-    public function test_a_missing_licence_warns_but_installs(): void
+    public function test_a_missing_license_warns_but_installs(): void
     {
         $this->fakeGoogle('Brand', ['400,0']);
 
@@ -118,12 +118,12 @@ final class InstallFontTest extends TestCase
 
         $this->assertSame(0, $code, $out);
         $this->assertFileExists(base_path($this->dir . '/Brand/Brand-Regular.ttf'));
-        $this->assertStringContainsString("Couldn't download Brand's licence", $out);
+        $this->assertStringContainsString("Couldn't download Brand's license", $out);
     }
 
-    public function test_an_existing_licence_is_kept_unless_forced(): void
+    public function test_an_existing_license_is_kept_unless_forced(): void
     {
-        $this->fakeGoogle('Brand', ['400,0'], licences: ['ofl/brand/OFL.txt' => "new\n"]);
+        $this->fakeGoogle('Brand', ['400,0'], licenses: ['ofl/brand/OFL.txt' => "new\n"]);
         File::ensureDirectoryExists(base_path($this->dir . '/Brand'));
         file_put_contents(base_path($this->dir . '/Brand/OFL.txt'), "old\n");
 

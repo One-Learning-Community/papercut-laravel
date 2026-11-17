@@ -74,7 +74,7 @@ final class ColumnFlowComponentTest extends TestCase
         self::assertSame([20.0], $view->columnSpec()->gaps);
     }
 
-    public function test_rule_with_length_and_colour(): void
+    public function test_rule_with_length_and_color(): void
     {
         $spec = $this->flow('<x-doc::column-flow rule="2pt #ff0000"><x-doc::text>A</x-doc::text></x-doc::column-flow>')->columnSpec();
 

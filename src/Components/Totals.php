@@ -10,7 +10,7 @@ use Papercut\Laravel\Rendering\NodeRegistry;
 use Papercut\Laravel\Tag;
 
 /**
- * `<x-doc::totals>` holding `<x-doc::kv>` rows; `<x-doc::kv total>` marks an emphasised row.
+ * `<x-doc::totals>` holding `<x-doc::kv>` rows; `<x-doc::kv total>` marks an emphasized row.
  *
  * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */

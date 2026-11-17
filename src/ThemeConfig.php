@@ -52,7 +52,7 @@ final class ThemeConfig
         $label = static fn (string $key): string => $config ? "papercut.theme.$key" : "theme $key $where";
 
         try {
-            $color = isset($values['color']) ? Color::parse(self::string($values['color'], $label('color'), 'a colour')) : null;
+            $color = isset($values['color']) ? Color::parse(self::string($values['color'], $label('color'), 'a color')) : null;
         } catch (InvalidValue $e) {
             throw $e->within($config ? self::CONFIG . '.color' : $where);
         }
