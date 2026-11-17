@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Export\FidelityLevel;
-use Papercut\Exception\InvalidValue;
-use Papercut\Image;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Markup\{Markup, Note};
-use Papercut\Text;
+use Quoin\Export\FidelityLevel;
+use Quoin\Exception\InvalidValue;
+use Quoin\Image;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Markup\{Markup, Note};
+use Quoin\Text;
 
 final class NodeComponentTest extends TestCase
 {

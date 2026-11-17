@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Unit;
+namespace Quoin\Laravel\Tests\Unit;
 
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\{NodeRegistry, Segments};
-use Papercut\Text;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\{NodeRegistry, Segments};
+use Quoin\Text;
+use Quoin\Laravel\Tests\TestCase;
 
 final class NodeRegistryTest extends TestCase
 {
@@ -115,7 +115,7 @@ final class NodeRegistryTest extends TestCase
         $old = ini_set('pcre.backtrack_limit', '1');
         try {
             $this->expectException(InvalidStructure::class);
-            $this->expectExceptionMessageMatches('/could not be searched for papercut nodes/');
+            $this->expectExceptionMessageMatches('/could not be searched for quoin nodes/');
             $r->scope(fn () => $r->segments(str_repeat('a [[pc:0000000000000000:1]] ', 50)));
         } finally {
             ini_set('pcre.backtrack_limit', (string) $old);

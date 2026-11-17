@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Tag;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Tag;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Callout extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Callout extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array
@@ -19,7 +19,7 @@ final class Callout extends PapercutComponent
     protected function build(array $data): object
     {
         ['own' => $own] = $this->attrs($data);
-        $callout = \Papercut\Decorator\Callout::make(...$this->children($data));
+        $callout = \Quoin\Decorator\Callout::make(...$this->children($data));
         if (isset($own['type'])) {
             $type = $this->scalarOwn($own['type'], 'type');
             try {

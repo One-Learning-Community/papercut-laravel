@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Decorator\{Badge, Blockquote, Callout, Card, ChoiceList, Field, KeyValueList, Section};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Value\{Length, Percent};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\{Node, Text, View};
+use Quoin\Decorator\{Badge, Blockquote, Callout, Card, ChoiceList, Field, KeyValueList, Section};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Value\{Length, Percent};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\{Node, Text, View};
 
 final class DecoratorComponentsTest extends TestCase
 {
@@ -100,7 +100,7 @@ final class DecoratorComponentsTest extends TestCase
 
     public function test_custom_tone_without_title_style_renders_untitled_callout(): void
     {
-        config(['papercut.styles' => ['callout.hint' => ['padding' => '4pt']]]);
+        config(['quoin.styles' => ['callout.hint' => ['padding' => '4pt']]]);
         $c = $this->nodeFrom('<x-doc::callout type="hint">x</x-doc::callout>');
         self::assertInstanceOf(Callout::class, $c);
         self::assertSame('hint', $c->toneName());
@@ -108,7 +108,7 @@ final class DecoratorComponentsTest extends TestCase
 
     public function test_titled_custom_tone_still_requires_title_style(): void
     {
-        config(['papercut.styles' => ['callout.hint' => ['padding' => '4pt']]]);
+        config(['quoin.styles' => ['callout.hint' => ['padding' => '4pt']]]);
         $this->expectException(UnknownAttribute::class);
         $this->nodeFrom('<x-doc::callout type="hint" title="T">x</x-doc::callout>');
     }
@@ -132,9 +132,9 @@ final class DecoratorComponentsTest extends TestCase
         $heading = static function (object $decorator): ?int {
             $found = null;
             $walk = static function (object $n) use (&$walk, &$found): void {
-                if ($n instanceof \Papercut\Text && $n->headingLevel() !== null) {
+                if ($n instanceof \Quoin\Text && $n->headingLevel() !== null) {
                     $found ??= $n->headingLevel();
-                } elseif ($n instanceof \Papercut\View) {
+                } elseif ($n instanceof \Quoin\View) {
                     foreach ($n->children() as $c) {
                         $walk($c);
                     }
@@ -189,14 +189,14 @@ final class DecoratorComponentsTest extends TestCase
         $f = $this->nodeFrom('<x-doc::field lines="3">x</x-doc::field>');
         self::assertInstanceOf(Field::class, $f);
         $inner = $f->render()->children()[0];
-        self::assertInstanceOf(\Papercut\View::class, $inner);
+        self::assertInstanceOf(\Quoin\View::class, $inner);
         self::assertSame('3lh', (string) $inner->style()->minHeight);
     }
 
     public function test_style_attributes_accept_em_and_lh(): void
     {
         $v = $this->nodeFrom('<x-doc::view padding="0.5em" min-height="4lh">x</x-doc::view>');
-        self::assertInstanceOf(\Papercut\View::class, $v);
+        self::assertInstanceOf(\Quoin\View::class, $v);
         self::assertSame('0.5em', (string) $v->style()->padding?->top);
         self::assertSame('4lh', (string) $v->style()->minHeight);
     }
@@ -220,7 +220,7 @@ final class DecoratorComponentsTest extends TestCase
 
     public function test_inline_error_lists_mark(): void
     {
-        $this->expectException(\Papercut\Laravel\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Laravel\Exception\InvalidStructure::class);
         $this->expectExceptionMessage('<mark>');
         $this->nodeFrom('<x-doc::text><x-doc::view>x</x-doc::view><x-doc::card>y</x-doc::card></x-doc::text>');
     }
@@ -288,7 +288,7 @@ final class DecoratorComponentsTest extends TestCase
             $list = $this->nodeFrom('<x-doc::key-value label-width="' . $width . '"><x-doc::kv label="A">b</x-doc::kv></x-doc::key-value>');
             self::assertInstanceOf(KeyValueList::class, $list);
             $table = $list->render();
-            self::assertInstanceOf(\Papercut\Table::class, $table);
+            self::assertInstanceOf(\Quoin\Table::class, $table);
             self::assertInstanceOf($class, $table->trackList()?->tracks[0] ?? null);
         }
     }
@@ -364,8 +364,8 @@ final class DecoratorComponentsTest extends TestCase
 
     public function test_pdf_and_html_render_all_tags(): void
     {
-        self::assertStringStartsWith('%PDF', Papercut::view('pdf.decorators')->pdf()->toString());
-        $html = Papercut::view('pdf.decorators')->html()->page()->toString();
+        self::assertStringStartsWith('%PDF', Quoin::view('pdf.decorators')->pdf()->toString());
+        $html = Quoin::view('pdf.decorators')->html()->page()->toString();
         self::assertStringContainsString('Overview', $html);
         self::assertStringContainsString('None', $html);
         self::assertStringContainsString('Respondent', $html);
@@ -373,7 +373,7 @@ final class DecoratorComponentsTest extends TestCase
     }
 
     /** @return list<string> */
-    private static function texts(\Papercut\Component|Node $node): array
+    private static function texts(\Quoin\Component|Node $node): array
     {
         if ($node instanceof Text) {
             $s = '';

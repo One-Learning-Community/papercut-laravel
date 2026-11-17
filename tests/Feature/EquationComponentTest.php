@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Math\Math;
-use Papercut\{Equation, Text};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Math\Math;
+use Quoin\{Equation, Text};
 
 final class EquationComponentTest extends TestCase
 {
@@ -56,21 +56,21 @@ final class EquationComponentTest extends TestCase
 
     private function fresh(): void
     {
-        app()->forgetInstance(PapercutManager::class);
-        Papercut::clearResolvedInstances();
+        app()->forgetInstance(QuoinManager::class);
+        Quoin::clearResolvedInstances();
     }
 
     public function test_math_font_config_applied(): void
     {
-        self::assertFalse(Papercut::pdfOptions()->fonts()->hasCustomMathFont());
+        self::assertFalse(Quoin::pdfOptions()->fonts()->hasCustomMathFont());
 
-        $path = sys_get_temp_dir() . '/papercut-math-font-' . uniqid() . '.ttf';
-        copy(\Papercut\Math\Math::stixTwoMathPath(), $path);
+        $path = sys_get_temp_dir() . '/quoin-math-font-' . uniqid() . '.ttf';
+        copy(\Quoin\Math\Math::stixTwoMathPath(), $path);
         try {
-            config(['papercut.math_font' => $path]);
+            config(['quoin.math_font' => $path]);
             $this->fresh();
 
-            $fonts = Papercut::pdfOptions()->fonts();
+            $fonts = Quoin::pdfOptions()->fonts();
             self::assertTrue($fonts->hasCustomMathFont());
             self::assertSame($path, $fonts->mathFontPath());
         } finally {
@@ -80,20 +80,20 @@ final class EquationComponentTest extends TestCase
 
     public function test_bad_math_font_config_message(): void
     {
-        config(['papercut.math_font' => self::INTER]);
+        config(['quoin.math_font' => self::INTER]);
         $this->fresh();
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/papercut\.math_font.*has no MATH table/');
-        Papercut::pdfOptions();
+        $this->expectExceptionMessageMatches('/quoin\.math_font.*has no MATH table/');
+        Quoin::pdfOptions();
     }
 
     public function test_missing_math_font_config_message(): void
     {
-        config(['papercut.math_font' => '/no/such/font.ttf']);
+        config(['quoin.math_font' => '/no/such/font.ttf']);
         $this->fresh();
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('papercut.math_font');
-        Papercut::pdfOptions();
+        $this->expectExceptionMessage('quoin.math_font');
+        Quoin::pdfOptions();
     }
 
     public function test_block_equation_inside_text_is_rejected(): void
@@ -112,14 +112,14 @@ final class EquationComponentTest extends TestCase
 
     public function test_garbage_math_font_file_message(): void
     {
-        $file = sys_get_temp_dir() . '/papercut-garbage-' . uniqid() . '.ttf';
+        $file = sys_get_temp_dir() . '/quoin-garbage-' . uniqid() . '.ttf';
         file_put_contents($file, 'this is not a font..');
         try {
-            config(['papercut.math_font' => $file]);
+            config(['quoin.math_font' => $file]);
             $this->fresh();
             $this->expectException(\InvalidArgumentException::class);
-            $this->expectExceptionMessage('papercut.math_font');
-            Papercut::pdfOptions();
+            $this->expectExceptionMessage('quoin.math_font');
+            Quoin::pdfOptions();
         } finally {
             unlink($file);
         }
@@ -141,7 +141,7 @@ final class EquationComponentTest extends TestCase
 
     public function test_an_unclosed_tag_with_no_math_keeps_its_own_message(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         $this->expectExceptionMessage('is not closed');
         $this->nodeFrom('<x-doc::p>Area <b>is here.</x-doc::p>');
     }
@@ -154,13 +154,13 @@ final class EquationComponentTest extends TestCase
 
     public function test_relative_math_font_resolves_against_base_path(): void
     {
-        $dir = base_path('papercut-math-font-test-' . uniqid());
+        $dir = base_path('quoin-math-font-test-' . uniqid());
         mkdir($dir);
-        copy(\Papercut\Math\Math::stixTwoMathPath(), $dir . '/m.ttf');
+        copy(\Quoin\Math\Math::stixTwoMathPath(), $dir . '/m.ttf');
         try {
-            config(['papercut.math_font' => basename($dir) . '/m.ttf']);
+            config(['quoin.math_font' => basename($dir) . '/m.ttf']);
             $this->fresh();
-            self::assertSame($dir . '/m.ttf', Papercut::pdfOptions()->fonts()->mathFontPath());
+            self::assertSame($dir . '/m.ttf', Quoin::pdfOptions()->fonts()->mathFontPath());
         } finally {
             unlink($dir . '/m.ttf');
             rmdir($dir);
@@ -217,10 +217,10 @@ final class EquationComponentTest extends TestCase
         $mml = '<math><mtable rowlines="solid"><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
         $n = $this->nodeFrom('<x-doc::equation :math="$m" />', ['m' => $mml]);
         $warnings = [];
-        $options = new \Papercut\Export\PdfOptions(onWarning: static function (string $msg) use (&$warnings): void {
+        $options = new \Quoin\Export\PdfOptions(onWarning: static function (string $msg) use (&$warnings): void {
             $warnings[] = $msg;
         });
-        \Papercut\Document::make(\Papercut\Page::named('a4')->body($n))->toPdf($options);
+        \Quoin\Document::make(\Quoin\Page::named('a4')->body($n))->toPdf($options);
 
         self::assertCount(1, $warnings);
     }
@@ -229,7 +229,7 @@ final class EquationComponentTest extends TestCase
     {
         $spy = \Illuminate\Support\Facades\Log::spy();
         $mml = '<math><mtable rowlines="solid"><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
-        $pdf = Papercut::view('pdf.mathml', ['m' => $mml])->pdf()->toString();
+        $pdf = Quoin::view('pdf.mathml', ['m' => $mml])->pdf()->toString();
 
         self::assertStringStartsWith('%PDF-', $pdf);
         $spy->shouldHaveReceived('debug')->withArgs(fn (string $m): bool => str_contains($m, 'math <mtable>'))->once();
@@ -240,7 +240,7 @@ final class EquationComponentTest extends TestCase
         $n = $this->nodeFrom('<x-doc::equation math="<math><mtext>x &lt;b&gt; &amp; y</mtext></math>" />');
 
         self::assertEquals(Math::mathml('<math><mtext>x &lt;b&gt; &amp; y</mtext></math>'), $n->math());
-        self::assertSame('x <b> & y', \Papercut\Math\Render\TextWriter::write($n->math()));
+        self::assertSame('x <b> & y', \Quoin\Math\Render\TextWriter::write($n->math()));
         self::assertSame([], Math::notes($n->math()));
     }
 
@@ -257,8 +257,8 @@ final class EquationComponentTest extends TestCase
         self::assertTrue($this->containsFraction($n->math()));
         self::assertEquals(Math::tex('\frac{a}{b}'), $n->math());
         self::assertSame(
-            \Papercut\Math\Render\TextWriter::write(Math::frac('a', 'b')),
-            \Papercut\Math\Render\TextWriter::write($n->math()),
+            \Quoin\Math\Render\TextWriter::write(Math::frac('a', 'b')),
+            \Quoin\Math\Render\TextWriter::write($n->math()),
         );
     }
 
@@ -323,9 +323,9 @@ final class EquationComponentTest extends TestCase
         self::assertEquals(Math::tex('a < b & c'), $n->math());
     }
 
-    private function containsGrid(\Papercut\Math\Node\Node $node): bool
+    private function containsGrid(\Quoin\Math\Node\Node $node): bool
     {
-        if ($node instanceof \Papercut\Math\Node\Grid) {
+        if ($node instanceof \Quoin\Math\Node\Grid) {
             return true;
         }
         foreach ($node->children() as $c) {
@@ -337,9 +337,9 @@ final class EquationComponentTest extends TestCase
         return false;
     }
 
-    private function containsFraction(\Papercut\Math\Node\Node $node): bool
+    private function containsFraction(\Quoin\Math\Node\Node $node): bool
     {
-        if ($node instanceof \Papercut\Math\Node\Fraction) {
+        if ($node instanceof \Quoin\Math\Node\Fraction) {
             return true;
         }
         foreach ($node->children() as $c) {

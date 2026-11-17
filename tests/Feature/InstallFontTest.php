@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Laravel\FontConfig;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Laravel\FontConfig;
+use Quoin\Laravel\Tests\TestCase;
 
 final class InstallFontTest extends TestCase
 {
@@ -22,7 +22,7 @@ final class InstallFontTest extends TestCase
     {
         parent::setUp();
         // per process, so parallel workers don't share a directory
-        $this->dir = 'storage/framework/testing/papercut-fonts-' . getmypid();
+        $this->dir = 'storage/framework/testing/quoin-fonts-' . getmypid();
     }
 
     protected function tearDown(): void
@@ -68,7 +68,7 @@ final class InstallFontTest extends TestCase
      */
     private function install(array $args): array
     {
-        $code = Artisan::call('papercut:fonts:install', $args + ['--path' => $this->dir]);
+        $code = Artisan::call('quoin:fonts:install', $args + ['--path' => $this->dir]);
 
         return [$code, Artisan::output()];
     }
@@ -85,7 +85,7 @@ final class InstallFontTest extends TestCase
         }
         $this->assertStringContainsString("'Open Sans' => [", $out);
         $this->assertStringContainsString("400 => ['normal' => '" . $this->dir . "/OpenSans/OpenSans-Regular.ttf', 'italic' => '" . $this->dir . "/OpenSans/OpenSans-Italic.ttf'],", $out);
-        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'googleapis') && $r->header('User-Agent') === ['Papercut']);
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'googleapis') && $r->header('User-Agent') === ['Quoin']);
     }
 
     public function test_saves_the_license_beside_the_fonts(): void
@@ -139,7 +139,7 @@ final class InstallFontTest extends TestCase
         $this->fakeGoogle('Brand', ['400,0']);
         $this->install(['family' => 'Brand', '--weights' => '400']);
 
-        config(['papercut.fonts' => ['Brand' => [400 => ['normal' => $this->dir . '/Brand/Brand-Regular.ttf']]]]);
+        config(['quoin.fonts' => ['Brand' => [400 => ['normal' => $this->dir . '/Brand/Brand-Regular.ttf']]]]);
         $faces = FontConfig::faces();
 
         $this->assertCount(1, $faces);

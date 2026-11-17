@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Artisan;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 
 final class FontsTest extends TestCase
 {
@@ -18,14 +18,14 @@ final class FontsTest extends TestCase
      */
     private function configure(array $fonts, array $fallback = []): void
     {
-        config(['papercut.fonts' => $fonts, 'papercut.fallback_fonts' => $fallback]);
+        config(['quoin.fonts' => $fonts, 'quoin.fallback_fonts' => $fallback]);
     }
 
     public function testCommandListsInterAndConfiguredFamilies(): void
     {
         $this->configure(['Brand' => [400 => ['normal' => self::INTER . '/Inter-Regular.ttf', 'italic' => self::INTER . '/Inter-Italic.ttf'], 700 => ['normal' => self::INTER . '/Inter-Bold.ttf']]]);
 
-        $code = Artisan::call('papercut:fonts');
+        $code = Artisan::call('quoin:fonts');
         $out = Artisan::output();
 
         $this->assertSame(0, $code);
@@ -40,7 +40,7 @@ final class FontsTest extends TestCase
     {
         $this->configure(['Brand' => [400 => ['normal' => '/nope/Brand.ttf']]]);
 
-        $code = Artisan::call('papercut:fonts');
+        $code = Artisan::call('quoin:fonts');
 
         $this->assertSame(1, $code);
         $this->assertStringContainsString('missing', Artisan::output());
@@ -53,7 +53,7 @@ final class FontsTest extends TestCase
         file_put_contents($bad, 'not a font');
         $this->configure(['Brand' => [400 => ['normal' => $bad]]]);
 
-        $code = Artisan::call('papercut:fonts');
+        $code = Artisan::call('quoin:fonts');
         unlink($bad);
 
         $this->assertSame(1, $code);
@@ -67,7 +67,7 @@ final class FontsTest extends TestCase
         $this->configure(['Brand' => [400 => ['normal' => $name]]]);
 
         try {
-            $this->assertSame(0, Artisan::call('papercut:fonts'), Artisan::output());
+            $this->assertSame(0, Artisan::call('quoin:fonts'), Artisan::output());
         } finally {
             unlink(base_path($name));
         }
@@ -77,29 +77,29 @@ final class FontsTest extends TestCase
     {
         $this->configure(['Brand' => [400 => ['normal' => self::INTER . '/Inter-Regular.ttf']]]);
 
-        $options = Papercut::pdfOptions();
+        $options = Quoin::pdfOptions();
 
-        $this->assertTrue(\Papercut\Text\FontRegistry::fromSet($options->fonts(), $options->backend())->has('Brand'));
+        $this->assertTrue(\Quoin\Text\FontRegistry::fromSet($options->fonts(), $options->backend())->has('Brand'));
     }
 
     public function testOptionsForwardFallbackFonts(): void
     {
         $this->configure([], ['Brand']);
 
-        $this->assertSame(['Brand'], Papercut::pdfOptions()->fonts()->fallbacks);
+        $this->assertSame(['Brand'], Quoin::pdfOptions()->fonts()->fallbacks);
     }
 
     /** @return iterable<string, array{array<mixed>, string}> */
     public static function badFonts(): iterable
     {
         $p = '/p.ttf';
-        yield 'non-numeric weight' => [['Brand' => ['bold' => ['normal' => $p]]], 'papercut.fonts.Brand.bold: weight'];
-        yield 'weight out of range' => [['Brand' => [0 => ['normal' => $p]]], 'papercut.fonts.Brand.0: weight'];
-        yield 'bad style key' => [['Brand' => [700 => ['bold' => $p]]], 'papercut.fonts.Brand.700.bold: style must be "normal" or "italic"'];
-        yield 'flat path' => [['Brand' => [400 => $p]], 'papercut.fonts.Brand.400: expected'];
-        yield 'non-string path' => [['Brand' => [400 => ['normal' => 12]]], 'papercut.fonts.Brand.400.normal: path'];
-        yield 'empty path' => [['Brand' => [400 => ['normal' => '']]], 'papercut.fonts.Brand.400.normal: path'];
-        yield 'family not array' => [['Brand' => $p], 'papercut.fonts.Brand: expected'];
+        yield 'non-numeric weight' => [['Brand' => ['bold' => ['normal' => $p]]], 'quoin.fonts.Brand.bold: weight'];
+        yield 'weight out of range' => [['Brand' => [0 => ['normal' => $p]]], 'quoin.fonts.Brand.0: weight'];
+        yield 'bad style key' => [['Brand' => [700 => ['bold' => $p]]], 'quoin.fonts.Brand.700.bold: style must be "normal" or "italic"'];
+        yield 'flat path' => [['Brand' => [400 => $p]], 'quoin.fonts.Brand.400: expected'];
+        yield 'non-string path' => [['Brand' => [400 => ['normal' => 12]]], 'quoin.fonts.Brand.400.normal: path'];
+        yield 'empty path' => [['Brand' => [400 => ['normal' => '']]], 'quoin.fonts.Brand.400.normal: path'];
+        yield 'family not array' => [['Brand' => $p], 'quoin.fonts.Brand: expected'];
     }
 
     /** @param array<mixed> $fonts */
@@ -110,23 +110,23 @@ final class FontsTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid font config ' . $message);
 
-        Papercut::pdfOptions();
+        Quoin::pdfOptions();
     }
 
     public function testBadFallbackEntryThrows(): void
     {
-        config(['papercut.fallback_fonts' => ['Brand', '']]);
+        config(['quoin.fallback_fonts' => ['Brand', '']]);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('papercut.fallback_fonts.1');
+        $this->expectExceptionMessage('quoin.fallback_fonts.1');
 
-        Papercut::pdfOptions();
+        Quoin::pdfOptions();
     }
 
     public function testCommandWarnsAboutUnregisteredFallback(): void
     {
         $this->configure([], ['Ghost']);
 
-        Artisan::call('papercut:fonts');
+        Artisan::call('quoin:fonts');
 
         $out = Artisan::output();
         $this->assertStringContainsString('Ghost', $out);
@@ -136,9 +136,9 @@ final class FontsTest extends TestCase
     public function testWordNamesApplyToBundledAndRegisteredFamilies(): void
     {
         $this->configure(['Brand' => [400 => ['normal' => __DIR__ . '/../../../core/resources/fonts/Inter/Inter-Regular.ttf']]]);
-        config(['papercut.font_word_names' => ['brand' => 'Arial', 'Cousine' => 'Consolas']]);
+        config(['quoin.font_word_names' => ['brand' => 'Arial', 'Cousine' => 'Consolas']]);
 
-        $fonts = Papercut::pdfOptions()->fonts();
+        $fonts = Quoin::pdfOptions()->fonts();
 
         $this->assertSame('Arial', $fonts->wordName('Brand'));
         $this->assertSame('Consolas', $fonts->wordName('Cousine'));
@@ -148,19 +148,19 @@ final class FontsTest extends TestCase
     /** @return iterable<string, array{mixed, string}> */
     public static function badWordNames(): iterable
     {
-        yield 'unknown family' => [['Nope' => 'Arial'], 'papercut.font_word_names.Nope'];
-        yield 'non-string name' => [['Inter' => 12], 'papercut.font_word_names.Inter'];
-        yield 'empty name' => [['Inter' => ''], 'papercut.font_word_names.Inter'];
-        yield 'not a map' => ['Arial', 'papercut.font_word_names'];
+        yield 'unknown family' => [['Nope' => 'Arial'], 'quoin.font_word_names.Nope'];
+        yield 'non-string name' => [['Inter' => 12], 'quoin.font_word_names.Inter'];
+        yield 'empty name' => [['Inter' => ''], 'quoin.font_word_names.Inter'];
+        yield 'not a map' => ['Arial', 'quoin.font_word_names'];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('badWordNames')]
     public function testBadWordNamesThrow(mixed $names, string $message): void
     {
-        config(['papercut.font_word_names' => $names]);
+        config(['quoin.font_word_names' => $names]);
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid font config ' . $message);
 
-        Papercut::pdfOptions();
+        Quoin::pdfOptions();
     }
 }

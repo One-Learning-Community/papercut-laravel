@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Support;
+namespace Quoin\Laravel\Tests\Support;
 
-use Papercut\Html\{FontAnswer, FontRequest, FontSource};
+use Quoin\Html\{FontAnswer, FontRequest, FontSource};
 
 /** A source the container cannot build: an unresolvable scalar constructor parameter. */
 final class NeedsScalarSource implements FontSource

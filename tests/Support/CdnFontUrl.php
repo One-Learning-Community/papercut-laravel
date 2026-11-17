@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Support;
+namespace Quoin\Laravel\Tests\Support;
 
-use Papercut\Laravel\Html\FontUrlResolver;
-use Papercut\Text\FontFace;
+use Quoin\Laravel\Html\FontUrlResolver;
+use Quoin\Text\FontFace;
 
 final class CdnFontUrl implements FontUrlResolver
 {

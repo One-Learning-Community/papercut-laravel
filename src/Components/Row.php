@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Row extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Row extends QuoinComponent
 {
     protected function aliases(): array
     {
@@ -14,6 +14,6 @@ final class Row extends PapercutComponent
 
     protected function build(array $data): object
     {
-        return $this->styled(\Papercut\Row::make(...$this->children($data)), $data);
+        return $this->styled(\Quoin\Row::make(...$this->children($data)), $data);
     }
 }

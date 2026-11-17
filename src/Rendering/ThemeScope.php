@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Rendering;
+namespace Quoin\Laravel\Rendering;
 
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Style\{Theme, ThemeOverride};
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Style\{Theme, ThemeOverride};
 
 /**
  * The theme overrides of the document and page tags being rendered, innermost last, so the early style checks
  * see the styles a tag's `:theme` defines.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ThemeScope
 {
@@ -55,7 +55,7 @@ final class ThemeScope
     /** The configured theme with the stacked overrides applied. */
     public function current(): Theme
     {
-        $base = app(PapercutManager::class)->pdfOptions()->theme();
+        $base = app(QuoinManager::class)->pdfOptions()->theme();
         if ($this->current !== null && $this->base === $base) {
             return $this->current;
         }

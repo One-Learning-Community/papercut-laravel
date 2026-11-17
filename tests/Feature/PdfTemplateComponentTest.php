@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\{Column, Document, Page, PdfPage, Place, QrCode, Text};
-use Papercut\Exception\{InvalidValue, PdfUnreadable};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Style\Anchor;
-use Papercut\Value\{Length, Percent};
-use function Papercut\pt;
+use Quoin\{Column, Document, Page, PdfPage, Place, QrCode, Text};
+use Quoin\Exception\{InvalidValue, PdfUnreadable};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Style\Anchor;
+use Quoin\Value\{Length, Percent};
+use function Quoin\pt;
 
 /** <x-doc::pdf-page>, <x-doc::place>, and the template attributes and overlay slot on <x-doc::page>. */
 final class PdfTemplateComponentTest extends TestCase
@@ -21,7 +21,7 @@ final class PdfTemplateComponentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->dir = sys_get_temp_dir() . '/papercut-template-' . getmypid() . '-' . bin2hex(random_bytes(3));
+        $this->dir = sys_get_temp_dir() . '/quoin-template-' . getmypid() . '-' . bin2hex(random_bytes(3));
         mkdir($this->dir . '/img', 0777, true);
         $page = static fn (string $word): Page => Page::size(pt(400), pt(300))->margin(pt(0))->body(
             Column::make()->width(pt(50))->height(pt(50))->background('#000'),
@@ -29,7 +29,7 @@ final class PdfTemplateComponentTest extends TestCase
         );
         $this->template = Document::make($page('First'), $page('Second'))->toPdf()->bytes();
         file_put_contents($this->dir . '/img/certificate.pdf', $this->template);
-        config(['papercut.image_path' => $this->dir . '/img']);
+        config(['quoin.image_path' => $this->dir . '/img']);
     }
 
     protected function tearDown(): void
@@ -159,8 +159,8 @@ final class PdfTemplateComponentTest extends TestCase
         $place = $this->placeFrom('<x-doc::place x="20mm" y="1in">Hi</x-doc::place>');
 
         self::assertSame(Anchor::TopLeft, $place->anchorPoint());
-        self::assertEquals(\Papercut\mm(20), $place->x());
-        self::assertEquals(\Papercut\in(1), $place->y());
+        self::assertEquals(\Quoin\mm(20), $place->x());
+        self::assertEquals(\Quoin\in(1), $place->y());
     }
 
     public function test_place_needs_x_and_y(): void

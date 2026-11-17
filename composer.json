@@ -1,13 +1,13 @@
 {
-    "name": "papercut/laravel",
-    "description": "Blade views to page-aware PDF, Word, and HTML documents, with Papercut's layout engine.",
+    "name": "quoin/laravel",
+    "description": "Blade views to page-aware PDF, Word, and HTML documents, laid out by quoin/core.",
     "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/One-Learning-Community/papercut",
+    "homepage": "https://github.com/One-Learning-Community/quoin",
     "support": {
-        "issues": "https://github.com/One-Learning-Community/papercut/issues",
-        "source": "https://github.com/One-Learning-Community/papercut",
-        "docs": "https://one-learning-community.github.io/papercut/laravel/"
+        "issues": "https://github.com/One-Learning-Community/quoin/issues",
+        "source": "https://github.com/One-Learning-Community/quoin",
+        "docs": "https://one-learning-community.github.io/quoin/laravel/"
     },
     "authors": [
         {
@@ -22,7 +22,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/core": "0.15.x-dev"
+                    "quoin/core": "0.16.x-dev"
                 }
             }
         },
@@ -32,7 +32,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/math": "0.15.x-dev"
+                    "quoin/math": "0.16.x-dev"
                 }
             }
         },
@@ -42,7 +42,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/docx": "0.15.x-dev"
+                    "quoin/docx": "0.16.x-dev"
                 }
             }
         }
@@ -55,38 +55,38 @@
         "illuminate/routing": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0",
         "illuminate/view": "^12.0|^13.0",
-        "papercut/core": "^0.15",
-        "papercut/math": "^0.15"
+        "quoin/core": "^0.16",
+        "quoin/math": "^0.16"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
         "orchestra/testbench": "^11.3",
-        "papercut/docx": "^0.15",
+        "quoin/docx": "^0.16",
         "phiki/phiki": "^2.2",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4"
     },
     "suggest": {
         "phiki/phiki": "Syntax highlighting in code blocks (TextMate grammars and themes)",
-        "papercut/docx": "Word (.docx) export: ->docx() and ?format=docx previews"
+        "quoin/docx": "Word (.docx) export: ->docx() and ?format=docx previews"
     },
     "autoload": {
         "psr-4": {
-            "Papercut\\Laravel\\": "src/"
+            "Quoin\\Laravel\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Papercut\\Laravel\\Tests\\": "tests/"
+            "Quoin\\Laravel\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Papercut\\Laravel\\PapercutServiceProvider"
+                "Quoin\\Laravel\\QuoinServiceProvider"
             ],
             "aliases": {
-                "Papercut": "Papercut\\Laravel\\Facades\\Papercut"
+                "Quoin": "Quoin\\Laravel\\Facades\\Quoin"
             }
         }
     },

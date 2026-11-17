@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tag;
-use Papercut\Value\Color;
+use Quoin\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\Value\Color;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class QrCode extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class QrCode extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -36,7 +36,7 @@ final class QrCode extends PapercutComponent
         if (!is_string($value) && !is_int($value)) {
             throw new InvalidStructure(Tag::of('qr-code') . ' requires a value');
         }
-        $node = \Papercut\QrCode::make((string) $value, self::level($own['level'] ?? 'M'));
+        $node = \Quoin\QrCode::make((string) $value, self::level($own['level'] ?? 'M'));
         if (isset($own['quiet-zone'])) {
             $zone = $own['quiet-zone'];
             if (!is_numeric($zone) || (string) (int) $zone !== trim((string) $zone) || (int) $zone < 0) {

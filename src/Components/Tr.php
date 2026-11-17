@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Tag;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\TableCell;
-use Papercut\TableRow;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Tag;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\TableCell;
+use Quoin\TableRow;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Tr extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Tr extends QuoinComponent
 {
     protected function build(array $data): object
     {

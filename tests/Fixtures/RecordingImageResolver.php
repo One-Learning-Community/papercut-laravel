@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Fixtures;
+namespace Quoin\Laravel\Tests\Fixtures;
 
-use Papercut\Laravel\Markup\ImageResolver;
+use Quoin\Laravel\Markup\ImageResolver;
 
 /** Base for resolvers that record how often they are built and which sources they are asked for. */
 abstract class RecordingImageResolver implements ImageResolver

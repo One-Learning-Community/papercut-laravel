@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Component;
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Tag;
-use Papercut\Node as PapercutNode;
+use Quoin\Component;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Tag;
+use Quoin\Node as QuoinNode;
 
 /**
  * `<x-doc::node :node="$n" />` embeds a PHP-built node or component as is.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Node extends PapercutComponent
+final class Node extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -24,7 +24,7 @@ final class Node extends PapercutComponent
     protected function build(array $data): object
     {
         $node = $this->attrs($data)['own']['node'] ?? null;
-        if (!$node instanceof PapercutNode && !$node instanceof Component) {
+        if (!$node instanceof QuoinNode && !$node instanceof Component) {
             throw InvalidValue::for('node', get_debug_type($node))->withContext('node')->within('on ' . Tag::of('node'));
         }
 

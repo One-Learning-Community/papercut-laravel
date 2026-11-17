@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Image;
-use Papercut\Markup\Markup;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Tests\Fixtures\FixtureImageResolver;
-use Papercut\Laravel\Tests\Fixtures\RecordingImageResolver;
-use Papercut\Laravel\Tests\Fixtures\RecordingImagesA;
-use Papercut\Laravel\Tests\Fixtures\RecordingImagesB;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Style\TextAlign;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Image;
+use Quoin\Markup\Markup;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Tests\Fixtures\FixtureImageResolver;
+use Quoin\Laravel\Tests\Fixtures\RecordingImageResolver;
+use Quoin\Laravel\Tests\Fixtures\RecordingImagesA;
+use Quoin\Laravel\Tests\Fixtures\RecordingImagesB;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Style\TextAlign;
+use Quoin\Text;
+use Quoin\View;
 
 final class MarkupComponentTest extends TestCase
 {
     private function fresh(): void
     {
-        app()->forgetInstance(PapercutManager::class);
-        Papercut::clearResolvedInstances();
+        app()->forgetInstance(QuoinManager::class);
+        Quoin::clearResolvedInstances();
     }
 
     public function test_html_and_text(): void
@@ -48,7 +48,7 @@ final class MarkupComponentTest extends TestCase
         ];
     }
 
-    private static function spans(\Papercut\Node|\Papercut\Component $n): mixed
+    private static function spans(\Quoin\Node|\Quoin\Component $n): mixed
     {
         return $n instanceof Text ? array_map(fn ($s) => $s->text, $n->spanList())
             : array_map(fn ($c) => self::spans($c), $n instanceof View ? $n->children() : []);
@@ -73,10 +73,10 @@ final class MarkupComponentTest extends TestCase
 
     public function test_unbuildable_images_resolver(): void
     {
-        config(['papercut.markup.images' => \Papercut\Laravel\Tests\Fixtures\UnbuildableImageResolver::class]);
+        config(['quoin.markup.images' => \Quoin\Laravel\Tests\Fixtures\UnbuildableImageResolver::class]);
         $this->fresh();
-        $this->expectExceptionMessageMatches('/^Cannot build papercut\.markup\.images resolver /');
-        Papercut::markupOptions();
+        $this->expectExceptionMessageMatches('/^Cannot build quoin\.markup\.images resolver /');
+        Quoin::markupOptions();
     }
 
     public function test_label_inside_a_bold_text_tag(): void
@@ -88,7 +88,7 @@ final class MarkupComponentTest extends TestCase
 
     public function test_configured_resolver_images(): void
     {
-        config(['papercut.markup.images' => FixtureImageResolver::class]);
+        config(['quoin.markup.images' => FixtureImageResolver::class]);
         $this->fresh();
         $n = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => '<img src="a.png">']);
         self::assertTrue($n instanceof Image || ($n instanceof View && $n->children()[0] instanceof Image));
@@ -96,7 +96,7 @@ final class MarkupComponentTest extends TestCase
 
     public function test_images_attribute_overrides_config(): void
     {
-        config(['papercut.markup.images' => RecordingImagesB::class]);
+        config(['quoin.markup.images' => RecordingImagesB::class]);
         $this->fresh();
         RecordingImageResolver::reset();
         $a = $this->nodeFrom('<x-doc::markup :html="$h" images="' . RecordingImagesA::class . '" />', ['h' => '<img src="a.png">']);
@@ -109,7 +109,7 @@ final class MarkupComponentTest extends TestCase
 
     public function test_images_none_shows_alt_text(): void
     {
-        config(['papercut.markup.images' => RecordingImagesB::class]);
+        config(['quoin.markup.images' => RecordingImagesB::class]);
         $this->fresh();
         RecordingImageResolver::reset();
         $n = $this->nodeFrom('<x-doc::markup :html="$h" images="none" />', ['h' => '<p><img src="a.png" alt="A picture"></p>']);
@@ -120,7 +120,7 @@ final class MarkupComponentTest extends TestCase
     public function test_images_attribute_rejects_non_resolver_class(): void
     {
         $this->fresh();
-        $this->expectExceptionMessage('Invalid <x-doc::markup> images: ' . var_export(\stdClass::class, true) . '; expected an invokable class name implementing ' . \Papercut\Laravel\Markup\ImageResolver::class . " or 'none'");
+        $this->expectExceptionMessage('Invalid <x-doc::markup> images: ' . var_export(\stdClass::class, true) . '; expected an invokable class name implementing ' . \Quoin\Laravel\Markup\ImageResolver::class . " or 'none'");
         $this->nodeFrom('<x-doc::markup :html="$h" images="' . \stdClass::class . '" />', ['h' => '<p>x</p>']);
     }
 
@@ -137,10 +137,10 @@ final class MarkupComponentTest extends TestCase
 
     public function test_a_tag_naming_the_configured_class_shares_the_config_instance(): void
     {
-        config(['papercut.markup.images' => RecordingImagesA::class]);
+        config(['quoin.markup.images' => RecordingImagesA::class]);
         $this->fresh();
         RecordingImageResolver::reset();
-        Papercut::markupOptions();
+        Quoin::markupOptions();
         $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => '<img src="a.png">']);
         $this->nodeFrom('<x-doc::markup :html="$h" images="' . RecordingImagesA::class . '" />', ['h' => '<img src="b.png">']);
         $this->nodeFrom('<x-doc::markup :html="$h" images="\\' . RecordingImagesA::class . '" />', ['h' => '<img src="c.png">']);
@@ -163,7 +163,7 @@ final class MarkupComponentTest extends TestCase
     public function test_images_attribute_that_is_not_a_class_name_is_invalid(): void
     {
         $this->fresh();
-        $this->expectExceptionMessage('Invalid <x-doc::markup> images: true; expected an invokable class name implementing ' . \Papercut\Laravel\Markup\ImageResolver::class . " or 'none'");
+        $this->expectExceptionMessage('Invalid <x-doc::markup> images: true; expected an invokable class name implementing ' . \Quoin\Laravel\Markup\ImageResolver::class . " or 'none'");
         $this->nodeFrom('<x-doc::markup :html="$h" :images="true" />', ['h' => '<p>x</p>']);
     }
 
@@ -178,7 +178,7 @@ final class MarkupComponentTest extends TestCase
     {
         $this->fresh();
         $this->expectExceptionMessageMatches('/^Cannot build <x-doc::markup> images resolver /');
-        $this->nodeFrom('<x-doc::markup :html="$h" images="' . \Papercut\Laravel\Tests\Fixtures\UnbuildableImageResolver::class . '" />', ['h' => '<p>x</p>']);
+        $this->nodeFrom('<x-doc::markup :html="$h" images="' . \Quoin\Laravel\Tests\Fixtures\UnbuildableImageResolver::class . '" />', ['h' => '<p>x</p>']);
     }
 
     public function test_config_styles_and_tag_override(): void
@@ -188,7 +188,7 @@ final class MarkupComponentTest extends TestCase
         self::assertInstanceOf(Text::class, $theme);
         self::assertNotSame(TextAlign::Center, $theme->style()->textAlign);
 
-        config(['papercut.markup.styles' => 'original']);
+        config(['quoin.markup.styles' => 'original']);
         $this->fresh();
         $orig = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => $html]);
         self::assertInstanceOf(Text::class, $orig);
@@ -235,9 +235,9 @@ final class MarkupComponentTest extends TestCase
 
     public function test_toc_config_default_and_tag_override(): void
     {
-        config(['papercut.markup.toc' => false]);
+        config(['quoin.markup.toc' => false]);
         $this->fresh();
-        self::assertFalse(Papercut::markupOptions()->toc);
+        self::assertFalse(Quoin::markupOptions()->toc);
         $off = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => '<h2>x</h2><p>a</p>']);
         $on = $this->nodeFrom('<x-doc::markup :html="$h" toc="true" />', ['h' => '<h2>x</h2><p>a</p>']);
         self::assertInstanceOf(View::class, $off);
@@ -259,36 +259,36 @@ final class MarkupComponentTest extends TestCase
             self::assertStringContainsString('toc', $e->getMessage());
             self::assertStringContainsString('<x-doc::markup>', $e->getMessage());
         }
-        config(['papercut.markup.toc' => 'no']);
+        config(['quoin.markup.toc' => 'no']);
         $this->fresh();
-        $this->expectExceptionMessage("Invalid papercut.markup.toc: 'no'; expected true or false");
-        Papercut::markupOptions();
+        $this->expectExceptionMessage("Invalid quoin.markup.toc: 'no'; expected true or false");
+        Quoin::markupOptions();
     }
 
     public function test_config_errors_surface_at_first_use(): void
     {
-        config(['papercut.markup.styles' => 'fancy']);
+        config(['quoin.markup.styles' => 'fancy']);
         $this->fresh();
-        app()->make(PapercutManager::class); // booting does not throw
+        app()->make(QuoinManager::class); // booting does not throw
         try {
             $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => '<p>a</p>']);
             self::fail('expected exception');
         } catch (\InvalidArgumentException $e) {
-            self::assertSame("Invalid papercut.markup.styles: 'fancy'; expected 'theme' or 'original'", $e->getMessage());
+            self::assertSame("Invalid quoin.markup.styles: 'fancy'; expected 'theme' or 'original'", $e->getMessage());
         }
 
-        config(['papercut.markup.styles' => 'theme', 'papercut.markup.blank_paragraphs' => 'maybe']);
+        config(['quoin.markup.styles' => 'theme', 'quoin.markup.blank_paragraphs' => 'maybe']);
         $this->fresh();
-        $this->expectExceptionMessage("Invalid papercut.markup.blank_paragraphs: 'maybe'; expected 'drop' or 'keep'");
-        Papercut::markupOptions();
+        $this->expectExceptionMessage("Invalid quoin.markup.blank_paragraphs: 'maybe'; expected 'drop' or 'keep'");
+        Quoin::markupOptions();
     }
 
     public function test_bad_images_config(): void
     {
-        config(['papercut.markup.images' => \stdClass::class]);
+        config(['quoin.markup.images' => \stdClass::class]);
         $this->fresh();
-        $this->expectExceptionMessage('Invalid papercut.markup.images: ' . var_export(\stdClass::class, true) . '; expected an invokable class name implementing ' . \Papercut\Laravel\Markup\ImageResolver::class . ' or null');
-        Papercut::markupOptions();
+        $this->expectExceptionMessage('Invalid quoin.markup.images: ' . var_export(\stdClass::class, true) . '; expected an invokable class name implementing ' . \Quoin\Laravel\Markup\ImageResolver::class . ' or null');
+        Quoin::markupOptions();
     }
 
     public function test_bad_tag_override(): void
@@ -347,7 +347,7 @@ final class MarkupComponentTest extends TestCase
     {
         $n = $this->nodeFrom('<x-doc::markup><table><x-price-row label="Design" amount="400" /><x-price-row label="Build" amount="900" /></table></x-doc::markup>');
         $table = $n instanceof View ? $n->children()[0] ?? null : $n;
-        self::assertInstanceOf(\Papercut\Table::class, $table);
+        self::assertInstanceOf(\Quoin\Table::class, $table);
         self::assertCount(2, $table->bodyRows());
     }
 
@@ -358,7 +358,7 @@ final class MarkupComponentTest extends TestCase
         self::assertSame(TextAlign::Center, $n->style()->textAlign);
     }
 
-    public function test_papercut_tags_in_the_slot_are_an_error(): void
+    public function test_quoin_tags_in_the_slot_are_an_error(): void
     {
         $this->expectException(InvalidStructure::class);
         $this->expectExceptionMessage('<x-doc::markup> takes plain HTML in its slot, not <x-doc::*> tags; put those next to the markup tag instead');

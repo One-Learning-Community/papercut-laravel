@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
 /**
  * `<x-doc::stat label="Revenue" note="Up 12%">$48,200</x-doc::stat>`: the slot is the value.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Stat extends PapercutComponent
+final class Stat extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array
@@ -19,7 +19,7 @@ final class Stat extends PapercutComponent
 
     protected function build(array $data): object
     {
-        $stat = \Papercut\Decorator\Stat::make($this->inlineText($data));
+        $stat = \Quoin\Decorator\Stat::make($this->inlineText($data));
         $label = $this->slotOrAttribute($data, 'label');
         if ($label !== null) {
             $stat = $stat->label($label);

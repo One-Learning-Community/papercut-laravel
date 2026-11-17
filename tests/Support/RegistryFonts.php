@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Support;
+namespace Quoin\Laravel\Tests\Support;
 
-use Papercut\Html\{FontAnswer, FontRequest, FontSource};
+use Quoin\Html\{FontAnswer, FontRequest, FontSource};
 
 /** A custom source: answers https://fonts.example.test/<family>.css for Acme only. */
 final class RegistryFonts implements FontSource

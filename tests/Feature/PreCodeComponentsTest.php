@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Orchestra\Testbench\Attributes\DefineEnvironment;
-use Papercut\Laravel\Components\Pre;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Text;
+use Quoin\Laravel\Components\Pre;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Text;
 
 final class PreCodeComponentsTest extends TestCase
 {
@@ -65,7 +65,7 @@ final class PreCodeComponentsTest extends TestCase
     public function test_code_component_matches_span_code(): void
     {
         $t = $this->nodeFrom('<x-doc::text><x-doc::code>toPdf()</x-doc::code></x-doc::text>');
-        self::assertEquals(\Papercut\Text::code('toPdf()')->spanList(), $t->spanList());
+        self::assertEquals(\Quoin\Text::code('toPdf()')->spanList(), $t->spanList());
     }
 
     public function test_code_round_trips_escaped_blade_output(): void
@@ -140,12 +140,12 @@ final class PreCodeComponentsTest extends TestCase
 
     protected function usePaperPrefix(mixed $app): void
     {
-        $app['config']->set('papercut.prefix', 'paper');
+        $app['config']->set('quoin.prefix', 'paper');
     }
 
     public function test_no_sentinel_reaches_any_output(): void
     {
-        $pending = Papercut::view('pdf.pre-sample', ['code' => "a < b\n  c"]);
+        $pending = Quoin::view('pdf.pre-sample', ['code' => "a < b\n  c"]);
         $html = $pending->html()->toHtml();
         self::assertStringNotContainsString("\u{E000}", $html);
         self::assertStringContainsString('a &lt; b', $html);
@@ -167,7 +167,7 @@ final class PreCodeComponentsTest extends TestCase
 
     public function test_code_resolved_style_keeps_the_code_family(): void
     {
-        $theme = $this->app()->make(\Papercut\Laravel\PapercutManager::class)->pdfOptions()->theme();
+        $theme = $this->app()->make(\Quoin\Laravel\QuoinManager::class)->pdfOptions()->theme();
         $t = $this->nodeFrom('<x-doc::p><x-doc::code bold>x</x-doc::code></x-doc::p>');
         $resolved = $theme->spanStyle($t->spanList()[0]);
         self::assertSame($theme->named('code')->fontFamily, $resolved->fontFamily);
@@ -198,13 +198,13 @@ final class PreCodeComponentsTest extends TestCase
     public function test_pre_tag_mentioned_in_a_bound_attribute_leaves_no_sentinel(): void
     {
         $link = $this->nodeFrom("<x-doc::link :href=\"'#a<x-doc::pre>'\">x</x-doc::link>");
-        self::assertInstanceOf(\Papercut\Link::class, $link);
+        self::assertInstanceOf(\Quoin\Link::class, $link);
         self::assertSame('#a<x-doc::pre>', $link->uri());
     }
 
     public function test_code_with_a_style_object_keeps_its_other_style_attributes(): void
     {
-        $style = \Papercut\Style\Style::make(italic: true);
+        $style = \Quoin\Style\Style::make(italic: true);
         $t = $this->nodeFrom('<x-doc::p><x-doc::code :style="$s" bold>x</x-doc::code></x-doc::p>', ['s' => $style]);
         $span = $t->spanList()[0];
 
@@ -215,7 +215,7 @@ final class PreCodeComponentsTest extends TestCase
 
     public function test_pre_with_a_style_object_keeps_the_pre_style_name(): void
     {
-        $style = \Papercut\Style\Style::make(italic: true);
+        $style = \Quoin\Style\Style::make(italic: true);
         $t = $this->nodeFrom('<x-doc::pre :style="$s" bold>x</x-doc::pre>', ['s' => $style]);
 
         self::assertSame('pre', $t->styleName());
@@ -225,8 +225,8 @@ final class PreCodeComponentsTest extends TestCase
 
     public function test_layered_pre_and_code_names_render_as_pre_and_code_in_html(): void
     {
-        config(['papercut.styles' => ['mine' => ['color' => '#ff0000']]]);
-        $html = Papercut::view('pdf.layered-styles')->html()->toHtml();
+        config(['quoin.styles' => ['mine' => ['color' => '#ff0000']]]);
+        $html = Quoin::view('pdf.layered-styles')->html()->toHtml();
 
         self::assertMatchesRegularExpression('~<pre [^>]*overflow-wrap:anywhere;tab-size:4~', $html);
         self::assertMatchesRegularExpression('~<pre [^>]*overflow-wrap:anywhere[^>]*>a  b</pre>~', $html);

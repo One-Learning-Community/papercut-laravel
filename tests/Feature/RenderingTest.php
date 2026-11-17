@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Route;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 
 final class RenderingTest extends TestCase
 {
     public function test_renders_view_to_pdf(): void
     {
-        $pdf = Papercut::view('pdf.hello', ['name' => 'Ada'])->pdf()->toString();
+        $pdf = Quoin::view('pdf.hello', ['name' => 'Ada'])->pdf()->toString();
         self::assertStringStartsWith('%PDF-', $pdf);
         $file = tempnam(sys_get_temp_dir(), 'pc');
         file_put_contents($file, $pdf);
@@ -24,8 +24,8 @@ final class RenderingTest extends TestCase
 
     public function test_download_and_inline_responses(): void
     {
-        Route::get('/dl', fn () => Papercut::view('pdf.hello', ['name' => 'A'])->pdf()->download('report.pdf'));
-        Route::get('/in', fn () => Papercut::view('pdf.hello', ['name' => 'A'])->pdf());
+        Route::get('/dl', fn () => Quoin::view('pdf.hello', ['name' => 'A'])->pdf()->download('report.pdf'));
+        Route::get('/in', fn () => Quoin::view('pdf.hello', ['name' => 'A'])->pdf());
         $this->get('/dl')->assertOk()->assertHeader('Content-Type', 'application/pdf')
             ->assertHeader('Content-Disposition', 'attachment; filename=report.pdf');
         $this->get('/in')->assertOk()->assertHeader('Content-Disposition', 'inline; filename=document.pdf');
@@ -35,7 +35,7 @@ final class RenderingTest extends TestCase
     {
         foreach (['pdf.two-roots', 'pdf.no-root'] as $view) {
             try {
-                Papercut::view($view)->pdf()->toString();
+                Quoin::view($view)->pdf()->toString();
                 self::fail("$view accepted");
             } catch (\Throwable $e) {
                 $root = $e;
@@ -49,7 +49,7 @@ final class RenderingTest extends TestCase
     public function test_attribute_error_names_blade_file(): void
     {
         try {
-            Papercut::view('pdf.bad-attr')->pdf()->toString();
+            Quoin::view('pdf.bad-attr')->pdf()->toString();
             self::fail('accepted');
         } catch (\Throwable $e) {
             self::assertStringContainsString('bad-attr.blade.php', $e->getMessage());
@@ -59,25 +59,25 @@ final class RenderingTest extends TestCase
 
     public function test_implicit_page_and_two_renders_are_isolated(): void
     {
-        $a = Papercut::view('pdf.implicit-page')->pdf()->toString();
-        $b = Papercut::view('pdf.hello', ['name' => 'B'])->pdf()->toString();
+        $a = Quoin::view('pdf.implicit-page')->pdf()->toString();
+        $b = Quoin::view('pdf.hello', ['name' => 'B'])->pdf()->toString();
         self::assertStringStartsWith('%PDF-', $a);
         self::assertStringStartsWith('%PDF-', $b);
     }
 
     public function test_named_styles_and_theme_from_config(): void
     {
-        config(['papercut.styles' => ['card' => ['padding' => '12pt', 'background' => 'slate-50']], 'papercut.theme' => ['font_size' => 11.0]]);
-        app()->forgetInstance(\Papercut\Laravel\PapercutManager::class);
-        $theme = Papercut::pdfOptions()->theme();
+        config(['quoin.styles' => ['card' => ['padding' => '12pt', 'background' => 'slate-50']], 'quoin.theme' => ['font_size' => 11.0]]);
+        app()->forgetInstance(\Quoin\Laravel\QuoinManager::class);
+        $theme = Quoin::pdfOptions()->theme();
         self::assertSame(11.0, $theme->fontSize);
         self::assertSame(12.0, $theme->named('card')->padding?->top->points);
     }
 
     public function test_theme_mono_family_from_config(): void
     {
-        config(['papercut.theme' => ['mono_family' => 'Inter']]);
-        app()->forgetInstance(\Papercut\Laravel\PapercutManager::class);
-        self::assertSame('Inter', Papercut::pdfOptions()->theme()->monoFamily);
+        config(['quoin.theme' => ['mono_family' => 'Inter']]);
+        app()->forgetInstance(\Quoin\Laravel\QuoinManager::class);
+        self::assertSame('Inter', Quoin::pdfOptions()->theme()->monoFamily);
     }
 }

@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Tag;
-use Papercut\Span;
-use Papercut\Style\Style;
-use Papercut\Text;
+use Quoin\Exception\InvalidValue;
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Tag;
+use Quoin\Span;
+use Quoin\Style\Style;
+use Quoin\Text;
 
 /**
  * Inline code for use inside text tags: a span in the `code` style. Like `<x-doc::pre>`, its
  * content is literal text.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Code extends PapercutComponent
+final class Code extends QuoinComponent
 {
     protected function build(array $data): object
     {

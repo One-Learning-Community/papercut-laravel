@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Document extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Document extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -32,18 +32,18 @@ final class Document extends PapercutComponent
         }
 
         $children = $this->rawChildren($data, []);
-        $pages = array_values(array_filter($children, static fn (object $n): bool => $n instanceof \Papercut\Page));
+        $pages = array_values(array_filter($children, static fn (object $n): bool => $n instanceof \Quoin\Page));
         if ($pages === []) {
             if ($children === []) {
                 throw new InvalidStructure(Tag::of('document') . ' must contain at least one ' . Tag::of('page'));
             }
-            /** @var list<\Papercut\Node> $children */
+            /** @var list<\Quoin\Node> $children */
             $pages = [Page::implicit($children)];
         } elseif (count($pages) !== count($children)) {
             throw new InvalidStructure(Tag::of('document') . ' children must all be ' . Tag::of('page') . '; put other content inside a page');
         }
 
-        $doc = \Papercut\Document::make(...$pages);
+        $doc = \Quoin\Document::make(...$pages);
         $theme = $this->themeOverride();
         if ($theme !== null) {
             $doc = $doc->theme($theme);

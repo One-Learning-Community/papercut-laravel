@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Blade;
-use Papercut\Document;
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Rendering\ThemeScope;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Style\ThemeOverride;
+use Quoin\Document;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Rendering\ThemeScope;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Style\ThemeOverride;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ThemeOverrideTest extends TestCase
 {
@@ -27,7 +27,7 @@ final class ThemeOverrideTest extends TestCase
 
     private function pdfOf(Document $doc): string
     {
-        return $this->app()->make(PapercutManager::class)->make($doc)->pdf()->toString();
+        return $this->app()->make(QuoinManager::class)->make($doc)->pdf()->toString();
     }
 
     public function test_document_theme_attribute_changes_the_pdf(): void
@@ -41,7 +41,7 @@ final class ThemeOverrideTest extends TestCase
         self::assertSame(14.0, $override->fontSize?->points);
         self::assertNotNull($override->color);
 
-        $manager = $this->app()->make(PapercutManager::class);
+        $manager = $this->app()->make(QuoinManager::class);
         $a = $manager->make($plain)->pdf()->toString();
         $b = $manager->make($big)->pdf()->toString();
         self::assertStringContainsString('Hello', $this->pdfText($b));
@@ -59,7 +59,7 @@ final class ThemeOverrideTest extends TestCase
     public function test_controller_theme_wins_over_the_views_document_theme(): void
     {
         $doc = $this->document('<x-doc::document :theme="[\'font_size\' => 14, \'line_height\' => 2]"><x-doc::page>Hi</x-doc::page></x-doc::document>');
-        $pending = $this->app()->make(PapercutManager::class)->make($doc)->theme(['font_size' => 20]);
+        $pending = $this->app()->make(QuoinManager::class)->make($doc)->theme(['font_size' => 20]);
 
         $override = $pending->document()->themeOverride();
         self::assertSame(20.0, $override?->fontSize?->points);
@@ -79,7 +79,7 @@ final class ThemeOverrideTest extends TestCase
             BLADE);
 
         self::assertArrayHasKey('stamp', $doc->pages()[0]->themeOverride()->styles ?? []);
-        self::assertStringContainsString('Stamped', $this->pdfText($this->app()->make(PapercutManager::class)->make($doc)->pdf()->toString()));
+        self::assertStringContainsString('Stamped', $this->pdfText($this->app()->make(QuoinManager::class)->make($doc)->pdf()->toString()));
     }
 
     public function test_a_style_defined_in_the_document_theme_passes_for_every_page(): void
@@ -114,7 +114,7 @@ final class ThemeOverrideTest extends TestCase
         }
 
         $scope = $this->app()->make(ThemeScope::class);
-        self::assertSame($this->app()->make(PapercutManager::class)->pdfOptions()->theme(), $scope->current());
+        self::assertSame($this->app()->make(QuoinManager::class)->pdfOptions()->theme(), $scope->current());
     }
 
     public function test_bad_theme_values_name_their_source(): void
@@ -133,7 +133,7 @@ final class ThemeOverrideTest extends TestCase
             self::assertStringContainsString('<x-doc::document>', $e->getMessage());
         }
 
-        $pending = $this->app()->make(PapercutManager::class)->make($this->document('<x-doc::document><x-doc::page>A</x-doc::page></x-doc::document>'));
+        $pending = $this->app()->make(QuoinManager::class)->make($this->document('<x-doc::document><x-doc::page>A</x-doc::page></x-doc::document>'));
         try {
             $pending->theme(['font_family' => 'Nonesuch']);
             self::fail('accepted an unregistered family');
@@ -145,7 +145,7 @@ final class ThemeOverrideTest extends TestCase
 
     public function test_unknown_keys_name_the_key_and_the_allowed_ones(): void
     {
-        $pending = $this->app()->make(PapercutManager::class)->make($this->document('<x-doc::document><x-doc::page>A</x-doc::page></x-doc::document>'));
+        $pending = $this->app()->make(QuoinManager::class)->make($this->document('<x-doc::document><x-doc::page>A</x-doc::page></x-doc::document>'));
         try {
             $pending->theme(['font_sise' => 12]);
             self::fail('accepted an unknown key');
@@ -158,7 +158,7 @@ final class ThemeOverrideTest extends TestCase
 
     public function test_an_empty_theme_changes_nothing(): void
     {
-        $manager = $this->app()->make(PapercutManager::class);
+        $manager = $this->app()->make(QuoinManager::class);
         $plain = $manager->make($this->document('<x-doc::document><x-doc::page>Same</x-doc::page></x-doc::document>'));
         $empty = $manager->make($this->document('<x-doc::document :theme="[]"><x-doc::page :theme="[]">Same</x-doc::page></x-doc::document>'))->theme([]);
 
@@ -169,31 +169,31 @@ final class ThemeOverrideTest extends TestCase
 
     public function test_config_theme_still_validates_as_before(): void
     {
-        config(['papercut.theme' => ['font_size' => -1]]);
-        $this->expectExceptionMessage('Invalid papercut.theme.font_size:');
-        $this->app()->make(PapercutManager::class)->pdfOptions();
+        config(['quoin.theme' => ['font_size' => -1]]);
+        $this->expectExceptionMessage('Invalid quoin.theme.font_size:');
+        $this->app()->make(QuoinManager::class)->pdfOptions();
     }
 
     /** @return iterable<string, array{string, string}> */
     public static function badConfigKeys(): iterable
     {
-        yield 'unknown' => ['font_sise', "Unknown key papercut.theme.font_sise; allowed keys: font_family, mono_family, font_size, color, line_height"];
-        yield 'code_theme' => ['code_theme', 'Unknown key papercut.theme.code_theme; set the code theme with papercut.code.theme'];
-        yield 'styles' => ['styles', 'Unknown key papercut.theme.styles; define named styles in papercut.styles'];
+        yield 'unknown' => ['font_sise', "Unknown key quoin.theme.font_sise; allowed keys: font_family, mono_family, font_size, color, line_height"];
+        yield 'code_theme' => ['code_theme', 'Unknown key quoin.theme.code_theme; set the code theme with quoin.code.theme'];
+        yield 'styles' => ['styles', 'Unknown key quoin.theme.styles; define named styles in quoin.styles'];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('badConfigKeys')]
     public function test_config_theme_rejects_keys_it_does_not_use(string $key, string $message): void
     {
-        config(['papercut.theme' => [$key => 'x']]);
+        config(['quoin.theme' => [$key => 'x']]);
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage($message);
-        $this->app()->make(PapercutManager::class)->pdfOptions();
+        $this->app()->make(QuoinManager::class)->pdfOptions();
     }
 
     public function test_a_page_theme_styles_that_pages_text_in_the_pdf(): void
     {
-        $manager = $this->app()->make(PapercutManager::class);
+        $manager = $this->app()->make(QuoinManager::class);
         $with = $manager->make($this->document(<<<'BLADE'
             <x-doc::document>
                 <x-doc::page :theme="['styles' => ['stamp' => ['font-size' => '30pt', 'bold' => true]]]"><x-doc::text style="stamp">Stamped</x-doc::text></x-doc::page>
@@ -207,7 +207,7 @@ final class ThemeOverrideTest extends TestCase
 
     public function test_a_style_attribute_error_from_theme_names_the_call(): void
     {
-        $pending = $this->app()->make(PapercutManager::class)->make($this->document('<x-doc::document><x-doc::page>A</x-doc::page></x-doc::document>'));
+        $pending = $this->app()->make(QuoinManager::class)->make($this->document('<x-doc::document><x-doc::page>A</x-doc::page></x-doc::document>'));
         try {
             $pending->theme(['styles' => ['x' => ['no-such' => 1]]]);
             self::fail('accepted a bad style attribute');
@@ -277,7 +277,7 @@ final class ThemeOverrideTest extends TestCase
         try {
             Blade::render('<x-doc::page :theme="[\'styles\' => [\'leak\' => [\'bold\' => true]]]"><x-doc::text>A</x-doc::text></x-doc::page>');
         } catch (\Throwable) {
-            // rendered outside Papercut::view(), so the page never closes
+            // rendered outside Quoin::view(), so the page never closes
         }
 
         $this->expectException(UnknownAttribute::class);
@@ -286,7 +286,7 @@ final class ThemeOverrideTest extends TestCase
 
     private function wrapper(string $name, string $blade): void
     {
-        $dir = $this->tempDir('papercut-components');
+        $dir = $this->tempDir('quoin-components');
         mkdir("$dir/components");
         file_put_contents("$dir/components/$name.blade.php", $blade);
         $this->app()->make('view')->addLocation($dir);

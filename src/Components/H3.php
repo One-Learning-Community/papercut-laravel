@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class H3 extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class H3 extends QuoinComponent
 {
     protected function ownAttributes(): array
     {

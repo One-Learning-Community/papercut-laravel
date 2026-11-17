@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\TableRow;
+use Quoin\TableRow;
 
 /**
  * Internal value object returned by <x-doc::thead>; only <x-doc::table> accepts it.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class HeaderRows
 {

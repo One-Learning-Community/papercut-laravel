@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class PageNumber extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class PageNumber extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -26,6 +26,6 @@ final class PageNumber extends PapercutComponent
             throw InvalidValue::for('format', is_scalar($format) ? (string) $format : get_debug_type($format))->withContext('format')->within('on ' . Tag::of('page-number'));
         }
 
-        return $this->textStyled(\Papercut\PageNumber::make($format), $data);
+        return $this->textStyled(\Quoin\PageNumber::make($format), $data);
     }
 }

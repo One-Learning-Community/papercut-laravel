@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tag;
-use Papercut\ListItem;
-use Papercut\ListNode;
-use Papercut\Style\ListMarker;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\ListItem;
+use Quoin\ListNode;
+use Quoin\Style\ListMarker;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-class Ol extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+class Ol extends QuoinComponent
 {
     protected function ownAttributes(): array
     {

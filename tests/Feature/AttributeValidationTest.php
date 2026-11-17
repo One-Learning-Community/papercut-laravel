@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\{Document, Page, Table};
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\{Document, Page, Table};
+use Quoin\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /** Blade attributes get the same checks as the builder setters (D3, D10). */
@@ -90,13 +90,13 @@ final class AttributeValidationTest extends TestCase
     public function test_legitimate_values_still_build(): void
     {
         $node = $this->nodeFrom('<x-doc::column width="0pt" padding="0" margin="-4pt 0 0 0" opacity="0" grow="0" letter-spacing="-0.5pt">x</x-doc::column>');
-        self::assertInstanceOf(\Papercut\View::class, $node);
+        self::assertInstanceOf(\Quoin\View::class, $node);
     }
 
     public function test_bound_null_means_not_set_and_array_throws(): void
     {
         $node = $this->nodeFrom('<x-doc::column :width="$w" padding="2pt">x</x-doc::column>', ['w' => null]);
-        self::assertInstanceOf(\Papercut\View::class, $node);
+        self::assertInstanceOf(\Quoin\View::class, $node);
         self::assertNull($node->style()->width);
 
         $this->expectException(InvalidValue::class);

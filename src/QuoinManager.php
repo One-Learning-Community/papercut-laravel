@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel;
+namespace Quoin\Laravel;
 
 use Illuminate\Support\Traits\Macroable;
-use Papercut\Code\{CodeHighlighting, CodeTheme, PhikiHighlighter};
-use Papercut\Document;
-use Papercut\Exception\{InvalidValue, MissingExporter, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Preview\PreviewRegistry;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\OverflowMode;
-use Papercut\Export\{Exporter, ExportOptions, FidelityLevel, FidelityReport, FontMode, HtmlOptions, PdfOptions};
-use Papercut\Html\FontSource;
-use Papercut\Markup\{BlankParagraphs, MarkupOptions, StyleMode};
-use Papercut\Style\{Style, Theme};
-use Papercut\Text\{FontFace, FontSet};
+use Quoin\Code\{CodeHighlighting, CodeTheme, PhikiHighlighter};
+use Quoin\Document;
+use Quoin\Exception\{InvalidValue, MissingExporter, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Preview\PreviewRegistry;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\OverflowMode;
+use Quoin\Export\{Exporter, ExportOptions, FidelityLevel, FidelityReport, FontMode, HtmlOptions, PdfOptions};
+use Quoin\Html\FontSource;
+use Quoin\Markup\{BlankParagraphs, MarkupOptions, StyleMode};
+use Quoin\Style\{Style, Theme};
+use Quoin\Text\{FontFace, FontSet};
 
 /** Not final only so tests can stand in a missing exporter; see docxExporterClass(). */
-class PapercutManager
+class QuoinManager
 {
     use Macroable;
 
@@ -55,7 +55,7 @@ class PapercutManager
             ));
 
             if (count($segments) !== 1 || !$segments[0] instanceof Document) {
-                throw new InvalidStructure('A Papercut view must have exactly one ' . Tag::of('document') . ' root; found ' . $this->describe($segments) . " in view [$view]");
+                throw new InvalidStructure('A view must have exactly one ' . Tag::of('document') . ' root; found ' . $this->describe($segments) . " in view [$view]");
             }
             if ($this->registry->remaining() > 0) {
                 if (preg_match('/\[\[pc:[0-9a-f]{16}:\d+\]\]/i', $html) === 1) {
@@ -89,7 +89,7 @@ class PapercutManager
     }
 
     /**
-     * Options for Word export: the export options, as papercut/docx's DocxOptions with `papercut.docx` applied when
+     * Options for Word export: the export options, as quoin/docx's DocxOptions with `quoin.docx` applied when
      * that package is installed. The class is named as a string, like the exporter.
      *
      * @internal
@@ -99,18 +99,18 @@ class PapercutManager
         if ($this->docx !== null) {
             return $this->docx;
         }
-        $pageNumbers = config('papercut.docx.toc_page_numbers', true);
+        $pageNumbers = config('quoin.docx.toc_page_numbers', true);
         if (!is_bool($pageNumbers)) {
-            throw new \InvalidArgumentException('Invalid papercut.docx.toc_page_numbers: ' . self::shown($pageNumbers) . '; expected true or false');
+            throw new \InvalidArgumentException('Invalid quoin.docx.toc_page_numbers: ' . self::shown($pageNumbers) . '; expected true or false');
         }
-        // An empty PAPERCUT_RSVG_CONVERT= in .env reads as '': off, like null.
-        $rsvg = config('papercut.docx.rsvg_convert');
+        // An empty QUOIN_RSVG_CONVERT= in .env reads as '': off, like null.
+        $rsvg = config('quoin.docx.rsvg_convert');
         $rsvg = $rsvg === '' ? null : $rsvg;
         if ($rsvg !== null && !is_string($rsvg)) {
-            throw new \InvalidArgumentException('Invalid papercut.docx.rsvg_convert: ' . self::shown($rsvg) . '; expected null or the path to rsvg-convert');
+            throw new \InvalidArgumentException('Invalid quoin.docx.rsvg_convert: ' . self::shown($rsvg) . '; expected null or the path to rsvg-convert');
         }
         $base = $this->exportOptions();
-        $class = 'Papercut\\Docx\\DocxOptions';
+        $class = 'Quoin\\Docx\\DocxOptions';
         if (!class_exists($class)) {
             return $this->docx = $base;
         }
@@ -129,9 +129,9 @@ class PapercutManager
     }
 
     /**
-     * The Word exporter from papercut/docx, which is optional: the class is named as a string, never imported.
+     * The Word exporter from quoin/docx, which is optional: the class is named as a string, never imported.
      *
-     * @throws MissingExporter when papercut/docx is not installed
+     * @throws MissingExporter when quoin/docx is not installed
      *
      * @internal
      */
@@ -139,7 +139,7 @@ class PapercutManager
     {
         $class = static::docxExporterClass();
         if (!class_exists($class) || !is_subclass_of($class, Exporter::class)) {
-            throw MissingExporter::for('docx', 'papercut/docx');
+            throw MissingExporter::for('docx', 'quoin/docx');
         }
 
         return new $class();
@@ -147,16 +147,16 @@ class PapercutManager
 
     protected static function docxExporterClass(): string
     {
-        return 'Papercut\\Docx\\DocxExporter';
+        return 'Quoin\\Docx\\DocxExporter';
     }
 
-    /** Options for `<x-doc::markup>`, built from `papercut.markup` on first use. */
+    /** Options for `<x-doc::markup>`, built from `quoin.markup` on first use. */
     public function markupOptions(): MarkupOptions
     {
         return $this->markup ??= $this->buildMarkupOptions();
     }
 
-    /** Code block highlighting, built from `papercut.code` on first use. */
+    /** Code block highlighting, built from `quoin.code` on first use. */
     public function codeHighlighting(): CodeHighlighting
     {
         return $this->code ??= $this->buildCodeHighlighting();
@@ -164,7 +164,7 @@ class PapercutManager
 
     /**
      * The resolver for a markup tag's `images` attribute: the class is built through the container once per manager and
-     * shared by every markup tag naming it, and by `papercut.markup.images` when that names the same class.
+     * shared by every markup tag naming it, and by `quoin.markup.images` when that names the same class.
      *
      * @return \Closure(string): ?string
      */
@@ -198,33 +198,33 @@ class PapercutManager
 
     private function buildMarkupOptions(): MarkupOptions
     {
-        $styles = config('papercut.markup.styles', 'theme');
-        $blank = config('papercut.markup.blank_paragraphs', 'drop');
+        $styles = config('quoin.markup.styles', 'theme');
+        $blank = config('quoin.markup.blank_paragraphs', 'drop');
         $mode = is_string($styles) ? StyleMode::tryFrom($styles) : null;
         if ($mode === null) {
-            throw new \InvalidArgumentException('Invalid papercut.markup.styles: ' . (is_scalar($styles) ? var_export($styles, true) : get_debug_type($styles)) . "; expected 'theme' or 'original'");
+            throw new \InvalidArgumentException('Invalid quoin.markup.styles: ' . (is_scalar($styles) ? var_export($styles, true) : get_debug_type($styles)) . "; expected 'theme' or 'original'");
         }
         $paragraphs = is_string($blank) ? BlankParagraphs::tryFrom($blank) : null;
         if ($paragraphs === null) {
-            throw new \InvalidArgumentException('Invalid papercut.markup.blank_paragraphs: ' . (is_scalar($blank) ? var_export($blank, true) : get_debug_type($blank)) . "; expected 'drop' or 'keep'");
+            throw new \InvalidArgumentException('Invalid quoin.markup.blank_paragraphs: ' . (is_scalar($blank) ? var_export($blank, true) : get_debug_type($blank)) . "; expected 'drop' or 'keep'");
         }
 
         $images = self::configuredClass('markup.images', Markup\ImageResolver::class);
 
-        $toc = config('papercut.markup.toc', true);
+        $toc = config('quoin.markup.toc', true);
         if (!is_bool($toc)) {
-            throw new \InvalidArgumentException('Invalid papercut.markup.toc: ' . self::shown($toc) . '; expected true or false');
+            throw new \InvalidArgumentException('Invalid quoin.markup.toc: ' . self::shown($toc) . '; expected true or false');
         }
 
         return new MarkupOptions(styles: $mode, images: $images === null ? null : $this->sharedImageResolver($images, 'markup.images'), blankParagraphs: $paragraphs, code: $this->markupCode(), toc: $toc);
     }
 
-    /** What markup gets for code: the configured highlighting, or false when `papercut.markup.highlight` is off. */
+    /** What markup gets for code: the configured highlighting, or false when `quoin.markup.highlight` is off. */
     public function markupCode(): CodeHighlighting|false
     {
-        $highlight = config('papercut.markup.highlight', true);
+        $highlight = config('quoin.markup.highlight', true);
         if (!is_bool($highlight)) {
-            throw new \InvalidArgumentException('Invalid papercut.markup.highlight: ' . self::shown($highlight) . '; expected true or false');
+            throw new \InvalidArgumentException('Invalid quoin.markup.highlight: ' . self::shown($highlight) . '; expected true or false');
         }
 
         return $highlight ? $this->codeHighlighting() : false;
@@ -232,35 +232,35 @@ class PapercutManager
 
     private function buildCodeHighlighting(): CodeHighlighting
     {
-        $theme = config('papercut.code.theme');
+        $theme = config('quoin.code.theme');
         if ($theme !== null && (!is_string($theme) || $theme === '')) {
-            throw new \InvalidArgumentException('Invalid papercut.code.theme: ' . self::shown($theme) . '; expected a theme name or null');
+            throw new \InvalidArgumentException('Invalid quoin.code.theme: ' . self::shown($theme) . '; expected a theme name or null');
         }
-        $variant = config('papercut.code.variant');
+        $variant = config('quoin.code.variant');
         if ($variant !== null && !in_array($variant, ['strip', 'caption'], true)) {
-            throw new \InvalidArgumentException('Invalid papercut.code.variant: ' . self::shown($variant) . "; expected 'strip', 'caption' or null");
+            throw new \InvalidArgumentException('Invalid quoin.code.variant: ' . self::shown($variant) . "; expected 'strip', 'caption' or null");
         }
         $maps = [];
         foreach (['grammars', 'themes', 'aliases'] as $key) {
-            $map = config("papercut.code.$key", []);
+            $map = config("quoin.code.$key", []);
             if (!is_array($map) || ($map !== [] && array_is_list($map))) {
-                throw new \InvalidArgumentException("Invalid papercut.code.$key: " . self::shown($map) . '; expected a map of name => ' . ($key === 'aliases' ? 'language' : 'file path'));
+                throw new \InvalidArgumentException("Invalid quoin.code.$key: " . self::shown($map) . '; expected a map of name => ' . ($key === 'aliases' ? 'language' : 'file path'));
             }
             foreach ($map as $name => $value) {
                 if (!is_string($value) || $value === '') {
-                    throw new \InvalidArgumentException("Invalid papercut.code.$key.$name: " . self::shown($value) . '; expected a ' . ($key === 'aliases' ? 'language name' : 'file path'));
+                    throw new \InvalidArgumentException("Invalid quoin.code.$key.$name: " . self::shown($value) . '; expected a ' . ($key === 'aliases' ? 'language name' : 'file path'));
                 }
             }
             $maps[$key] = $map;
         }
-        $injections = config('papercut.code.injections', []);
+        $injections = config('quoin.code.injections', []);
         if (!is_array($injections) || !array_is_list($injections)) {
-            throw new \InvalidArgumentException('Invalid papercut.code.injections: ' . self::shown($injections) . "; expected a list of ['path' => …, 'into' => [scope, …]]");
+            throw new \InvalidArgumentException('Invalid quoin.code.injections: ' . self::shown($injections) . "; expected a list of ['path' => …, 'into' => [scope, …]]");
         }
         foreach ($injections as $i => $entry) {
             $into = is_array($entry) ? ($entry['into'] ?? null) : null;
             if (!is_array($entry) || !is_string($entry['path'] ?? null) || !is_array($into) || !array_is_list($into) || $into === [] || array_filter($into, 'is_string') !== $into) {
-                throw new \InvalidArgumentException("Invalid papercut.code.injections.$i: " . self::shown($entry) . "; expected ['path' => file path, 'into' => [scope, …]]");
+                throw new \InvalidArgumentException("Invalid quoin.code.injections.$i: " . self::shown($entry) . "; expected ['path' => file path, 'into' => [scope, …]]");
             }
         }
 
@@ -298,7 +298,7 @@ class PapercutManager
         try {
             return $register();
         } catch (\InvalidArgumentException $e) {
-            throw new \InvalidArgumentException("Invalid papercut.code.$key: " . $e->getMessage(), 0, $e);
+            throw new \InvalidArgumentException("Invalid quoin.code.$key: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -322,19 +322,19 @@ class PapercutManager
             $fonts = $fonts->withWordName($family, $wordName);
         }
 
-        $cfg = (array) config('papercut.theme', []);
+        $cfg = (array) config('quoin.theme', []);
         $theme = Theme::default()->withOverride(ThemeConfig::override(
             $cfg,
             ThemeConfig::CONFIG,
             $families,
         ));
         /** @var array<string, array<string, mixed>> $styles */
-        $styles = (array) config('papercut.styles', []);
+        $styles = (array) config('quoin.styles', []);
         foreach ($styles as $name => $attrs) {
             try {
                 $theme = $theme->withStyle((string) $name, Style::fromAttributes($attrs));
             } catch (InvalidValue|UnknownAttribute $e) {
-                throw $e->within("in config papercut.styles.$name");
+                throw $e->within("in config quoin.styles.$name");
             }
         }
 
@@ -343,9 +343,9 @@ class PapercutManager
             theme: $theme,
             onWarning: static function (string $msg, ?FidelityReport $report = null): void {
                 if ($report?->level === FidelityLevel::Approximated) {
-                    logger()->debug('[papercut] ' . $msg);
+                    logger()->debug('[quoin] ' . $msg);
                 } else {
-                    logger()->warning('[papercut] ' . $msg);
+                    logger()->warning('[quoin] ' . $msg);
                 }
             },
             strict: self::strict(),
@@ -354,10 +354,10 @@ class PapercutManager
 
     private function buildPdfOptions(): PdfOptions
     {
-        $overflow = config('papercut.overflow');
+        $overflow = config('quoin.overflow');
         $key = is_string($overflow) ? strtolower($overflow) : $overflow;
         if ($key !== null && $key !== 'throw' && $key !== 'clip') {
-            throw new \InvalidArgumentException('Invalid papercut.overflow: ' . (is_scalar($overflow) ? var_export($overflow, true) : get_debug_type($overflow)) . '; expected throw, clip or null');
+            throw new \InvalidArgumentException('Invalid quoin.overflow: ' . (is_scalar($overflow) ? var_export($overflow, true) : get_debug_type($overflow)) . '; expected throw, clip or null');
         }
         $mode = match ($key) {
             'throw' => OverflowMode::Throw,
@@ -365,9 +365,9 @@ class PapercutManager
             default => app()->environment('local', 'testing') ? OverflowMode::Throw : OverflowMode::Clip,
         };
 
-        $bookmarks = config('papercut.bookmarks', true);
+        $bookmarks = config('quoin.bookmarks', true);
         if (!is_bool($bookmarks)) {
-            throw new \InvalidArgumentException('Invalid papercut.bookmarks: ' . (is_scalar($bookmarks) ? var_export($bookmarks, true) : get_debug_type($bookmarks)) . '; expected true or false');
+            throw new \InvalidArgumentException('Invalid quoin.bookmarks: ' . (is_scalar($bookmarks) ? var_export($bookmarks, true) : get_debug_type($bookmarks)) . '; expected true or false');
         }
 
         $base = $this->exportOptions();
@@ -385,19 +385,19 @@ class PapercutManager
 
     private function buildHtmlOptions(): HtmlOptions
     {
-        $fonts = config('papercut.html.fonts', 'none');
+        $fonts = config('quoin.html.fonts', 'none');
         $mode = match (is_string($fonts) ? strtolower($fonts) : null) {
             'none' => FontMode::None,
             'embed' => FontMode::Embed,
             'link' => FontMode::Link,
             'sources' => FontMode::Sources,
-            default => throw new \InvalidArgumentException('Invalid papercut.html.fonts: ' . (is_scalar($fonts) ? var_export($fonts, true) : get_debug_type($fonts)) . '; expected none, embed, link or sources'),
+            default => throw new \InvalidArgumentException('Invalid quoin.html.fonts: ' . (is_scalar($fonts) ? var_export($fonts, true) : get_debug_type($fonts)) . '; expected none, embed, link or sources'),
         };
 
         $imageUrl = self::resolver('html.image_url', Html\ImageUrlResolver::class);
         $fontUrl = self::fontUrlResolver();
         if ($mode === FontMode::Link && $fontUrl === null) {
-            throw new \InvalidArgumentException('papercut.html.fonts is link, which needs papercut.html.font_url');
+            throw new \InvalidArgumentException('quoin.html.fonts is link, which needs quoin.html.font_url');
         }
 
         $sources = $mode === FontMode::Sources ? self::fontSources() : [];
@@ -413,7 +413,7 @@ class PapercutManager
             imageUrl: $imageUrl,
             fontUrl: $fontUrl,
             fontSources: $sources,
-            inlineSvgs: (bool) config('papercut.html.inline_svgs', false),
+            inlineSvgs: (bool) config('quoin.html.inline_svgs', false),
         );
     }
 
@@ -426,18 +426,18 @@ class PapercutManager
     /** @return list<FontSource> */
     private static function fontSources(): array
     {
-        $classes = config('papercut.html.font_sources', [\Papercut\Html\GoogleFonts::class]);
+        $classes = config('quoin.html.font_sources', [\Quoin\Html\GoogleFonts::class]);
         if (!is_array($classes) || !array_is_list($classes)) {
-            throw new \InvalidArgumentException('Invalid papercut.html.font_sources: ' . (is_scalar($classes) ? var_export($classes, true) : get_debug_type($classes)) . '; expected a list of class names implementing ' . FontSource::class);
+            throw new \InvalidArgumentException('Invalid quoin.html.font_sources: ' . (is_scalar($classes) ? var_export($classes, true) : get_debug_type($classes)) . '; expected a list of class names implementing ' . FontSource::class);
         }
         if ($classes === []) {
-            throw new \InvalidArgumentException('papercut.html.fonts is sources, which needs at least one class in papercut.html.font_sources');
+            throw new \InvalidArgumentException('quoin.html.fonts is sources, which needs at least one class in quoin.html.font_sources');
         }
         $sources = [];
         foreach ($classes as $i => $class) {
             $key = "html.font_sources.$i";
             if (!is_string($class) || !is_subclass_of($class, FontSource::class)) {
-                throw new \InvalidArgumentException("Invalid papercut.$key: " . (is_scalar($class) ? var_export($class, true) : get_debug_type($class)) . '; expected an invokable class name implementing ' . FontSource::class);
+                throw new \InvalidArgumentException("Invalid quoin.$key: " . (is_scalar($class) ? var_export($class, true) : get_debug_type($class)) . '; expected an invokable class name implementing ' . FontSource::class);
             }
             /** @var FontSource $instance */
             $instance = self::build($key, $class);
@@ -457,12 +457,12 @@ class PapercutManager
             if ($inner instanceof \InvalidArgumentException) {
                 throw $inner;
             }
-            throw new \InvalidArgumentException('Cannot build ' . ($what ?? "papercut.$key") . ' resolver ' . var_export($class, true) . ': ' . $e->getMessage(), 0, $e);
+            throw new \InvalidArgumentException('Cannot build ' . ($what ?? "quoin.$key") . ' resolver ' . var_export($class, true) . ': ' . $e->getMessage(), 0, $e);
         }
     }
 
     /**
-     * @param string $key config path under `papercut.`, e.g. `html.image_url`
+     * @param string $key config path under `quoin.`, e.g. `html.image_url`
      * @param class-string<Html\ImageUrlResolver|Html\FontUrlResolver|Markup\ImageResolver> $interface
      */
     private static function resolver(string $key, string $interface): ?\Closure
@@ -478,19 +478,19 @@ class PapercutManager
     }
 
     /**
-     * The class name set at `papercut.$key`, or null when unset.
+     * The class name set at `quoin.$key`, or null when unset.
      *
      * @param class-string $interface the interface the class must implement
      * @return class-string|null
      */
     private static function configuredClass(string $key, string $interface): ?string
     {
-        $class = config('papercut.' . $key);
+        $class = config('quoin.' . $key);
         if ($class === null) {
             return null;
         }
         if (!is_string($class) || !is_subclass_of($class, $interface)) {
-            throw new \InvalidArgumentException("Invalid papercut.$key: " . (is_scalar($class) ? var_export($class, true) : get_debug_type($class)) . "; expected an invokable class name implementing $interface or null");
+            throw new \InvalidArgumentException("Invalid quoin.$key: " . (is_scalar($class) ? var_export($class, true) : get_debug_type($class)) . "; expected an invokable class name implementing $interface or null");
         }
 
         return $class;
@@ -498,9 +498,9 @@ class PapercutManager
 
     private static function strict(): bool
     {
-        $strict = config('papercut.strict', false);
+        $strict = config('quoin.strict', false);
         if (!is_bool($strict)) {
-            throw new \InvalidArgumentException('Invalid papercut.strict: ' . (is_scalar($strict) ? var_export($strict, true) : get_debug_type($strict)) . '; expected true or false');
+            throw new \InvalidArgumentException('Invalid quoin.strict: ' . (is_scalar($strict) ? var_export($strict, true) : get_debug_type($strict)) . '; expected true or false');
         }
 
         return $strict;
@@ -508,15 +508,15 @@ class PapercutManager
 
     private static function cacheDir(): string|false
     {
-        $dir = config('papercut.cache_dir');
+        $dir = config('quoin.cache_dir');
         if ($dir === null) {
             // not the temp dir: PHP-FPM and the CLI can each see a different one
-            return storage_path('framework/cache/papercut');
+            return storage_path('framework/cache/quoin');
         }
         if ($dir === false || (is_string($dir) && $dir !== '')) {
             return $dir;
         }
-        throw new \InvalidArgumentException('Invalid papercut.cache_dir: ' . (is_scalar($dir) ? var_export($dir, true) : get_debug_type($dir)) . '; expected a directory path, false or null');
+        throw new \InvalidArgumentException('Invalid quoin.cache_dir: ' . (is_scalar($dir) ? var_export($dir, true) : get_debug_type($dir)) . '; expected a directory path, false or null');
     }
 
     /** @param list<object|string> $segments */

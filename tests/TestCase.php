@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests;
+namespace Quoin\Laravel\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 use Illuminate\View\ViewException;
 use Illuminate\Support\Facades\Blade;
-use Papercut\Laravel\PapercutServiceProvider;
-use Papercut\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\QuoinServiceProvider;
+use Quoin\Laravel\Rendering\NodeRegistry;
 
 abstract class TestCase extends Orchestra
 {
@@ -18,7 +18,7 @@ abstract class TestCase extends Orchestra
      */
     protected function getPackageProviders($app): array
     {
-        return [PapercutServiceProvider::class];
+        return [QuoinServiceProvider::class];
     }
 
     /**
@@ -94,7 +94,7 @@ abstract class TestCase extends Orchestra
     /** The text of a PDF as poppler's pdftotext reads it; skips the test when pdftotext is not installed. */
     protected function pdfText(string $pdf): string
     {
-        $file = tempnam(sys_get_temp_dir(), 'papercut-text-');
+        $file = tempnam(sys_get_temp_dir(), 'quoin-text-');
         file_put_contents($file, $pdf);
         try {
             exec('pdftotext ' . escapeshellarg($file) . ' - 2>/dev/null', $out, $code);

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
@@ -27,8 +27,8 @@ final class GoldenBytesTest extends TestCase
     {
         $app['config']->set('view.paths', [self::EXAMPLES . '/views']);
         // v0.1 had no bookmarks; with them off, everything drawn must still match its bytes.
-        $app['config']->set('papercut.bookmarks', false);
-        $app['config']->set('papercut.image_path', self::EXAMPLES . '/../assets');
+        $app['config']->set('quoin.bookmarks', false);
+        $app['config']->set('quoin.image_path', self::EXAMPLES . '/../assets');
     }
 
     /** @return iterable<string, array{string}> */
@@ -59,9 +59,9 @@ final class GoldenBytesTest extends TestCase
     {
         // The example views set no createdAt, so the PDF would embed the current time. Pin it by rebuilding the
         // resolved document with a fixed date; only the test does this, the examples stay as they are.
-        $document = Papercut::view($view, $data)->document()->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
+        $document = Quoin::view($view, $data)->document()->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
 
-        return Papercut::make($document)->pdf()->toString();
+        return Quoin::make($document)->pdf()->toString();
     }
 
     public function test_golden_keys_match_the_cases_exactly(): void

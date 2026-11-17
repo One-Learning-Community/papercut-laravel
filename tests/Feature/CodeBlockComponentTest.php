@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Decorator\CodeBlock;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\{Text, View};
+use Quoin\Decorator\CodeBlock;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\{Text, View};
 
 final class CodeBlockComponentTest extends TestCase
 {
@@ -16,8 +16,8 @@ final class CodeBlockComponentTest extends TestCase
 
     private function fresh(): void
     {
-        app()->forgetInstance(PapercutManager::class);
-        Papercut::clearResolvedInstances();
+        app()->forgetInstance(QuoinManager::class);
+        Quoin::clearResolvedInstances();
     }
 
     /** @param array<string, mixed> $data */
@@ -108,7 +108,7 @@ final class CodeBlockComponentTest extends TestCase
 
     public function test_config_theme_variant_and_custom_grammar(): void
     {
-        config(['papercut.code' => [
+        config(['quoin.code' => [
             'theme' => 'demo-dark',
             'variant' => 'strip',
             'grammars' => ['demo' => self::FIX . '/demo.tmLanguage.json'],
@@ -121,31 +121,31 @@ final class CodeBlockComponentTest extends TestCase
         self::assertSame('#101010', (string) $view->style()->background);
         self::assertContains('#00ff00', self::colors($view));
         self::assertContains('#ff00ff', self::colors($view));
-        self::assertSame('strip', app(PapercutManager::class)->codeHighlighting()->variant);
+        self::assertSame('strip', app(QuoinManager::class)->codeHighlighting()->variant);
         self::assertInstanceOf(View::class, $view->children()[0], 'the configured variant is applied');
     }
 
     public function test_unreadable_grammar_path_throws_naming_the_config_key(): void
     {
-        config(['papercut.code.grammars' => ['demo' => '/nope/missing.json']]);
+        config(['quoin.code.grammars' => ['demo' => '/nope/missing.json']]);
         $this->fresh();
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('papercut.code.grammars.demo');
-        app(PapercutManager::class)->codeHighlighting();
+        $this->expectExceptionMessage('quoin.code.grammars.demo');
+        app(QuoinManager::class)->codeHighlighting();
     }
 
     public function test_invalid_variant_in_config_throws(): void
     {
-        config(['papercut.code.variant' => 'large']);
+        config(['quoin.code.variant' => 'large']);
         $this->fresh();
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('papercut.code.variant');
-        app(PapercutManager::class)->codeHighlighting();
+        $this->expectExceptionMessage('quoin.code.variant');
+        app(QuoinManager::class)->codeHighlighting();
     }
 
     public function test_code_highlighting_is_built_once(): void
     {
-        $m = app(PapercutManager::class);
+        $m = app(QuoinManager::class);
         self::assertSame($m->codeHighlighting(), $m->codeHighlighting());
     }
 
@@ -155,7 +155,7 @@ final class CodeBlockComponentTest extends TestCase
         $on = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => $html]);
         self::assertTrue($this->hasCodeBlock($on));
 
-        config(['papercut.markup.highlight' => false]);
+        config(['quoin.markup.highlight' => false]);
         $this->fresh();
         $off = $this->nodeFrom('<x-doc::markup :html="$h" />', ['h' => $html]);
         self::assertFalse($this->hasCodeBlock($off));
@@ -167,7 +167,7 @@ final class CodeBlockComponentTest extends TestCase
     private function hasCodeBlock(mixed $node): bool
     {
         // markup keeps the block as a component until layout, so expand it and look for its language label
-        $node = $node instanceof \Papercut\Component ? \Papercut\Tree\Expander::expand($node) : $node;
+        $node = $node instanceof \Quoin\Component ? \Quoin\Tree\Expander::expand($node) : $node;
         if ($node instanceof Text) {
             return array_map(static fn ($s): string => $s->text, $node->spanList()) === ['PHP'];
         }
@@ -180,7 +180,7 @@ final class CodeBlockComponentTest extends TestCase
         try {
             $this->nodeFrom('<x-doc::pre language="php" :label="true">x</x-doc::pre>');
             self::fail('Expected InvalidValue.');
-        } catch (\Papercut\Exception\InvalidValue $e) {
+        } catch (\Quoin\Exception\InvalidValue $e) {
             self::assertStringContainsString('label', $e->getMessage());
         }
         self::assertSame('PHP', self::texts($this->rendered('<x-doc::pre language="php" label="">x</x-doc::pre>'))[0]);
@@ -188,10 +188,10 @@ final class CodeBlockComponentTest extends TestCase
 
     public function test_custom_config_without_phiki_gives_plain_text_and_the_install_note(): void
     {
-        config(['papercut.code.grammars' => ['demo' => self::FIX . '/demo.tmLanguage.json']]);
-        app()->forgetInstance(PapercutManager::class);
-        Papercut::clearResolvedInstances();
-        app()->instance(PapercutManager::class, new class(app(\Papercut\Laravel\Rendering\NodeRegistry::class), app(\Papercut\Laravel\Preview\PreviewRegistry::class)) extends PapercutManager {
+        config(['quoin.code.grammars' => ['demo' => self::FIX . '/demo.tmLanguage.json']]);
+        app()->forgetInstance(QuoinManager::class);
+        Quoin::clearResolvedInstances();
+        app()->instance(QuoinManager::class, new class(app(\Quoin\Laravel\Rendering\NodeRegistry::class), app(\Quoin\Laravel\Preview\PreviewRegistry::class)) extends QuoinManager {
             protected function phikiAvailable(): bool
             {
                 return false;

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Decorator\ChoiceList;
-use Papercut\Decorator\ChoiceOption;
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tag;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Decorator\ChoiceList;
+use Quoin\Decorator\ChoiceOption;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Choices extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Choices extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array

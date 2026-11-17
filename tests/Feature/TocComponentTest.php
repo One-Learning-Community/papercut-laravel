@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Toc;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Toc;
 
 final class TocComponentTest extends TestCase
 {
@@ -71,7 +71,7 @@ final class TocComponentTest extends TestCase
 
     public function test_the_core_exception_type_catches_it(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Exception\InvalidStructure::class);
         $this->nodeFrom('<x-doc::toc>Contents</x-doc::toc>');
     }
 
@@ -89,7 +89,7 @@ final class TocComponentTest extends TestCase
         file_put_contents($path, $blade);
         \Illuminate\Support\Facades\View::addLocation(sys_get_temp_dir());
         try {
-            $text = $this->pdfText(Papercut::view($view)->pdf()->toString());
+            $text = $this->pdfText(Quoin::view($view)->pdf()->toString());
         } finally {
             unlink($path);
         }

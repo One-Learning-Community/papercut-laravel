@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Blade;
 use InvalidArgumentException;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
-use Papercut\Laravel\Tag;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Tag;
+use Quoin\Laravel\Tests\TestCase;
 
 final class PrefixTest extends TestCase
 {
     protected function usePaperPrefix(mixed $app): void
     {
-        $app['config']->set('papercut.prefix', 'paper');
+        $app['config']->set('quoin.prefix', 'paper');
     }
 
     public function test_default_prefix_is_doc(): void
     {
         $namespaces = Blade::getClassComponentNamespaces();
 
-        $this->assertSame('Papercut\\Laravel\\Components', $namespaces['doc'] ?? null);
+        $this->assertSame('Quoin\\Laravel\\Components', $namespaces['doc'] ?? null);
         $this->assertArrayNotHasKey('pdf', $namespaces);
         $this->assertSame('<x-doc::page>', Tag::of('page'));
         $this->assertSame('<x-doc::*>', Tag::any());
@@ -51,18 +51,18 @@ final class PrefixTest extends TestCase
 
     public function test_invalid_prefix_is_rejected(): void
     {
-        config(['papercut.prefix' => 'Bad Prefix']);
+        config(['quoin.prefix' => 'Bad Prefix']);
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid papercut.prefix');
+        $this->expectExceptionMessage('Invalid quoin.prefix');
         Tag::prefix();
     }
 
     public function test_prefix_cache_follows_config_changes(): void
     {
         $this->assertSame('doc', Tag::prefix());
-        config(['papercut.prefix' => 'other']);
+        config(['quoin.prefix' => 'other']);
         $this->assertSame('other', Tag::prefix());
-        config(['papercut.prefix' => 'Bad Prefix']);
+        config(['quoin.prefix' => 'Bad Prefix']);
         $this->expectException(InvalidArgumentException::class);
         Tag::prefix();
     }
@@ -70,6 +70,6 @@ final class PrefixTest extends TestCase
     public function test_app_components_under_doc_folder_do_not_conflict(): void
     {
         $node = $this->nodeFrom('<x-doc::document><x-doc::page><x-doc::text><x-doc.badge>Gold</x-doc.badge></x-doc::text></x-doc::page></x-doc::document>');
-        $this->assertStringContainsString('Badge Gold', \Papercut\Laravel\Facades\Papercut::make($node)->html()->page()->toString());
+        $this->assertStringContainsString('Badge Gold', \Quoin\Laravel\Facades\Quoin::make($node)->html()->page()->toString());
     }
 }

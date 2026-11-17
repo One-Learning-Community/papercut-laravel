@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\{Document, Page, Text};
-use Papercut\Export\Encryption;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PendingDocument;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\{Document, Page, Text};
+use Quoin\Export\Encryption;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\PendingDocument;
+use Quoin\Laravel\Tests\TestCase;
 
 final class EncryptTest extends TestCase
 {
@@ -25,7 +25,7 @@ final class EncryptTest extends TestCase
 
     private function document(): PendingDocument
     {
-        return Papercut::make(Document::make(Page::a4()->body(Text::make('Private'))));
+        return Quoin::make(Document::make(Page::a4()->body(Text::make('Private'))));
     }
 
     public function test_encrypt_with_a_password(): void

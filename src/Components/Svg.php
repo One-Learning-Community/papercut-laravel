@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\ImagePath;
-use Papercut\Laravel\Tag;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\ImagePath;
+use Quoin\Laravel\Tag;
 
 /**
  * <x-doc::svg>: an SVG from src (a file under the image path), data (markup) or markup inside the tag.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Svg extends PapercutComponent
+final class Svg extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -39,8 +39,8 @@ final class Svg extends PapercutComponent
         $where = rtrim(Tag::of('svg'), '>') . ($src !== null ? ' src="' . $src . '">' : '>');
         try {
             $node = $src !== null
-                ? \Papercut\Svg::file(ImagePath::resolve($src))
-                : \Papercut\Svg::fromString($markup ?? $inside);
+                ? \Quoin\Svg::file(ImagePath::resolve($src))
+                : \Quoin\Svg::fromString($markup ?? $inside);
         } catch (ImageUnreadable $e) {
             throw new ImageUnreadable($e->getMessage() . ' on ' . $where, 0, $e);
         }

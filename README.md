@@ -1,23 +1,23 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/One-Learning-Community/papercut/main/art/papercut-logo-dark.svg">
-  <img alt="Papercut" src="https://raw.githubusercontent.com/One-Learning-Community/papercut/main/art/papercut-logo.svg" width="240">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/One-Learning-Community/quoin/main/art/quoin-logo-dark.svg">
+  <img alt="Quoin" src="https://raw.githubusercontent.com/One-Learning-Community/quoin/main/art/quoin-logo.svg" width="177">
 </picture>
 
-# papercut/laravel
+# quoin/laravel
 
-Blade components for [Papercut](../../README.md): `<x-doc::*>` tags compile into Papercut's layout engine and out to PDF, HTML or Word. Not HTML-to-PDF.
+Blade components for [Quoin](../../README.md): `<x-doc::*>` tags compile into the layout engine and out to PDF, HTML or Word. Not HTML-to-PDF.
 
-**Documentation:** [one-learning-community.github.io/papercut/laravel](https://one-learning-community.github.io/papercut/laravel/)
+**Documentation:** [one-learning-community.github.io/quoin/laravel](https://one-learning-community.github.io/quoin/laravel/)
 
-> **Status: 0.15, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
+> **Status: 0.16, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
 
 ## Install
 
 ```
-composer require papercut/laravel
+composer require quoin/laravel
 ```
 
-Requires PHP 8.4+, `ext-zlib`, `ext-mbstring`, `ext-dom` and Laravel 12 or 13. The service provider and the `Papercut` facade are auto-discovered.
+Requires PHP 8.4+, `ext-zlib`, `ext-mbstring`, `ext-dom` and Laravel 12 or 13. The service provider and the `Quoin` facade are auto-discovered.
 
 ## Quick start
 
@@ -26,28 +26,28 @@ Requires PHP 8.4+, `ext-zlib`, `ext-mbstring`, `ext-dom` and Laravel 12 or 13. T
 <x-doc::document title="Hello">
   <x-doc::page>
     <x-doc::h1>Hello, {{ $name }}</x-doc::h1>
-    <x-doc::p>Rendered by Papercut.</x-doc::p>
+    <x-doc::p>Rendered by Quoin.</x-doc::p>
   </x-doc::page>
 </x-doc::document>
 ```
 
 ```php
-use Papercut\Laravel\Facades\Papercut;
+use Quoin\Laravel\Facades\Quoin;
 
-Route::get('/hello', fn () => Papercut::view('pdf.hello', ['name' => 'Ada'])->pdf()->download('hello.pdf'));
+Route::get('/hello', fn () => Quoin::view('pdf.hello', ['name' => 'Ada'])->pdf()->download('hello.pdf'));
 ```
 
-A view must have exactly one `<x-doc::document>` root. `Papercut::view($view, $data)` returns a `PendingDocument`; `->document()` gives the core `Document` and `->pdf()` a `PendingOutput` with `download($filename)`, `streamDownload($filename)` (a streamed response that renders as it's sent; Livewire and Filament actions need it), `inline($filename)`, `save($path)`, `store($path, $disk = null)` (a Laravel filesystem disk), `toString()` and `output()`. The filename defaults to `document.pdf`. A `PendingOutput` returned from a route renders inline. `Papercut::make($document)` wraps a `Document` you built in PHP the same way. `->encrypt('secret')` (or an `Encryption` with custom permissions) returns a copy whose PDF opens only with that password; HTML is not affected.
+A view must have exactly one `<x-doc::document>` root. `Quoin::view($view, $data)` returns a `PendingDocument`; `->document()` gives the core `Document` and `->pdf()` a `PendingOutput` with `download($filename)`, `streamDownload($filename)` (a streamed response that renders as it's sent; Livewire and Filament actions need it), `inline($filename)`, `save($path)`, `store($path, $disk = null)` (a Laravel filesystem disk), `toString()` and `output()`. The filename defaults to `document.pdf`. A `PendingOutput` returned from a route renders inline. `Quoin::make($document)` wraps a `Document` you built in PHP the same way. `->encrypt('secret')` (or an `Encryption` with custom permissions) returns a copy whose PDF opens only with that password; HTML is not affected.
 
 Full examples: [`examples/laravel`](../../examples/laravel) (invoice, transcript, report). Content inside `<x-doc::document>` may also contain your own Blade components, which can themselves contain `<x-doc::*>` tags.
 
 ## Configuration
 
 ```
-php artisan vendor:publish --tag=papercut-config
+php artisan vendor:publish --tag=quoin-config
 ```
 
-This publishes `config/papercut.php`:
+This publishes `config/quoin.php`:
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -63,32 +63,32 @@ This publishes `config/papercut.php`:
 | `overflow` | `null` | `'throw'`, `'clip'`, or `null` = throw in `local`/`testing`, clip elsewhere |
 | `strict` | `false` | `true` makes an export throw `UnsupportedFeature` for content a format cannot render, instead of dropping it with a warning. Consider `true` in tests |
 | `html.fonts` | `'none'` | Fonts in HTML output: `'none'` (a font stack ending in a generic family that matches the font's class, small files), `'embed'` (base64 `@font-face`, large files), `'link'` (`@font-face` with URLs from `html.font_url`; requires it) or `'sources'` (see [Font sources](#font-sources)) |
-| `html.image_url` | `null` | Class name implementing `Papercut\Laravel\Html\ImageUrlResolver`; `null` embeds images as data URIs (see [HTML URLs](#html-urls)) |
-| `html.font_url` | `null` | Class name implementing `Papercut\Laravel\Html\FontUrlResolver`; required when `html.fonts` is `'link'` |
-| `html.font_sources` | `[GoogleFonts::class]` | Used when `html.fonts` is `'sources'`: an ordered list of class names implementing `Papercut\Html\FontSource` |
+| `html.image_url` | `null` | Class name implementing `Quoin\Laravel\Html\ImageUrlResolver`; `null` embeds images as data URIs (see [HTML URLs](#html-urls)) |
+| `html.font_url` | `null` | Class name implementing `Quoin\Laravel\Html\FontUrlResolver`; required when `html.fonts` is `'link'` |
+| `html.font_sources` | `[GoogleFonts::class]` | Used when `html.fonts` is `'sources'`: an ordered list of class names implementing `Quoin\Html\FontSource` |
 | `html.google_fonts.host` | `'https://fonts.googleapis.com'` | Host of the `GoogleFonts` source; `'https://fonts.bunny.net'` for Bunny Fonts |
 | `html.google_fonts.display` | `'swap'` | `font-display`: `auto`, `block`, `swap`, `fallback` or `optional` |
 | `html.google_fonts.families` | `null` | `null` = every family, or a list of family names (allowlist) |
 | `html.local_fonts.mode` | `'embed'` | `LocalFonts` source: `'embed'` (base64) or `'link'` (URLs from `html.font_url`; requires it) |
 | `html.local_fonts.families` | `null` | `null` = every registered family, or a list of family names |
-| `markup.images` | `null` | Class name implementing `Papercut\Laravel\Markup\ImageResolver`; `null` treats every `<img>` in markup as missing (see [Rich text](#rich-text-from-your-database)) |
+| `markup.images` | `null` | Class name implementing `Quoin\Laravel\Markup\ImageResolver`; `null` treats every `<img>` in markup as missing (see [Rich text](#rich-text-from-your-database)) |
 | `markup.styles` | `'theme'` | `'theme'` (HTML gives structure, the theme styles it) or `'original'` (inline `style=""` applied on top) |
 | `markup.blank_paragraphs` | `'drop'` | `'drop'` or `'keep'` paragraphs that hold only `&nbsp;` or `<br>` |
 | `markup.toc` | `true` | `false` keeps converted headings out of tables of contents; they keep their look and bookmarks |
 | `docx.toc_page_numbers` | `true` | Word export lays out the pages to fill in a table of contents' page numbers (about the cost of a PDF export); `false` skips that, and entries show without numbers until the reader updates the field |
 | `markup.highlight` | `true` | `false` keeps `<pre><code class="language-x">` as plain `pre` blocks instead of code blocks |
-| `code.theme` | `null` | Default code theme. `null` is `papercut-light`; otherwise a name from Phiki's bundled themes or `code.themes` |
+| `code.theme` | `null` | Default code theme. `null` is `quoin-light`; otherwise a name from Phiki's bundled themes or `code.themes` |
 | `code.variant` | `null` | `null`, `'strip'` or `'caption'`: the look of code blocks that don't set a `variant` |
 | `code.grammars` | `[]` | `'name' => path` to a TextMate grammar JSON file |
 | `code.themes` | `[]` | `'name' => path` to a TextMate theme JSON file |
 | `code.aliases` | `[]` | `'alias' => 'language'` |
 | `code.injections` | `[]` | A list of `['path' => …, 'into' => ['source.x', …]]`: a VS Code style injection grammar, merged into the grammars with those scope names. Grammars are registered first, so `into` can name one from `code.grammars` |
-| `docx.rsvg_convert` | `env('PAPERCUT_RSVG_CONVERT')` | Absolute path to `rsvg-convert`, which then draws SVG in Word export, so Imagick isn't needed for it. `null` or empty uses Imagick |
+| `docx.rsvg_convert` | `env('QUOIN_RSVG_CONVERT')` | Absolute path to `rsvg-convert`, which then draws SVG in Word export, so Imagick isn't needed for it. `null` or empty uses Imagick |
 | `bookmarks` | `true` | Headings and `bookmark="…"` build the PDF's bookmarks panel; `false` leaves it empty |
 | `image_path` | `null` | Base directory for relative `<x-doc::image src>` and `<x-doc::svg src>`; `null` = `public_path()` |
-| `cache_dir` | `null` | Parsed-font cache directory: `null` = `storage_path('framework/cache/papercut')`, `false` = no disk cache, or a path (see core's "Font cache") |
-| `preview.enabled` | `env('PAPERCUT_PREVIEW', false)` | Enable [preview routes](#preview-routes) |
-| `preview.path` | `'_papercut'` | URL prefix for preview routes |
+| `cache_dir` | `null` | Parsed-font cache directory: `null` = `storage_path('framework/cache/quoin')`, `false` = no disk cache, or a path (see core's "Font cache") |
+| `preview.enabled` | `env('QUOIN_PREVIEW', false)` | Enable [preview routes](#preview-routes) |
+| `preview.path` | `'_quoin'` | URL prefix for preview routes |
 
 ## HTML output
 
@@ -96,17 +96,17 @@ The same document exports to HTML. `->html()` shares the theme, fonts, named sty
 
 ```php
 // A route: a full HTML page (Content-Type text/html; charset=UTF-8)
-return Papercut::view('pdf.invoice', $data)->html();
+return Quoin::view('pdf.invoice', $data)->html();
 
 // Download or save
-Papercut::view('pdf.invoice', $data)->html()->page()->download('invoice.html');
-Papercut::view('pdf.invoice', $data)->html()->page()->save(storage_path('invoice.html'));
+Quoin::view('pdf.invoice', $data)->html()->page()->download('invoice.html');
+Quoin::view('pdf.invoice', $data)->html()->page()->save(storage_path('invoice.html'));
 
 // The embeddable fragment as a string or file
-$fragment = Papercut::view('pdf.invoice', $data)->html()->fragment()->toString();
+$fragment = Quoin::view('pdf.invoice', $data)->html()->fragment()->toString();
 ```
 
-Inside another Blade view, `{{ $doc->html() }}`, `{!! $doc->html() !!}` and `(string) $doc->html()` all give the embeddable fragment (one `.papercut` element, no `<html>`), where `$doc` is `Papercut::view(...)` or `Papercut::make($document)`. Returning `->html()` from a route sends the full page. `PendingHtml` has no `toString()`, `save()` or `download()` of its own, so a string never means two things: `->html()->page()` and `->html()->fragment()` each return a `PendingOutput` (`toString()`, `save()`, `download()`, `inline()`, default name `document.html`). HTML reports approximations through the same warning log as PDF. Every approximation is reported (for example fr column widths, the page box, and header and footer once per page), and HTML reports nothing as dropped, so `strict` does not throw for it.
+Inside another Blade view, `{{ $doc->html() }}`, `{!! $doc->html() !!}` and `(string) $doc->html()` all give the embeddable fragment (one `.quoin` element, no `<html>`), where `$doc` is `Quoin::view(...)` or `Quoin::make($document)`. Returning `->html()` from a route sends the full page. `PendingHtml` has no `toString()`, `save()` or `download()` of its own, so a string never means two things: `->html()->page()` and `->html()->fragment()` each return a `PendingOutput` (`toString()`, `save()`, `download()`, `inline()`, default name `document.html`). HTML reports approximations through the same warning log as PDF. Every approximation is reported (for example fr column widths, the page box, and header and footer once per page), and HTML reports nothing as dropped, so `strict` does not throw for it.
 
 ### HTML URLs
 
@@ -115,8 +115,8 @@ Inside another Blade view, `{{ $doc->html() }}`, `{!! $doc->html() !!}` and `(st
 ```php
 namespace App\Pdf;
 
-use Papercut\Image;
-use Papercut\Laravel\Html\ImageUrlResolver;
+use Quoin\Image;
+use Quoin\Laravel\Html\ImageUrlResolver;
 
 final class CdnImageUrl implements ImageUrlResolver
 {
@@ -128,7 +128,7 @@ final class CdnImageUrl implements ImageUrlResolver
     }
 }
 
-// config/papercut.php
+// config/quoin.php
 'html' => ['fonts' => 'link', 'image_url' => \App\Pdf\CdnImageUrl::class, 'font_url' => \App\Pdf\CdnFontUrl::class],
 ```
 
@@ -142,18 +142,18 @@ Invalid `html.*` config is reported at the first `->html()` export, not at boot.
 // Bunny Fonts instead of Google: a host change
 'html' => ['fonts' => 'sources', 'google_fonts' => ['host' => 'https://fonts.bunny.net']],
 
-// Fonts registered in papercut.fonts embedded; anything else from Google
+// Fonts registered in quoin.fonts embedded; anything else from Google
 'html' => [
     'fonts' => 'sources',
-    'font_sources' => [\Papercut\Html\LocalFonts::class, \Papercut\Html\GoogleFonts::class],
+    'font_sources' => [\Quoin\Html\LocalFonts::class, \Quoin\Html\GoogleFonts::class],
     'local_fonts' => ['families' => ['Acme']], // null = every registered family
 ],
 ```
 
-A custom source is a class implementing `Papercut\Html\FontSource`, built by the container, so constructor dependencies work:
+A custom source is a class implementing `Quoin\Html\FontSource`, built by the container, so constructor dependencies work:
 
 ```php
-use Papercut\Html\{FontAnswer, FontRequest, FontSource};
+use Quoin\Html\{FontAnswer, FontRequest, FontSource};
 
 final class BrandFonts implements FontSource
 {
@@ -163,26 +163,26 @@ final class BrandFonts implements FontSource
     }
 }
 
-'font_sources' => [\App\Pdf\BrandFonts::class, \Papercut\Html\GoogleFonts::class],
+'font_sources' => [\App\Pdf\BrandFonts::class, \Quoin\Html\GoogleFonts::class],
 ```
 
 - **Order.** The first source that answers wins, so list specific sources first and catch-all hosts such as Google last.
 - **Privacy.** With `GoogleFonts` the visitor's browser fetches the stylesheet and fonts from the host, and so sends it their IP address. A German court held this can breach data protection law without consent (LG München I, 3 O 17493/20). Bunny Fonts is a host that states it does not log IP addresses, but the request still reaches a third party and this is not a compliance guarantee. The fully private routes are `LocalFonts` (embed, or link to your own files) and the `'embed'` and `'link'` modes.
 - **CSP.** If your site sends a Content-Security-Policy, allow: `style-src` for the stylesheet host (`fonts.googleapis.com` for Google, `fonts.bunny.net` for Bunny); `font-src` for the font domain (`fonts.gstatic.com` for Google, `fonts.bunny.net` for Bunny); and `font-src data:` for embedded faces (`local_fonts` in its default `embed` mode).
-- **Config is checked lazily.** `font_sources` is read only when `html.fonts` is `'sources'`, and `google_fonts` and `local_fonts` only when their class is in the list, at the first `->html()` export. Class names only: closures are rejected naming the key and index, for example `papercut.html.font_sources.1`.
+- **Config is checked lazily.** `font_sources` is read only when `html.fonts` is `'sources'`, and `google_fonts` and `local_fonts` only when their class is in the list, at the first `->html()` export. Class names only: closures are rejected naming the key and index, for example `quoin.html.font_sources.1`.
 
-Preview routes accept `?format=pdf` (default), `?format=html` or `?format=docx` (with `papercut/docx`); any other value is a 404.
+Preview routes accept `?format=pdf` (default), `?format=html` or `?format=docx` (with `quoin/docx`); any other value is a 404.
 
 
 ## Word output
 
-With [`papercut/docx`](../docx/README.md) installed (`composer require papercut/docx`), `->docx()` exports the same document as a Word file, sharing the theme, fonts, named styles and strict setting with `->pdf()`:
+With [`quoin/docx`](../docx/README.md) installed (`composer require quoin/docx`), `->docx()` exports the same document as a Word file, sharing the theme, fonts, named styles and strict setting with `->pdf()`:
 
 ```php
-return Papercut::view('pdf.invoice', $data)->docx()->download('invoice.docx');
+return Quoin::view('pdf.invoice', $data)->docx()->download('invoice.docx');
 ```
 
-It returns a `PendingOutput` (default name `document.docx`). Without the package, the export throws `MissingExporter` with the command to install it. Preview routes accept `?format=docx`. Opacity is blended onto what lies beneath. QR codes and SVG are drawn into pictures: SVG with `rsvg-convert` (recommended; set `docx.rsvg_convert`) or Imagick, and styled QR codes need Imagick. What Word can't show (corner radius and more) is reported through the same warning log, and `strict` throws on anything left out. See the [Word export guide](https://one-learning-community.github.io/papercut/guide/word-export).
+It returns a `PendingOutput` (default name `document.docx`). Without the package, the export throws `MissingExporter` with the command to install it. Preview routes accept `?format=docx`. Opacity is blended onto what lies beneath. QR codes and SVG are drawn into pictures: SVG with `rsvg-convert` (recommended; set `docx.rsvg_convert`) or Imagick, and styled QR codes need Imagick. What Word can't show (corner radius and more) is reported through the same warning log, and `strict` throws on anything left out. See the [Word export guide](https://one-learning-community.github.io/quoin/guide/word-export).
 
 ## Tags
 
@@ -200,7 +200,7 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::h1>` ... `<x-doc::h4>` | `align`, `size` | Style. Heading presets. |
 | `<x-doc::p>` | `align`, `size` | Style. Paragraph preset. |
 | `<x-doc::qr-code>` | `value`, `level` (`L`/`M`/`Q`/`H`), `quiet-zone`, `shape` (`square`/`rounded`/`dots`; the last two raise `level` to at least `Q`), `eyes` (`square`/`dot`/`pointy`), `eye-color`, `gradient` (two colors), `gradient-type` | Style. A square QR code drawn as vectors in the text color; `width` sets its size (25mm by default). The styling attributes need `composer require bacon/bacon-qr-code`. No content. |
-| `<x-doc::image>` | `src`, `data`, `fit` (`contain`/`cover`/`fill`) | Style. Exactly one of `src` or `data` (raw bytes). PNG and JPEG; WebP, GIF, BMP and AVIF need `ext-gd`. An image taller than the page shrinks to fit unless it has an explicit `height`. Absolute and scheme paths (`/x.png`, `C:\x.png`, `file://`) are trusted as given; relative paths are contained to `papercut.image_path` (`..` cannot escape it). Remote URLs are not supported. Never pass untrusted input to `src`. |
+| `<x-doc::image>` | `src`, `data`, `fit` (`contain`/`cover`/`fill`) | Style. Exactly one of `src` or `data` (raw bytes). PNG and JPEG; WebP, GIF, BMP and AVIF need `ext-gd`. An image taller than the page shrinks to fit unless it has an explicit `height`. Absolute and scheme paths (`/x.png`, `C:\x.png`, `file://`) are trusted as given; relative paths are contained to `quoin.image_path` (`..` cannot escape it). Remote URLs are not supported. Never pass untrusted input to `src`. |
 | `<x-doc::pdf-page>` | `src` or `data`, `page`, `password` | Style. A page of an existing PDF, drawn as it is and sized like an image; relative `src` follows the same rules as `<x-doc::image>`. Left out of HTML exports. |
 | `<x-doc::svg>` | `src`, `data`, or SVG markup inside the tag | Style. Exactly one source. Drawn as vector paths and sized like an image; relative `src` follows the same rules as `<x-doc::image>`. Untrusted SVG is checked before it is drawn. |
 | `<x-doc::link>` | `href` | Style. Required `href`. |
@@ -215,14 +215,14 @@ Style attributes (next section) work on every tag marked "style" below. Values a
 | `<x-doc::totals>` | `variant` | Style. Holds only `<x-doc::kv>` rows: labels on the left, amounts right-aligned. 45% wide at the right by default. See [Decorators](#decorators). |
 | `<x-doc::stat>` | `label`, `note`, `variant` | Style. The content is the value, with inline tags. `label` and `note` also work as slots. |
 | `<x-doc::signature>` | `name`, `role`, `date`, `variant` | Style. The content sits on the line (an image, a typed name, or nothing). `name`, `role` and `date` also work as slots. |
-| `<x-doc::markup>` | `html` or `text`, or HTML in the slot (exactly one of the three; two sources throw), `styles`, `blank-paragraphs`, `images`, `toc` | Converts HTML or plain text to nodes. Papercut tags in the slot are an error; components that render HTML are fine. See [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. `toc="false"` keeps every heading it converts out of tables of contents (`markup.toc` sets the default). |
-| `<x-doc::pre>` | none | Style. A preformatted block in the `pre` style. The content is literal: tags are not parsed and entities are decoded. The first and last blank lines are dropped and the common leading indentation is removed. Components inside are an error. The tag is found by a compile step that runs on every Blade view in the app, so a PHP string holding a literal `<x-doc::pre>` tag in an ordinary (non-Papercut) view gets an invisible U+E000 character after it. |
+| `<x-doc::markup>` | `html` or `text`, or HTML in the slot (exactly one of the three; two sources throw), `styles`, `blank-paragraphs`, `images`, `toc` | Converts HTML or plain text to nodes. Tags from this package in the slot are an error; components that render HTML are fine. See [Rich text](#rich-text-from-your-database). A number is taken as its string. Inside a text tag it contributes inline content and inherits the text style. `styles` and `blank-paragraphs` override the config per use (with `html`; plain `text` ignores them). `images` names an `ImageResolver` class for this tag instead of `markup.images`, or `none` (lower case only) to show each image's alt text. `toc="false"` keeps every heading it converts out of tables of contents (`markup.toc` sets the default). |
+| `<x-doc::pre>` | none | Style. A preformatted block in the `pre` style. The content is literal: tags are not parsed and entities are decoded. The first and last blank lines are dropped and the common leading indentation is removed. Components inside are an error. The tag is found by a compile step that runs on every Blade view in the app, so a PHP string holding a literal `<x-doc::pre>` tag in an ordinary (non-document) view gets an invisible U+E000 character after it. |
 | `<x-doc::code>` | none | Style, applied to the span. Inline code in the `code` style, for use inside text tags. The content is literal text. |
 | `<x-doc::node>` | `node` | Embeds a PHP-built `Node` or `Component` (anything else throws `InvalidValue`). As a block among blocks. Inside a text tag a `Text` joins the line; a `View` is flattened into it like `Markup::flatten()` (block content approximated, images and other nodes dropped, each reported). |
 | `<x-doc::spacer>` | `size` | `size="10mm"` is a fixed gap; with no `size` it is flexible (`grow`, default 1). Only `grow` is accepted besides `size`/`style`. |
 | `<x-doc::column-flow>` | `columns`, `widths`, `column-gap`, `rule` | Style. Text set in columns, like Word's: content fills each column, then the next page, and the last page ends level. `columns` is 1 to 45 (default 2); `widths="2 1"` sets unequal columns as ratios; `column-gap` is one length, or one per gap (default 36pt); `rule` draws a line in each gap, bare or `rule="1pt slate-400"`. `gap` spaces the children, as on any box. No border, background, padding or size: wrap it in a `view` for those. Not allowed inside a table cell, a row, another flow, or a header, footer, background or overlay. |
 | `<x-doc::column-break>` | none | Sends what follows to the next column (from the last column, to the next page). Only inside `<x-doc::column-flow>`. |
-| `<x-doc::equation>` | `math` or `tex` | Style. A block equation. `math` is a string or a node built with `Papercut\Math\Math`; `tex` is a TeX string (exactly one of the two). A static `tex` containing `{{` is Blade echo syntax, so bind it: `:tex="'…'"`. In any `tex` attribute TeX's `\\` line break must be written `\\\\`, or pass the TeX in a variable. Static quote style (`tex="…"` or `tex='…'`) doesn't matter, but never use a double-quoted PHP string in a bound `:tex`: PHP turns `\f`, `\n`, `\t` and similar into control characters and interpolates `$` variables. No content. Inside a text tag it is an error; use `<x-doc::math>`. |
+| `<x-doc::equation>` | `math` or `tex` | Style. A block equation. `math` is a string or a node built with `Quoin\Math\Math`; `tex` is a TeX string (exactly one of the two). A static `tex` containing `{{` is Blade echo syntax, so bind it: `:tex="'…'"`. In any `tex` attribute TeX's `\\` line break must be written `\\\\`, or pass the TeX in a variable. Static quote style (`tex="…"` or `tex='…'`) doesn't matter, but never use a double-quoted PHP string in a bound `:tex`: PHP turns `\f`, `\n`, `\t` and similar into control characters and interpolates `$` variables. No content. Inside a text tag it is an error; use `<x-doc::math>`. |
 | `<x-doc::math>` | `math` or `tex` | Inside a text tag, an inline equation (`Span::math()`), with no style attributes. Anywhere else it is a block equation, like `<x-doc::equation>`. No content. It can't sit inside a raw inline HTML tag (`<b>`, `<a>`); that throws. |
 | `<x-doc::page-number>` | `format`, `align`, `size` | Style. `format` uses `{page}` and `{total}`; no content allowed. |
 | `<x-doc::toc>` | `levels`, `title`, `leaders` | Table of contents. `levels="2"` or `"1-3"` (1 to 4); `title` is a line above the list; `leaders` (default on) draws dot leaders; no content allowed. Leave a heading out with `toc="false"`. |
@@ -232,7 +232,7 @@ On `row`, `column` and `view`, `align` is a shorthand for `align-items`. On text
 
 ## Style attributes
 
-These attributes are accepted by every tag marked "style" above. Lengths are `pt`, `mm`, `cm`, `in` or `px`, or relative to the element: `em` (its font size) and `lh` (its line height, font size × line-height), so `padding="0.5em"` or `min-height="4lh"` follow the theme; percentages are where noted; colors are palette names such as `slate-500`, hex, or other forms Papercut's `Color::parse` accepts.
+These attributes are accepted by every tag marked "style" above. Lengths are `pt`, `mm`, `cm`, `in` or `px`, or relative to the element: `em` (its font size) and `lh` (its line height, font size × line-height), so `padding="0.5em"` or `min-height="4lh"` follow the theme; percentages are where noted; colors are palette names such as `slate-500`, hex, or other forms `Color::parse` accepts.
 
 | Attribute | Example | Notes |
 |---|---|---|
@@ -267,7 +267,7 @@ Boolean values: bare attribute or `true`/`1`/`false`/`0`. Any attribute not list
 
 ## Theme per document or page
 
-`<x-doc::document :theme="[...]">` and `<x-doc::page :theme="[...]">` override the theme for one document or one page, and `Papercut::view(...)->theme([...])` does it from a controller:
+`<x-doc::document :theme="[...]">` and `<x-doc::page :theme="[...]">` override the theme for one document or one page, and `Quoin::view(...)->theme([...])` does it from a controller:
 
 ```blade
 <x-doc::document :theme="['font_size' => 11]">
@@ -276,14 +276,14 @@ Boolean values: bare attribute or `true`/`1`/`false`/`0`. Any attribute not list
 ```
 
 ```php
-Papercut::view('pdf.invoice', $data)->theme(['color' => $customer->brand_color])->pdf();
+Quoin::view('pdf.invoice', $data)->theme(['color' => $customer->brand_color])->pdf();
 ```
 
-Keys are `font_family`, `mono_family`, `font_size`, `color`, `line_height`, `code_theme` and `styles` (in the `papercut.styles` shape); the first five work as in `papercut.theme`. `Merriweather` must be bundled or registered in `fonts`. Order: config, the view's document, the controller's `->theme()`, then the page. Named styles merge onto the existing style (`papercut.styles` still replaces). `->theme()` can change values and restyle existing names, but a new style name the view uses must be defined in config or in a `:theme` in the view. Headings take their look from `h1` to `h4` styles when defined.
+Keys are `font_family`, `mono_family`, `font_size`, `color`, `line_height`, `code_theme` and `styles` (in the `quoin.styles` shape); the first five work as in `quoin.theme`. `Merriweather` must be bundled or registered in `fonts`. Order: config, the view's document, the controller's `->theme()`, then the page. Named styles merge onto the existing style (`quoin.styles` still replaces). `->theme()` can change values and restyle existing names, but a new style name the view uses must be defined in config or in a `:theme` in the view. Headings take their look from `h1` to `h4` styles when defined.
 
 ## Named styles
 
-Define styles in `config/papercut.php`, using the same keys as tag attributes:
+Define styles in `config/quoin.php`, using the same keys as tag attributes:
 
 ```php
 'styles' => [
@@ -299,7 +299,7 @@ The named style is the base; attributes written on the tag override it for any p
 
 ## Decorators
 
-Ready-made pieces that give content a look (each takes a `variant`, which also applies the theme's `<name>.<variant>` styles for the parts it styles; built in are `line` on `field`, `outline` on `badge`, `flat` on `card` and `large` on `section`): `card`, `callout`, `blockquote`, `section`, `field`, `choices`, `key-value`, `badge`, `stat`, `totals` and `signature`. They are plain Papercut components, so they work in PDF and HTML, take the usual [style attributes](#style-attributes) on their outer box, and get their look from [named styles](#named-styles) you can override. Decorator style names (`card`, `card.title`, `callout.*`, `section.*`, `field.*`, `choice.*`, `key-value.*`, `badge.*`, `blockquote.*`, `stat.*`, `totals.*`, `signature.*`) belong to the decorators: a theme or config style with the same name replaces the built-in one, so pick other names for your own styles.
+Ready-made pieces that give content a look (each takes a `variant`, which also applies the theme's `<name>.<variant>` styles for the parts it styles; built in are `line` on `field`, `outline` on `badge`, `flat` on `card` and `large` on `section`): `card`, `callout`, `blockquote`, `section`, `field`, `choices`, `key-value`, `badge`, `stat`, `totals` and `signature`. They are plain components, so they work in PDF and HTML, take the usual [style attributes](#style-attributes) on their outer box, and get their look from [named styles](#named-styles) you can override. Decorator style names (`card`, `card.title`, `callout.*`, `section.*`, `field.*`, `choice.*`, `key-value.*`, `badge.*`, `blockquote.*`, `stat.*`, `totals.*`, `signature.*`) belong to the decorators: a theme or config style with the same name replaces the built-in one, so pick other names for your own styles.
 
 ```blade
 <x-doc::card title="Respondent">
@@ -326,7 +326,7 @@ A bordered box with an optional title strip. `callout` and `badge` share tone na
 <x-doc::section number="3"><x-slot:title><x-doc::markup :text="$prompt" /></x-slot:title> ... </x-doc::section>
 ```
 
-A section keeps its heading with the first of its content. The number is a string and Papercut adds no punctuation. The heading is always laid out as a row (number beside title); a `direction` in the `section.heading` style has no effect. An empty title or number is treated as unset.
+A section keeps its heading with the first of its content. The number is a string and no punctuation is added. The heading is always laid out as a row (number beside title); a `direction` in the `section.heading` style has no effect. An empty title or number is treated as unset.
 
 `heading="1"` to `heading="4"` on a section or card makes its title a real heading (bookmark, table of contents entry, `h` tag in HTML, Heading style in Word) without changing its look. A numbered section's entry reads "3 Search terms". A heading tag inside the title slot doesn't do this, because the slot is joined into one line of text.
 
@@ -391,11 +391,11 @@ Each decorator reads these names. Colors are palette names.
 | `signature`, `signature.line`, `signature.name`, `signature.role`, `signature.date` | 216pt (3in) wide, kept together; line at least 30pt high with a 0.75pt `slate-700` rule beneath; bold name; `0.85em` `slate-600` role and date |
 | `field.line`, `badge.outline`, `card.flat`, `card.title.flat`, `section.large`, `section.title.large`, `section.number.large` | The built-in variants: `field.line` keeps only a 1pt `slate-400` bottom rule; `badge.outline` has no fill and a 0.75pt border in the tone's color; `card.flat` is a `slate-50` panel with no border; `section.large` sets the title and number at `1.35em` |
 
-Every value is listed in the [decorator styles reference](https://one-learning-community.github.io/papercut/reference/decorator-styles.html).
+Every value is listed in the [decorator styles reference](https://one-learning-community.github.io/quoin/reference/decorator-styles.html).
 
 ### Restyle or add a tone
 
-Define a style with the same name in `config/papercut.php`. It replaces the built-in one entirely, so restate every property you want:
+Define a style with the same name in `config/quoin.php`. It replaces the built-in one entirely, so restate every property you want:
 
 ```php
 'styles' => [
@@ -430,7 +430,7 @@ the tag on each side instead (`<b>x </b><x-doc::node :node="$t"/><b> y</b>`).
 
 ### Images
 
-Papercut never reads an `<img src>` itself. Name a resolver class in `papercut.markup.images`. It receives the trimmed
+Markup conversion never reads an `<img src>` itself. Name a resolver class in `quoin.markup.images`. It receives the trimmed
 decoded `src`, once per distinct value in a markup conversion (later images with the same `src` reuse the answer, a null
 included), and returns the image bytes, or `null` when the image is missing. The container builds it, so it can take
 dependencies. `src` is untrusted user input: the resolver decides what may be read, so never pass it to a disk or the
@@ -441,7 +441,7 @@ filesystem unchecked. For example, an editor that stores uploads on the default 
 namespace App\Markup;
 
 use Illuminate\Support\Facades\Storage;
-use Papercut\Laravel\Markup\ImageResolver;
+use Quoin\Laravel\Markup\ImageResolver;
 
 final class EditorImages implements ImageResolver
 {
@@ -462,7 +462,7 @@ final class EditorImages implements ImageResolver
 ```
 
 ```php
-// config/papercut.php
+// config/quoin.php
 'markup' => [
     'images' => \App\Markup\EditorImages::class,
     'styles' => 'theme',
@@ -499,30 +499,30 @@ Inter (regular, bold, italic, bold italic) is bundled and always available. Regi
 'theme' => ['font_family' => 'Merriweather', 'font_size' => 10],
 ```
 
-`php artisan papercut:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite), saves the family's license beside them (`OFL.txt`, `LICENSE.txt` or `UFL.txt`, from Google's [fonts repository](https://github.com/google/fonts)) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
+`php artisan quoin:fonts:install "Merriweather" --weights=400,700 --italic` downloads a family's TrueType files from Google Fonts into `resources/fonts/<Family>/` (`--path` to change, `--force` to overwrite), saves the family's license beside them (`OFL.txt`, `LICENSE.txt` or `UFL.txt`, from Google's [fonts repository](https://github.com/google/fonts)) and prints the `fonts` entry to paste into the config. The files are downloaded once and committed with the app; rendering never touches the network.
 
-`php artisan papercut:fonts` lists every available face and reports whether each file is `ok`, `missing` or `invalid`. A glyph missing from the primary family is looked up in `fallback_fonts`; if no family has it, a warning is logged (`[papercut] ...`).
+`php artisan quoin:fonts` lists every available face and reports whether each file is `ok`, `missing` or `invalid`. A glyph missing from the primary family is looked up in `fallback_fonts`; if no family has it, a warning is logged (`[quoin] ...`).
 
 ## Preview routes
 
 For fast iteration on a layout, register a view with sample data (for example in a service provider) and enable previews:
 
 ```php
-Papercut::preview('pdf.invoice', fn () => ['invoice' => Invoice::factory()->make()]);
+Quoin::preview('pdf.invoice', fn () => ['invoice' => Invoice::factory()->make()]);
 ```
 
-Set `PAPERCUT_PREVIEW=true`. Only in the `local` environment, `GET /_papercut` lists the registered views and `GET /_papercut/{view}` renders one inline.
+Set `QUOIN_PREVIEW=true`. Only in the `local` environment, `GET /_quoin` lists the registered views and `GET /_quoin/{view}` renders one inline.
 
 ## Errors
 
-- `Papercut\Exception\UnknownAttribute` and `Papercut\Exception\InvalidValue`: reported with the tag (`on <x-doc::td>`), the attribute and, where possible, a suggestion.
-- `Papercut\Laravel\Exception\InvalidStructure`: misplaced content, such as a `<x-doc::tr>` outside a table, a missing `<x-doc::document>` root, or an unknown page slot.
-- `Papercut\Exception\ImageUnreadable`: the `src` file is missing or cannot be read as an image.
-- `Papercut\Exception\LayoutOverflow`: a block cannot fit on a page even after every permitted split. Controlled by `overflow`: throw (default in `local`/`testing`) or clip.
+- `Quoin\Exception\UnknownAttribute` and `Quoin\Exception\InvalidValue`: reported with the tag (`on <x-doc::td>`), the attribute and, where possible, a suggestion.
+- `Quoin\Laravel\Exception\InvalidStructure`: misplaced content, such as a `<x-doc::tr>` outside a table, a missing `<x-doc::document>` root, or an unknown page slot.
+- `Quoin\Exception\ImageUnreadable`: the `src` file is missing or cannot be read as an image.
+- `Quoin\Exception\LayoutOverflow`: a block cannot fit on a page even after every permitted split. Controlled by `overflow`: throw (default in `local`/`testing`) or clip.
 
 Blade wraps exceptions thrown while rendering a view in `Illuminate\View\ViewException`; the original is its `getPrevious()`.
 
 ## Credits
 
-The Blade tags compile to [`papercut/core`](../core), and every PDF is written by [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf), by Denis
+The Blade tags compile to [`quoin/core`](../core), and every PDF is written by [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf), by Denis
 Skripchenko. Word output uses his [`dskripchenko/php-docx`](https://github.com/dskripchenko/php-docx). Thank you to both projects.

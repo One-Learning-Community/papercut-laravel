@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Exception\{InvalidStructure, PdfUnreadable};
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Exception\{InvalidStructure, PdfUnreadable};
+use Quoin\Laravel\Tests\TestCase;
 
-/** Developer mistakes in Blade raise Papercut exceptions, never vendor or PHP ones. */
+/** Developer mistakes in Blade raise the library's exceptions, never vendor or PHP ones. */
 final class DeveloperMistakesTest extends TestCase
 {
     public function test_a_bound_null_style_attribute_renders(): void
@@ -27,7 +27,7 @@ final class DeveloperMistakesTest extends TestCase
     {
         $dir = $this->tempDir('dm');
         file_put_contents($dir . '/hosts.txt', "127.0.0.1 localhost\n");
-        config(['papercut.image_path' => $dir]);
+        config(['quoin.image_path' => $dir]);
 
         $this->expectException(PdfUnreadable::class);
         $this->nodeFrom('<x-doc::page template="hosts.txt">Body</x-doc::page>');

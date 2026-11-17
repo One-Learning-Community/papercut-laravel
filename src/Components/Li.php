@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Tag;
-use Papercut\ListItem;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Tag;
+use Quoin\ListItem;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Li extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Li extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -19,7 +19,7 @@ final class Li extends PapercutComponent
     protected function build(array $data): object
     {
         ['own' => $own] = $this->attrs($data);
-        /** @var list<\Papercut\Node> $children */
+        /** @var list<\Quoin\Node> $children */
         $children = $this->children($data);
         $item = ListItem::make(...$children);
 

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\TextAlign;
-use Papercut\TableCell;
+use Quoin\Laravel\Tag;
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\TextAlign;
+use Quoin\TableCell;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-class Td extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+class Td extends QuoinComponent
 {
     protected function ownAttributes(): array
     {

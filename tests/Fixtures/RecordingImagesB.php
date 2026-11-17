@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Fixtures;
+namespace Quoin\Laravel\Tests\Fixtures;
 
 final class RecordingImagesB extends RecordingImageResolver
 {

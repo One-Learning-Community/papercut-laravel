@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Html;
+namespace Quoin\Laravel\Html;
 
-use Papercut\Image;
+use Quoin\Image;
 
 /**
- * Names an invokable class for `papercut.html.image_url`. Return a URL for the image,
+ * Names an invokable class for `quoin.html.image_url`. Return a URL for the image,
  * or null to embed it as a data URI. Built by the container, so it can take dependencies.
  */
 interface ImageUrlResolver

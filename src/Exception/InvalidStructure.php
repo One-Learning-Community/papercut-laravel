@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Exception;
+namespace Quoin\Laravel\Exception;
 
-final class InvalidStructure extends \Papercut\Exception\InvalidStructure
+final class InvalidStructure extends \Quoin\Exception\InvalidStructure
 {
 }

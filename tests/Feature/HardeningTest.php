@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\{Log, Route};
-use Papercut\Exception\{ImageUnreadable, InvalidValue};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Preview\PreviewController;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\OverflowMode;
+use Quoin\Exception\{ImageUnreadable, InvalidValue};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Preview\PreviewController;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\OverflowMode;
 
 final class HardeningTest extends TestCase
 {
@@ -20,11 +20,11 @@ final class HardeningTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->dir = sys_get_temp_dir() . '/papercut-hard-' . getmypid() . '-' . bin2hex(random_bytes(3));
+        $this->dir = sys_get_temp_dir() . '/quoin-hard-' . getmypid() . '-' . bin2hex(random_bytes(3));
         mkdir($this->dir . '/img', 0777, true);
         file_put_contents($this->dir . '/img/logo.png', 'x');
         file_put_contents($this->dir . '/secret.txt', 'secret');
-        config(['papercut.image_path' => $this->dir . '/img']);
+        config(['quoin.image_path' => $this->dir . '/img']);
     }
 
     // ---- 1. image containment
@@ -49,14 +49,14 @@ final class HardeningTest extends TestCase
     {
         mkdir($this->dir . '/img/sub');
         $img = $this->nodeFrom('<x-doc::image src="sub/../logo.png" />');
-        self::assertInstanceOf(\Papercut\Image::class, $img);
+        self::assertInstanceOf(\Quoin\Image::class, $img);
     }
 
     public function test_image_symlinked_subdirectory_inside_base_is_allowed(): void
     {
         symlink($this->dir, $this->dir . '/img/link');
         $img = $this->nodeFrom('<x-doc::image src="link/secret.txt" />');
-        self::assertInstanceOf(\Papercut\Image::class, $img);
+        self::assertInstanceOf(\Quoin\Image::class, $img);
     }
 
     public function test_image_dotdot_climbing_above_base_after_descending_is_rejected(): void
@@ -83,7 +83,7 @@ final class HardeningTest extends TestCase
     public function test_image_absolute_path_is_trusted(): void
     {
         $img = $this->nodeFrom('<x-doc::image :src="$p" />', ['p' => $this->dir . '/secret.txt']);
-        self::assertInstanceOf(\Papercut\Image::class, $img);
+        self::assertInstanceOf(\Quoin\Image::class, $img);
     }
 
     public function test_image_stream_wrapper_and_drive_paths_count_as_absolute(): void
@@ -117,7 +117,7 @@ final class HardeningTest extends TestCase
 
     public function test_preview_actions_abort_outside_local(): void
     {
-        $registry = $this->laravel()->make(\Papercut\Laravel\Preview\PreviewRegistry::class);
+        $registry = $this->laravel()->make(\Quoin\Laravel\Preview\PreviewRegistry::class);
         $registry->register('pdf.hello', ['name' => 'A']);
         $controller = $this->laravel()->make(PreviewController::class);
         foreach ([fn () => $controller->index(), fn () => $controller->show('pdf.hello')] as $call) {
@@ -133,15 +133,15 @@ final class HardeningTest extends TestCase
     public function test_preview_index_urlencodes_names(): void
     {
         $this->setEnv('local');
-        Papercut::preview('pdf.a b?c');
+        Quoin::preview('pdf.a b?c');
         $html = (string) $this->laravel()->make(PreviewController::class)->index()->getContent();
-        self::assertStringContainsString('href="/_papercut/pdf.a%20b%3Fc"', $html);
+        self::assertStringContainsString('href="/_quoin/pdf.a%20b%3Fc"', $html);
     }
 
     public function test_preview_closure_must_return_array(): void
     {
         $this->setEnv('local');
-        Papercut::preview('pdf.hello', fn () => 'nope');
+        Quoin::preview('pdf.hello', fn () => 'nope');
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('Preview data for pdf.hello must be an array');
         $this->laravel()->make(PreviewController::class)->show('pdf.hello');
@@ -151,9 +151,9 @@ final class HardeningTest extends TestCase
 
     public function test_unknown_named_style_has_context_suggestion_and_file(): void
     {
-        config(['papercut.styles' => ['card' => ['padding' => '12pt']]]);
+        config(['quoin.styles' => ['card' => ['padding' => '12pt']]]);
         try {
-            Papercut::view('pdf.bad-style')->pdf()->toString();
+            Quoin::view('pdf.bad-style')->pdf()->toString();
             self::fail('accepted');
         } catch (\Illuminate\View\ViewException $e) {
             self::assertStringContainsString('Unknown style "crad" on <x-doc::view>', $e->getMessage());
@@ -164,10 +164,10 @@ final class HardeningTest extends TestCase
 
     public function test_known_named_style_and_no_style_still_render(): void
     {
-        config(['papercut.styles' => ['card' => ['padding' => '12pt']]]);
+        config(['quoin.styles' => ['card' => ['padding' => '12pt']]]);
         $v = $this->nodeFrom('<x-doc::view style="card">x</x-doc::view>');
-        self::assertInstanceOf(\Papercut\View::class, $v);
-        self::assertInstanceOf(\Papercut\View::class, $this->nodeFrom('<x-doc::view>x</x-doc::view>'));
+        self::assertInstanceOf(\Quoin\View::class, $v);
+        self::assertInstanceOf(\Quoin\View::class, $this->nodeFrom('<x-doc::view>x</x-doc::view>'));
     }
 
     // ---- 4. root validation names the view
@@ -176,7 +176,7 @@ final class HardeningTest extends TestCase
     {
         foreach (['pdf.two-roots', 'pdf.no-root', 'pdf.leftover'] as $view) {
             try {
-                Papercut::view($view)->pdf()->toString();
+                Quoin::view($view)->pdf()->toString();
                 self::fail('accepted');
             } catch (InvalidStructure $e) {
                 self::assertStringEndsWith(" in view [$view]", $e->getMessage());
@@ -188,13 +188,13 @@ final class HardeningTest extends TestCase
 
     public function test_download_filename_slashes_replaced(): void
     {
-        Route::get('/d1', fn () => Papercut::view('pdf.hello', ['name' => 'A'])->pdf()->download('a/b.pdf'));
+        Route::get('/d1', fn () => Quoin::view('pdf.hello', ['name' => 'A'])->pdf()->download('a/b.pdf'));
         $this->get('/d1')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename=a-b.pdf');
     }
 
     public function test_download_filename_unicode_fallback(): void
     {
-        Route::get('/d2', fn () => Papercut::view('pdf.hello', ['name' => 'A'])->pdf()->download('résumé.pdf'));
+        Route::get('/d2', fn () => Quoin::view('pdf.hello', ['name' => 'A'])->pdf()->download('résumé.pdf'));
         $h = (string) $this->get('/d2')->assertOk()->headers->get('Content-Disposition');
         self::assertStringContainsString('filename=resume.pdf', $h);
         self::assertStringContainsString("filename*=utf-8''r%C3%A9sum%C3%A9.pdf", $h);
@@ -204,41 +204,41 @@ final class HardeningTest extends TestCase
 
     public function test_overflow_config_is_validated_case_insensitively(): void
     {
-        config(['papercut.overflow' => 'CLIP']);
-        self::assertSame(OverflowMode::Clip, Papercut::pdfOptions()->overflow());
+        config(['quoin.overflow' => 'CLIP']);
+        self::assertSame(OverflowMode::Clip, Quoin::pdfOptions()->overflow());
     }
 
     public function test_cache_dir_config_reaches_pdf_options(): void
     {
-        $options = static function (mixed $value): \Papercut\Export\PdfOptions {
-            config(['papercut.cache_dir' => $value]);
-            app()->forgetInstance(PapercutManager::class);
-            Papercut::clearResolvedInstances();
+        $options = static function (mixed $value): \Quoin\Export\PdfOptions {
+            config(['quoin.cache_dir' => $value]);
+            app()->forgetInstance(QuoinManager::class);
+            Quoin::clearResolvedInstances();
 
-            return Papercut::pdfOptions();
+            return Quoin::pdfOptions();
         };
         // FPM and the CLI can see different temp dirs; storage/ is the same for both
-        self::assertSame(storage_path('framework/cache/papercut'), $options(null)->cacheDir());
+        self::assertSame(storage_path('framework/cache/quoin'), $options(null)->cacheDir());
         self::assertFalse($options(false)->cacheDir());
         self::assertSame('/tmp/pc-x', $options('/tmp/pc-x')->cacheDir());
     }
 
     public function test_invalid_overflow_throws(): void
     {
-        config(['papercut.overflow' => 'bogus']);
+        config(['quoin.overflow' => 'bogus']);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid papercut.overflow');
-        Papercut::pdfOptions();
+        $this->expectExceptionMessage('Invalid quoin.overflow');
+        Quoin::pdfOptions();
     }
 
     public function test_overflow_default_depends_on_environment(): void
     {
-        config(['papercut.overflow' => null]);
-        self::assertSame(OverflowMode::Throw, Papercut::pdfOptions()->overflow());
-        $this->laravel()->forgetInstance(PapercutManager::class);
-        \Illuminate\Support\Facades\Facade::clearResolvedInstance(PapercutManager::class);
+        config(['quoin.overflow' => null]);
+        self::assertSame(OverflowMode::Throw, Quoin::pdfOptions()->overflow());
+        $this->laravel()->forgetInstance(QuoinManager::class);
+        \Illuminate\Support\Facades\Facade::clearResolvedInstance(QuoinManager::class);
         $this->setEnv('production');
-        self::assertSame(OverflowMode::Clip, Papercut::pdfOptions()->overflow());
+        self::assertSame(OverflowMode::Clip, Quoin::pdfOptions()->overflow());
     }
 
     public function test_non_string_page_size_throws(): void
@@ -273,8 +273,8 @@ final class HardeningTest extends TestCase
 
     public function test_facade_docblock_has_single_options_line(): void
     {
-        $src = (string) file_get_contents(__DIR__ . '/../../src/Facades/Papercut.php');
-        self::assertSame(1, substr_count($src, 'static \Papercut\Export\PdfOptions pdfOptions()'));
+        $src = (string) file_get_contents(__DIR__ . '/../../src/Facades/Quoin.php');
+        self::assertSame(1, substr_count($src, 'static \Quoin\Export\PdfOptions pdfOptions()'));
     }
 
     public function test_link_accepts_stringable_and_rejects_bad_href(): void
@@ -285,7 +285,7 @@ final class HardeningTest extends TestCase
                 return 'https://example.com';
             }
         };
-        self::assertInstanceOf(\Papercut\Link::class, $this->nodeFrom('<x-doc::link :href="$u">x</x-doc::link>', ['u' => $url]));
+        self::assertInstanceOf(\Quoin\Link::class, $this->nodeFrom('<x-doc::link :href="$u">x</x-doc::link>', ['u' => $url]));
         foreach ([[], 5, ''] as $bad) {
             try {
                 $this->nodeFrom('<x-doc::link :href="$u">x</x-doc::link>', ['u' => $bad]);
@@ -307,7 +307,7 @@ final class HardeningTest extends TestCase
     public function test_styled_tr_reaches_core(): void
     {
         $t = $this->nodeFrom('<x-doc::table><x-doc::tr background="slate-50"><x-doc::td>a</x-doc::td></x-doc::tr></x-doc::table>');
-        self::assertInstanceOf(\Papercut\Table::class, $t);
+        self::assertInstanceOf(\Quoin\Table::class, $t);
         $row = $t->bodyRows()[0];
         self::assertNotNull($row->style()->background);
     }
@@ -317,13 +317,13 @@ final class HardeningTest extends TestCase
         $t = $this->nodeFrom(
             '<x-doc::table>@foreach ([1, 2] as $i){{-- c --}}<x-doc::tr><x-doc::td>{{ $i }}</x-doc::td></x-doc::tr>{{-- c --}}@endforeach</x-doc::table>',
         );
-        self::assertInstanceOf(\Papercut\Table::class, $t);
+        self::assertInstanceOf(\Quoin\Table::class, $t);
         self::assertCount(2, $t->bodyRows());
     }
 
     public function test_remaining_counts_untaken_nodes(): void
     {
-        $registry = $this->laravel()->make(\Papercut\Laravel\Rendering\NodeRegistry::class);
+        $registry = $this->laravel()->make(\Quoin\Laravel\Rendering\NodeRegistry::class);
         $registry->scope(function () use ($registry): null {
             $registry->register(new \stdClass());
             $second = $registry->register(new \stdClass());
@@ -338,7 +338,7 @@ final class HardeningTest extends TestCase
 
     public function test_scope_pops_after_exception(): void
     {
-        $registry = $this->laravel()->make(\Papercut\Laravel\Rendering\NodeRegistry::class);
+        $registry = $this->laravel()->make(\Quoin\Laravel\Rendering\NodeRegistry::class);
         try {
             $registry->scope(function (): never {
                 throw new \RuntimeException('boom');
@@ -352,16 +352,16 @@ final class HardeningTest extends TestCase
     public function test_on_warning_writes_to_log(): void
     {
         $spy = Log::spy();
-        $cb = Papercut::pdfOptions()->onWarning();
+        $cb = Quoin::pdfOptions()->onWarning();
         self::assertNotNull($cb);
         $cb('careful');
-        $spy->shouldHaveReceived('warning')->with('[papercut] careful')->once();
+        $spy->shouldHaveReceived('warning')->with('[quoin] careful')->once();
     }
 
     public function test_make_and_save(): void
     {
-        $doc = \Papercut\Document::make(\Papercut\Page::named('a4')->body('hello'));
-        $pending = Papercut::make($doc)->pdf();
+        $doc = \Quoin\Document::make(\Quoin\Page::named('a4')->body('hello'));
+        $pending = Quoin::make($doc)->pdf();
         $path = $this->dir . '/out.pdf';
         self::assertSame($pending, $pending->save($path));
         self::assertStringStartsWith('%PDF-', (string) file_get_contents($path));
@@ -369,9 +369,9 @@ final class HardeningTest extends TestCase
 
     public function test_implicit_page_uses_configured_paper_and_margin(): void
     {
-        config(['papercut.paper' => 'letter', 'papercut.margin' => '10mm']);
+        config(['quoin.paper' => 'letter', 'quoin.margin' => '10mm']);
         $doc = $this->nodeFrom('<x-doc::document><x-doc::text>x</x-doc::text></x-doc::document>');
-        self::assertInstanceOf(\Papercut\Document::class, $doc);
+        self::assertInstanceOf(\Quoin\Document::class, $doc);
         $page = $doc->pages()[0];
         self::assertEqualsWithDelta(612.0, $page->width(), 0.5);
         self::assertEqualsWithDelta(28.35, $page->margins()->top->points, 0.1);
@@ -380,19 +380,19 @@ final class HardeningTest extends TestCase
     public function test_page_size_accepts_a_width_and_height(): void
     {
         $page = $this->nodeFrom('<x-doc::page size="8.5in 11in" orientation="landscape">x</x-doc::page>');
-        self::assertInstanceOf(\Papercut\Page::class, $page);
+        self::assertInstanceOf(\Quoin\Page::class, $page);
         self::assertEqualsWithDelta([792.0, 612.0], [$page->width(), $page->height()], 0.01);
 
-        config(['papercut.paper' => '100mm 150mm']);
+        config(['quoin.paper' => '100mm 150mm']);
         $doc = $this->nodeFrom('<x-doc::document><x-doc::text>x</x-doc::text></x-doc::document>');
-        self::assertInstanceOf(\Papercut\Document::class, $doc);
+        self::assertInstanceOf(\Quoin\Document::class, $doc);
         self::assertEqualsWithDelta(283.46, $doc->pages()[0]->width(), 0.01);
     }
 
     public function test_page_size_accepts_the_added_names(): void
     {
         $page = $this->nodeFrom('<x-doc::page size="Tabloid">x</x-doc::page>');
-        self::assertInstanceOf(\Papercut\Page::class, $page);
+        self::assertInstanceOf(\Quoin\Page::class, $page);
         self::assertEqualsWithDelta([792.0, 1224.0], [$page->width(), $page->height()], 0.01);
     }
 

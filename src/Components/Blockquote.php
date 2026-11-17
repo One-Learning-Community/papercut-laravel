@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Blockquote extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Blockquote extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array
@@ -15,7 +15,7 @@ final class Blockquote extends PapercutComponent
 
     protected function build(array $data): object
     {
-        $quote = \Papercut\Decorator\Blockquote::make(...$this->children($data));
+        $quote = \Quoin\Decorator\Blockquote::make(...$this->children($data));
         $cite = $this->slotOrAttribute($data, 'cite');
         if ($cite !== null) {
             $quote = $quote->cite($cite);

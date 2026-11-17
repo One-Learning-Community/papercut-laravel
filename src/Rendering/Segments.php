@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Rendering;
+namespace Quoin\Laravel\Rendering;
 
-use Papercut\Laravel\Tag;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Components\HeaderRows;
-use Papercut\Decorator\Badge;
-use Papercut\Decorator\ChoiceOption;
-use Papercut\Decorator\KeyValuePair;
-use Papercut\Document;
-use Papercut\ListItem;
-use Papercut\Place;
-use Papercut\TableCell;
-use Papercut\TableRow;
-use Papercut\Markup\Markup;
-use Papercut\Equation;
-use Papercut\Exception\InvalidValue;
-use Papercut\Span;
-use Papercut\Text;
-use Papercut\Style\Style;
-use Papercut\View;
+use Quoin\Laravel\Tag;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Components\HeaderRows;
+use Quoin\Decorator\Badge;
+use Quoin\Decorator\ChoiceOption;
+use Quoin\Decorator\KeyValuePair;
+use Quoin\Document;
+use Quoin\ListItem;
+use Quoin\Place;
+use Quoin\TableCell;
+use Quoin\TableRow;
+use Quoin\Markup\Markup;
+use Quoin\Equation;
+use Quoin\Exception\InvalidValue;
+use Quoin\Span;
+use Quoin\Text;
+use Quoin\Style\Style;
+use Quoin\View;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class Segments
 {
     private const array PARENTS = [

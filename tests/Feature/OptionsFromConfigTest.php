@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Log;
-use Papercut\Export\{Fidelity, FidelityLevel, FidelityReport};
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\OverflowMode;
-use Papercut\Text\FontStyle;
+use Quoin\Export\{Fidelity, FidelityLevel, FidelityReport};
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\OverflowMode;
+use Quoin\Text\FontStyle;
 
 final class OptionsFromConfigTest extends TestCase
 {
     private const string INTER = __DIR__ . '/../../../core/resources/fonts/Inter';
 
-    private function fresh(): PapercutManager
+    private function fresh(): QuoinManager
     {
-        app()->forgetInstance(PapercutManager::class);
-        Papercut::clearResolvedInstances();
+        app()->forgetInstance(QuoinManager::class);
+        Quoin::clearResolvedInstances();
 
-        return app()->make(PapercutManager::class);
+        return app()->make(QuoinManager::class);
     }
 
     public function test_overflow_null_is_throw_in_testing_and_clip_in_production(): void
     {
-        config(['papercut.overflow' => null]);
+        config(['quoin.overflow' => null]);
         self::assertSame(OverflowMode::Throw, $this->fresh()->pdfOptions()->overflow());
 
         app()->instance('env', 'production');
@@ -35,15 +35,15 @@ final class OptionsFromConfigTest extends TestCase
 
     public function test_cache_dir_false_and_string_pass_through(): void
     {
-        config(['papercut.cache_dir' => false]);
+        config(['quoin.cache_dir' => false]);
         self::assertFalse($this->fresh()->pdfOptions()->cacheDir());
 
-        config(['papercut.cache_dir' => '/tmp/pc-x']);
+        config(['quoin.cache_dir' => '/tmp/pc-x']);
         self::assertSame('/tmp/pc-x', $this->fresh()->pdfOptions()->cacheDir());
 
-        config(['papercut.cache_dir' => 5]);
+        config(['quoin.cache_dir' => 5]);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid papercut.cache_dir');
+        $this->expectExceptionMessage('Invalid quoin.cache_dir');
         $this->fresh()->pdfOptions();
     }
 
@@ -51,20 +51,20 @@ final class OptionsFromConfigTest extends TestCase
     {
         self::assertFalse($this->fresh()->pdfOptions()->strict());
 
-        config(['papercut.strict' => true]);
+        config(['quoin.strict' => true]);
         self::assertTrue($this->fresh()->pdfOptions()->strict());
 
-        config(['papercut.strict' => 'yes']);
+        config(['quoin.strict' => 'yes']);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid papercut.strict: 'yes'; expected true or false");
+        $this->expectExceptionMessage("Invalid quoin.strict: 'yes'; expected true or false");
         $this->fresh()->pdfOptions();
     }
 
     public function test_fonts_and_fallbacks_from_config_land_in_font_set(): void
     {
         config([
-            'papercut.fonts' => ['Brand' => [700 => ['italic' => self::INTER . '/Inter-BoldItalic.ttf']]],
-            'papercut.fallback_fonts' => ['Brand'],
+            'quoin.fonts' => ['Brand' => [700 => ['italic' => self::INTER . '/Inter-BoldItalic.ttf']]],
+            'quoin.fallback_fonts' => ['Brand'],
         ]);
 
         $fonts = $this->fresh()->pdfOptions()->fonts();
@@ -93,23 +93,23 @@ final class OptionsFromConfigTest extends TestCase
         $cb('close', new FidelityReport(FidelityLevel::Approximated, 'pdf', 'x', 'p'));
         $cb('lost', new FidelityReport(FidelityLevel::Dropped, 'pdf', 'x', 'p'));
 
-        $spy->shouldHaveReceived('warning')->with('[papercut] plain')->once();
-        $spy->shouldHaveReceived('debug')->with('[papercut] close')->once();
-        $spy->shouldHaveReceived('warning')->with('[papercut] lost')->once();
+        $spy->shouldHaveReceived('warning')->with('[quoin] plain')->once();
+        $spy->shouldHaveReceived('debug')->with('[quoin] close')->once();
+        $spy->shouldHaveReceived('warning')->with('[quoin] lost')->once();
     }
 
     public function test_markup_highlight_and_code_theme_reach_the_options(): void
     {
-        self::assertSame($this->fresh()->markupOptions()->code, app(PapercutManager::class)->codeHighlighting());
+        self::assertSame($this->fresh()->markupOptions()->code, app(QuoinManager::class)->codeHighlighting());
 
-        config(['papercut.markup.highlight' => false, 'papercut.code.theme' => 'github-dark']);
+        config(['quoin.markup.highlight' => false, 'quoin.code.theme' => 'github-dark']);
         $m = $this->fresh();
         self::assertFalse($m->markupOptions()->code);
         self::assertSame('github-dark', $m->codeHighlighting()->theme);
 
-        config(['papercut.markup.highlight' => 'no']);
+        config(['quoin.markup.highlight' => 'no']);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid papercut.markup.highlight: 'no'");
+        $this->expectExceptionMessage("Invalid quoin.markup.highlight: 'no'");
         $this->fresh()->markupOptions();
     }
 }

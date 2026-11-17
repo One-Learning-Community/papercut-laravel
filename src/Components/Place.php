@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tag;
-use Papercut\Style\Anchor;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\Style\Anchor;
 
 /**
  * <x-doc::place>: content at a point on the page, for the overlay slot of <x-doc::page>.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Place extends PapercutComponent
+final class Place extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -41,7 +41,7 @@ final class Place extends PapercutComponent
         };
 
         try {
-            $place = \Papercut\Place::at($value('x'), $value('y'), ...$this->children($data));
+            $place = \Quoin\Place::at($value('x'), $value('y'), ...$this->children($data));
         } catch (InvalidValue $e) {
             throw $e->within($location);
         }

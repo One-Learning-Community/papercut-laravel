@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Decorator\Badge;
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\{Span, Text};
+use Quoin\Decorator\Badge;
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\{Span, Text};
 
 final class InlineBadgeTest extends TestCase
 {

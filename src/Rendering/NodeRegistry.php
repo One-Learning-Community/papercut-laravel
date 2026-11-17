@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Rendering;
+namespace Quoin\Laravel\Rendering;
 
-use Papercut\Laravel\Components\Pre;
-use Papercut\Laravel\Tag;
+use Quoin\Laravel\Components\Pre;
+use Quoin\Laravel\Tag;
 use Illuminate\Support\HtmlString;
-use Papercut\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Exception\InvalidStructure;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class NodeRegistry
 {
     /** @var list<array{nonce: string, view: ?string, nodes: array<int, object>, taken: array<int, true>, next: int, inline: \SplObjectStorage<object, true>}> */
@@ -33,13 +33,13 @@ final class NodeRegistry
      */
     public static function staleHint(mixed $child): string
     {
-        if (!$child instanceof \Papercut\Text) {
+        if (!$child instanceof \Quoin\Text) {
             return '';
         }
         $text = implode('', array_map(static fn ($span) => $span->text, $child->spanList()));
 
         return self::looksMarked($text)
-            ? '. The text looks like a papercut node marker, which may come from rendered output that was cached or reused; rendered output can\'t be reused across renders, so cache the data instead.'
+            ? '. The text looks like a quoin node marker, which may come from rendered output that was cached or reused; rendered output can\'t be reused across renders, so cache the data instead.'
             : '';
     }
 
@@ -78,7 +78,7 @@ final class NodeRegistry
     {
         $key = array_key_last($this->scopes);
         if ($key === null) {
-            throw new InvalidStructure(Tag::any() . ' components can only be rendered through Papercut::view().');
+            throw new InvalidStructure(Tag::any() . ' components can only be rendered through Quoin::view().');
         }
         $id = $this->scopes[$key]['next']++;
         $this->scopes[$key]['nodes'][$id] = $node;
@@ -98,7 +98,7 @@ final class NodeRegistry
         $key = array_key_last($this->scopes);
         $parts = preg_split('/(\[\[pc:[0-9a-f]{16}:\d+\]\])/i', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
         if ($parts === false) {
-            throw new InvalidStructure('The rendered output could not be searched for papercut nodes: ' . preg_last_error_msg());
+            throw new InvalidStructure('The rendered output could not be searched for quoin nodes: ' . preg_last_error_msg());
         }
 
         $out = [];
@@ -109,11 +109,11 @@ final class NodeRegistry
             $node = null;
             $isMarker = preg_match('/^\[\[pc:([0-9a-f]{16}):(\d+)\]\]$/i', $part, $m);
             if ($isMarker === false) {
-                throw new InvalidStructure('The rendered output could not be searched for papercut nodes: ' . preg_last_error_msg());
+                throw new InvalidStructure('The rendered output could not be searched for quoin nodes: ' . preg_last_error_msg());
             }
             if ($isMarker === 1 && ($key === null || strtolower($m[1]) !== $this->scopes[$key]['nonce'])) {
                 if (isset($this->issued[strtolower($m[1])])) {
-                    throw new InvalidStructure("Found a papercut node marker from another or an earlier render. Rendered papercut output can't be cached or reused across renders; cache the data instead and render it each time.");
+                    throw new InvalidStructure("Found a quoin node marker from another or an earlier render. Rendered quoin output can't be cached or reused across renders; cache the data instead and render it each time.");
                 }
                 $isMarker = 0; // never issued here: ordinary text that happens to look like a marker
             }

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\ListNode;
-use Papercut\Style\ListMarker;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\ListNode;
+use Quoin\Style\ListMarker;
 
 final class ListComponentsTest extends TestCase
 {

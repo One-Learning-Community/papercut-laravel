@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Decorator\{Callout, Section};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\{Text, View};
+use Quoin\Decorator\{Callout, Section};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\{Text, View};
 
 final class DecoratorVariantsTest extends TestCase
 {
     public function test_variant_attribute_on_section(): void
     {
-        config(['papercut.styles' => ['section.title.large' => ['font-size' => '14pt']]]);
+        config(['quoin.styles' => ['section.title.large' => ['font-size' => '14pt']]]);
         $section = $this->nodeFrom('<x-doc::section title="T" variant="large">x</x-doc::section>');
 
         self::assertInstanceOf(Section::class, $section);
@@ -28,7 +28,7 @@ final class DecoratorVariantsTest extends TestCase
 
     public function test_variant_on_callout_with_tone(): void
     {
-        config(['papercut.styles' => ['callout.large' => ['padding' => '20pt']]]);
+        config(['quoin.styles' => ['callout.large' => ['padding' => '20pt']]]);
         $callout = $this->nodeFrom('<x-doc::callout type="tip" variant="large">x</x-doc::callout>');
 
         self::assertInstanceOf(Callout::class, $callout);
@@ -61,9 +61,9 @@ final class DecoratorVariantsTest extends TestCase
 
     public function test_variant_attribute_is_not_a_style_property(): void
     {
-        config(['papercut.styles' => ['card.large' => ['padding' => '20pt']]]);
+        config(['quoin.styles' => ['card.large' => ['padding' => '20pt']]]);
         $card = $this->nodeFrom('<x-doc::card variant="large">x</x-doc::card>');
-        self::assertInstanceOf(\Papercut\Decorator\Card::class, $card);
+        self::assertInstanceOf(\Quoin\Decorator\Card::class, $card);
         self::assertSame(['large'], $card->variants());
     }
 

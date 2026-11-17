@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel;
+namespace Quoin\Laravel;
 
 use Illuminate\Support\Traits\Macroable;
-use Papercut\Document;
-use Papercut\Export\Encryption;
+use Quoin\Document;
+use Quoin\Export\Encryption;
 
 /** A resolved document waiting to be exported; each format method returns a {@see PendingOutput}. */
 final class PendingDocument
@@ -19,7 +19,7 @@ final class PendingDocument
 
     public function __construct(
         private readonly Document $document,
-        private readonly PapercutManager $manager,
+        private readonly QuoinManager $manager,
         private readonly ?Encryption $encryption = null,
     ) {
     }
@@ -34,7 +34,7 @@ final class PendingDocument
     }
 
     /**
-     * A copy whose document has these theme values merged on top of the view's own (the keys the `papercut.theme` config takes).
+     * A copy whose document has these theme values merged on top of the view's own (the keys the `quoin.theme` config takes).
      * It runs after the view rendered: it can change values and restyle existing style names, but a new style
      * name a view uses must come from config or the view's `:theme`.
      *
@@ -55,18 +55,18 @@ final class PendingDocument
     public function pdf(): PendingOutput
     {
         return $this->pdf ??= new PendingOutput(
-            fn (): \Papercut\Export\Output => $this->document->toPdf($this->manager->pdfOptions()->withEncryption($this->encryption)),
+            fn (): \Quoin\Export\Output => $this->document->toPdf($this->manager->pdfOptions()->withEncryption($this->encryption)),
             'document',
             'pdf',
             'application/pdf',
         );
     }
 
-    /** Word export; needs papercut/docx, and throws MissingExporter on output without it. */
+    /** Word export; needs quoin/docx, and throws MissingExporter on output without it. */
     public function docx(): PendingOutput
     {
         return $this->docx ??= new PendingOutput(
-            fn (): \Papercut\Export\Output => $this->document->export($this->manager->docxExporter(), $this->manager->docxOptions()),
+            fn (): \Quoin\Export\Output => $this->document->export($this->manager->docxExporter(), $this->manager->docxOptions()),
             'document',
             'docx',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -76,8 +76,8 @@ final class PendingDocument
     public function html(): PendingHtml
     {
         return $this->html ??= new PendingHtml(
-            fn (): \Papercut\Export\Output => $this->document->toHtml($this->manager->htmlOptions()),
-            fn (): \Papercut\Export\Output => $this->document->toHtml($this->manager->htmlOptions()->withFullPage(true)),
+            fn (): \Quoin\Export\Output => $this->document->toHtml($this->manager->htmlOptions()),
+            fn (): \Quoin\Export\Output => $this->document->toHtml($this->manager->htmlOptions()->withFullPage(true)),
         );
     }
 }

@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel;
+namespace Quoin\Laravel;
 
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Style\{Style, ThemeOverride};
-use Papercut\Value\Color;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Style\{Style, ThemeOverride};
+use Quoin\Value\Color;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
  * Turns a theme array (config, a tag's `:theme`, `->theme()`) into a {@see ThemeOverride}, validating each value.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ThemeConfig
 {
-    /** The `$where` of `papercut.theme`, whose messages name the config key rather than a call site. */
-    public const string CONFIG = 'in config papercut.theme';
+    /** The `$where` of `quoin.theme`, whose messages name the config key rather than a call site. */
+    public const string CONFIG = 'in config quoin.theme';
 
-    /** The keys `papercut.theme` accepts; the rest of {@see self::KEYS} are for overrides only. */
+    /** The keys `quoin.theme` accepts; the rest of {@see self::KEYS} are for overrides only. */
     public const array CONFIG_KEYS = ['font_family', 'mono_family', 'font_size', 'color', 'line_height'];
 
     public const array KEYS = ['font_family', 'mono_family', 'font_size', 'color', 'line_height', 'code_theme', 'styles'];
@@ -36,12 +36,12 @@ final class ThemeConfig
         foreach (array_keys($values) as $key) {
             if ($config) {
                 $hint = match ($key) {
-                    'code_theme' => '; set the code theme with papercut.code.theme',
-                    'styles' => '; define named styles in papercut.styles',
+                    'code_theme' => '; set the code theme with quoin.code.theme',
+                    'styles' => '; define named styles in quoin.styles',
                     default => '',
                 };
                 if ($hint !== '' || !in_array($key, self::KEYS, true)) {
-                    throw new \InvalidArgumentException("Unknown key papercut.theme.$key" . ($hint ?: '; allowed keys: ' . implode(', ', self::CONFIG_KEYS)));
+                    throw new \InvalidArgumentException("Unknown key quoin.theme.$key" . ($hint ?: '; allowed keys: ' . implode(', ', self::CONFIG_KEYS)));
                 }
             }
             if (!in_array($key, self::KEYS, true)) {
@@ -49,7 +49,7 @@ final class ThemeConfig
             }
         }
 
-        $label = static fn (string $key): string => $config ? "papercut.theme.$key" : "theme $key $where";
+        $label = static fn (string $key): string => $config ? "quoin.theme.$key" : "theme $key $where";
 
         try {
             $color = isset($values['color']) ? Color::parse(self::string($values['color'], $label('color'), 'a color')) : null;
@@ -61,7 +61,7 @@ final class ThemeConfig
         if (isset($values['font_family'])) {
             $family = self::string($values['font_family'], $label('font_family'), 'a font family name');
             if (!$config && !self::known($family, $families)) {
-                throw new \InvalidArgumentException('Invalid ' . $label('font_family') . ": '$family' is neither bundled nor registered in papercut.fonts");
+                throw new \InvalidArgumentException('Invalid ' . $label('font_family') . ": '$family' is neither bundled nor registered in quoin.fonts");
             }
         }
 
@@ -74,7 +74,7 @@ final class ThemeConfig
                 throw new \InvalidArgumentException('Invalid ' . $label('mono_family') . ': ' . var_export($mono, true) . '; the keyword `monospace` stands for it, so name a real font family');
             }
             if (!self::known($mono, $families)) {
-                throw new \InvalidArgumentException('Invalid ' . $label('mono_family') . ": '$mono' is neither bundled nor registered in papercut.fonts");
+                throw new \InvalidArgumentException('Invalid ' . $label('mono_family') . ": '$mono' is neither bundled nor registered in quoin.fonts");
             }
         }
 

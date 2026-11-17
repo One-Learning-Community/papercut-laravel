@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Rendering;
+namespace Quoin\Laravel\Rendering;
 
-use Papercut\Exception\ImageUnreadable;
-use Papercut\PapercutException;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\QuoinException;
 
 /**
  * Where an image, SVG or PDF src points, for the <image>, <svg> and <pdf-page> tags and page templates.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ImagePath
 {
@@ -24,7 +24,7 @@ final class ImagePath
      */
     /**
      * @param string $what names the file in errors
-     * @param class-string<PapercutException> $error the exception to throw
+     * @param class-string<QuoinException> $error the exception to throw
      */
     public static function resolve(string $src, string $what = 'Image', string $error = ImageUnreadable::class): string
     {
@@ -37,7 +37,7 @@ final class ImagePath
         if ($absolute) {
             $path = $src;
         } else {
-            $base = config('papercut.image_path');
+            $base = config('quoin.image_path');
             $base = is_string($base) && $base !== '' ? $base : public_path();
             $stack = [];
             foreach (preg_split('#[/\\\\]#', $src) ?: [] as $segment) {

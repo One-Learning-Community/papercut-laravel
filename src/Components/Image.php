@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Exception\{ImageUnreadable, InvalidValue};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\ImagePath;
-use Papercut\Style\ImageFit;
+use Quoin\Laravel\Tag;
+use Quoin\Exception\{ImageUnreadable, InvalidValue};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\ImagePath;
+use Quoin\Style\ImageFit;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Image extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Image extends QuoinComponent
 {
     /** Blade escapes bound attributes as text, which would corrupt binary data; a constructor parameter reaches the tag as it is. */
     public function __construct(private readonly mixed $data = null)
@@ -39,12 +39,12 @@ final class Image extends PapercutComponent
 
         if ($src !== null) {
             try {
-                $node = \Papercut\Image::file(ImagePath::resolve($src));
+                $node = \Quoin\Image::file(ImagePath::resolve($src));
             } catch (ImageUnreadable $e) {
                 throw new ImageUnreadable($e->getMessage() . ' on ' . rtrim(Tag::of('image'), '>') . ' src="' . $src . '">', 0, $e);
             }
         } else {
-            $node = \Papercut\Image::bytes((string) $bytes);
+            $node = \Quoin\Image::bytes((string) $bytes);
         }
 
         if ($alt !== null) {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Decorator\KeyValuePair;
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Tag;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Decorator\KeyValuePair;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Tag;
+use Quoin\Text;
+use Quoin\View;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Kv extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Kv extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tag;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Toc extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Toc extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -23,7 +23,7 @@ final class Toc extends PapercutComponent
             throw new InvalidStructure(Tag::of('toc') . ' must not have content');
         }
         $own = $this->attrs($data)['own'];
-        $toc = \Papercut\Toc::make();
+        $toc = \Quoin\Toc::make();
         if (isset($own['levels'])) {
             $raw = $this->scalarOwn($own['levels'], 'levels');
             if (preg_match('/^\s*(\d+)\s*(?:-\s*(\d+)\s*)?$/', $raw, $m) !== 1) {

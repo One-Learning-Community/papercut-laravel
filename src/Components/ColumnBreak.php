@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Exception\UnknownAttribute;
+use Quoin\Laravel\Tag;
+use Quoin\Exception\UnknownAttribute;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class ColumnBreak extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class ColumnBreak extends QuoinComponent
 {
     protected function build(array $data): object
     {
@@ -17,6 +17,6 @@ final class ColumnBreak extends PapercutComponent
             throw UnknownAttribute::for((string) $key)->within('on ' . Tag::of('column-break'));
         }
 
-        return \Papercut\ColumnBreak::make();
+        return \Quoin\ColumnBreak::make();
     }
 }

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\{Document, Page};
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\{Document, Page};
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
 
 /** The first-header, first-footer, even-header and even-footer slots and the mirror attribute on <x-doc::page>. */
 final class PageVariantsComponentTest extends TestCase

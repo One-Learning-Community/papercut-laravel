@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Tag;
-use Papercut\Value\{Color, Length};
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Tag;
+use Quoin\Value\{Color, Length};
 
 /**
  * Text flowing through several columns; `column-gap` is the gap between columns, `gap` the ordinary style gap between children.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class ColumnFlow extends PapercutComponent
+final class ColumnFlow extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -23,7 +23,7 @@ final class ColumnFlow extends PapercutComponent
     protected function build(array $data): object
     {
         $own = $this->attrs($data)['own'];
-        $flow = \Papercut\ColumnFlow::make(...$this->children($data));
+        $flow = \Quoin\ColumnFlow::make(...$this->children($data));
         $where = 'on ' . Tag::of('column-flow');
 
         try {
@@ -76,7 +76,7 @@ final class ColumnFlow extends PapercutComponent
         return $words;
     }
 
-    private function withRule(\Papercut\View $flow, mixed $value): \Papercut\View
+    private function withRule(\Quoin\View $flow, mixed $value): \Quoin\View
     {
         if ($value === true || $value === '1') {
             return $flow->columnRule();

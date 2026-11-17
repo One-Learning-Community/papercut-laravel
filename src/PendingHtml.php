@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel;
+namespace Quoin\Laravel;
 
 use Illuminate\Contracts\Mail\Attachable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Mail\Attachment;
 use Illuminate\Support\Traits\Macroable;
-use Papercut\Export\Output;
+use Quoin\Export\Output;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -26,7 +26,7 @@ final class PendingHtml implements Attachable, Htmlable, \Stringable, Responsabl
     private ?PendingOutput $fragmentOutput = null;
 
     /**
-     * @param \Closure(): Output $fragment the embeddable `.papercut` fragment
+     * @param \Closure(): Output $fragment the embeddable `.quoin` fragment
      * @param \Closure(): Output $page the full HTML page
      */
     public function __construct(private readonly \Closure $fragment, private readonly \Closure $page)
@@ -39,7 +39,7 @@ final class PendingHtml implements Attachable, Htmlable, \Stringable, Responsabl
         return $this->pageOutput ??= new PendingOutput($this->page, 'document', 'html', self::MIME);
     }
 
-    /** The embeddable `.papercut` fragment. */
+    /** The embeddable `.quoin` fragment. */
     public function fragment(): PendingOutput
     {
         return $this->fragmentOutput ??= new PendingOutput($this->fragment, 'document', 'html', self::MIME);

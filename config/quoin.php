@@ -28,7 +28,7 @@ return [
     'strict' => false,
     // Base directory for relative <x-doc::image src>
     'image_path' => null, // null = public_path()
-    // Parsed-font cache directory: null = storage_path('framework/cache/papercut'), false = disabled, string = path
+    // Parsed-font cache directory: null = storage_path('framework/cache/quoin'), false = disabled, string = path
     'cache_dir' => null,
     'docx' => [
         // Fill in a table of contents' page numbers by laying out the pages, which costs about as much as a PDF export.
@@ -36,21 +36,21 @@ return [
         'toc_page_numbers' => true,
         // Absolute path to librsvg's rsvg-convert (e.g. /usr/bin/rsvg-convert) to draw SVG pictures with it rather than Imagick,
         // whose SVG quality depends on how it was built. null = Imagick only.
-        'rsvg_convert' => env('PAPERCUT_RSVG_CONVERT'),
+        'rsvg_convert' => env('QUOIN_RSVG_CONVERT'),
     ],
     'html' => [
         // Fonts in HTML output: none (system-ui fallback stack) | embed (base64 @font-face, large)
         // | link (@font-face with URLs from font_url; needs font_url)
         // | sources (each family goes to the first class in font_sources that accepts it; works as is, via Google)
         'fonts' => 'none',
-        // Class name implementing Papercut\Laravel\Html\ImageUrlResolver, built by the container.
+        // Class name implementing Quoin\Laravel\Html\ImageUrlResolver, built by the container.
         // null embeds images as data URIs. Use a class, not a closure: class names survive `php artisan config:cache`.
         'image_url' => null,
-        // Class name implementing Papercut\Laravel\Html\FontUrlResolver, built by the container. Needed when fonts is link.
+        // Class name implementing Quoin\Laravel\Html\FontUrlResolver, built by the container. Needed when fonts is link.
         'font_url' => null,
         // Write SVGs as inline markup so their text uses the page's fonts; false keeps them as img. Use only for trusted SVG.
         'inline_svgs' => false,
-        // Used when fonts is sources: an ordered list of classes implementing Papercut\Html\FontSource, built by the container.
+        // Used when fonts is sources: an ordered list of classes implementing Quoin\Html\FontSource, built by the container.
         // Each font family goes to the first source that accepts it: list specific sources first, catch-all hosts such as Google last.
         // PRIVACY: with GoogleFonts the visitor's browser fetches the CSS and fonts from the host and sends it their IP address
         // (see core's "Fonts in HTML"). Bunny Fonts (fonts.bunny.net) is a host that states it does not log IP addresses, but the
@@ -58,14 +58,14 @@ return [
         // keeps it all on your side.
         // Check your CSP: style-src, font-src and, for embedded fonts, font-src data:.
         // Class names only (they survive `php artisan config:cache`). Read only when fonts is sources.
-        'font_sources' => [\Papercut\Html\GoogleFonts::class],
+        'font_sources' => [\Quoin\Html\GoogleFonts::class],
         // Settings for the GoogleFonts source. Checked only when GoogleFonts is in font_sources.
         'google_fonts' => [
             'host' => 'https://fonts.googleapis.com', // or https://fonts.bunny.net
             'display' => 'swap', // auto|block|swap|fallback|optional
             'families' => null, // null = every family; or a list of names (allowlist)
         ],
-        // Settings for the LocalFonts source (families registered in papercut.fonts). Checked only when LocalFonts is in font_sources.
+        // Settings for the LocalFonts source (families registered in quoin.fonts). Checked only when LocalFonts is in font_sources.
         'local_fonts' => [
             'mode' => 'embed', // embed | link (link uses font_url)
             'families' => null, // null = every registered family; or a list of names
@@ -73,7 +73,7 @@ return [
     ],
     // <x-doc::markup>: HTML or plain text in, document nodes out.
     'markup' => [
-        // Invokable class implementing Papercut\Laravel\Markup\ImageResolver: turns an <img src> into bytes, or null when missing.
+        // Invokable class implementing Quoin\Laravel\Markup\ImageResolver: turns an <img src> into bytes, or null when missing.
         'images' => null,
         // 'theme' (HTML gives structure; the theme styles it) or 'original' (inline style="" applied on top).
         'styles' => 'theme',
@@ -86,7 +86,7 @@ return [
     ],
     // Code blocks (<x-doc::pre language>, markup): highlighting needs phiki/phiki.
     'code' => [
-        'theme' => null, // null = papercut-light
+        'theme' => null, // null = quoin-light
         'variant' => null, // null, 'strip' or 'caption'
         'grammars' => [], // name => path to a TextMate grammar JSON
         'themes' => [], // name => path to a TextMate theme JSON
@@ -94,7 +94,7 @@ return [
         'injections' => [], // list of ['path' => …, 'into' => ['source.x', …]]
     ],
     'preview' => [
-        'enabled' => env('PAPERCUT_PREVIEW', false),
-        'path' => '_papercut',
+        'enabled' => env('QUOIN_PREVIEW', false),
+        'path' => '_quoin',
     ],
 ];

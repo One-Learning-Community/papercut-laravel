@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
 use Illuminate\Support\Str;
-use Papercut\Laravel\Tag;
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Rendering\Segments;
-use Papercut\Value\{Edges, Length};
+use Quoin\Laravel\Tag;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Rendering\Segments;
+use Quoin\Value\{Edges, Length};
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Page extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Page extends QuoinComponent
 {
     private const array SLOTS = ['header', 'footer', 'first-header', 'first-footer', 'even-header', 'even-footer', 'background', 'overlay'];
 
@@ -74,8 +74,8 @@ final class Page extends PapercutComponent
             }
             if ($name === 'overlay') {
                 $places = [];
-                foreach (Segments::nodes($registry->segments($slots[$name]), 'page', [\Papercut\Place::class]) as $node) {
-                    $places[] = $node instanceof \Papercut\Place
+                foreach (Segments::nodes($registry->segments($slots[$name]), 'page', [\Quoin\Place::class]) as $node) {
+                    $places[] = $node instanceof \Quoin\Place
                         ? $node
                         : throw new InvalidStructure('The overlay slot of ' . Tag::of('page') . ' takes only ' . Tag::of('place') . ' tags');
                 }
@@ -83,7 +83,7 @@ final class Page extends PapercutComponent
                 continue;
             }
             $nodes = Segments::nodes($registry->segments($slots[$name]), 'page');
-            /** @var list<\Papercut\Node> $nodes */
+            /** @var list<\Quoin\Node> $nodes */
             $page = match ($name) {
                 'header' => $page->header(...$nodes),
                 'footer' => $page->footer(...$nodes),
@@ -96,38 +96,38 @@ final class Page extends PapercutComponent
             };
         }
 
-        /** @var list<\Papercut\Node> $body */
+        /** @var list<\Quoin\Node> $body */
         $body = $this->children($data);
 
         return $page->body(...$body);
     }
 
     /**
-     * @param list<\Papercut\Node> $body
+     * @param list<\Quoin\Node> $body
      */
-    public static function implicit(array $body): \Papercut\Page
+    public static function implicit(array $body): \Quoin\Page
     {
         return self::configured([])->body(...$body);
     }
 
     /** A paper name (`a4`) or a width and height (`8.5in 11in`). */
-    private static function sized(string $size): \Papercut\Page
+    private static function sized(string $size): \Quoin\Page
     {
         $parts = preg_split('/\s+/', trim($size), -1, PREG_SPLIT_NO_EMPTY) ?: [];
         if (count($parts) === 2) {
-            return \Papercut\Page::size(Length::parse($parts[0]), Length::parse($parts[1]));
+            return \Quoin\Page::size(Length::parse($parts[0]), Length::parse($parts[1]));
         }
-        if (count($parts) === 1 && in_array(strtolower($parts[0]), \Papercut\Page::sizeNames(), true)) {
-            return \Papercut\Page::named($parts[0]);
+        if (count($parts) === 1 && in_array(strtolower($parts[0]), \Quoin\Page::sizeNames(), true)) {
+            return \Quoin\Page::named($parts[0]);
         }
         throw InvalidValue::for('page size', $size)->because(sprintf(
             'expected one of %s, or a width and height such as "8.5in 11in"',
-            implode(', ', \Papercut\Page::sizeNames()),
+            implode(', ', \Quoin\Page::sizeNames()),
         ));
     }
 
     /** @param array<string, mixed> $own */
-    private static function configured(array $own): \Papercut\Page
+    private static function configured(array $own): \Quoin\Page
     {
         $location = 'on ' . Tag::of('page');
         if (isset($own['template']) || isset($own['template-data'])) {
@@ -136,10 +136,10 @@ final class Page extends PapercutComponent
             }
             $template = PdfPage::node($own, 'template', 'template-data', 'template-page', 'template-password', 'page');
 
-            return self::spaced(\Papercut\Page::template($template), $own);
+            return self::spaced(\Quoin\Page::template($template), $own);
         }
         try {
-            $size = $own['size'] ?? config('papercut.paper', 'a4');
+            $size = $own['size'] ?? config('quoin.paper', 'a4');
             if (!is_string($size)) {
                 throw InvalidValue::for('page size', is_scalar($size) ? (string) $size : get_debug_type($size));
             }
@@ -164,10 +164,10 @@ final class Page extends PapercutComponent
      *
      * @param array<string, mixed> $own
      */
-    private static function spaced(\Papercut\Page $page, array $own): \Papercut\Page
+    private static function spaced(\Quoin\Page $page, array $own): \Quoin\Page
     {
         $location = 'on ' . Tag::of('page');
-        $margin = $own['margin'] ?? config('papercut.margin', '20mm');
+        $margin = $own['margin'] ?? config('quoin.margin', '20mm');
         try {
             $page = $page->margin($margin instanceof Edges ? $margin : Edges::parse((string) (is_scalar($margin) ? $margin : '20mm')));
         } catch (InvalidValue $e) {

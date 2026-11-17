@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\Laravel\Exception\InvalidStructure;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Link extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Link extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -25,6 +25,6 @@ final class Link extends PapercutComponent
             throw new InvalidStructure(Tag::of('link') . ' href must be a non-empty string');
         }
 
-        return $this->styled(\Papercut\Link::to($href, ...$this->children($data)), $data);
+        return $this->styled(\Quoin\Link::to($href, ...$this->children($data)), $data);
     }
 }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Export\PdfOptions;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Export\PdfOptions;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 
 final class ExamplesTest extends TestCase
 {
@@ -30,7 +30,7 @@ final class ExamplesTest extends TestCase
     {
         $app['config']->set('view.paths', [self::EXAMPLES . '/views']);
         // The certificate view names its template and signature by relative path.
-        $app['config']->set('papercut.image_path', self::EXAMPLES . '/../assets');
+        $app['config']->set('quoin.image_path', self::EXAMPLES . '/../assets');
     }
 
     /**
@@ -46,7 +46,7 @@ final class ExamplesTest extends TestCase
 
     private function render(string $view): string
     {
-        $pdf = Papercut::view($view, self::data($view))->pdf()->toString();
+        $pdf = Quoin::view($view, self::data($view))->pdf()->toString();
         $base = (string) tempnam(sys_get_temp_dir(), 'pc-ex');
         $file = $base . '.pdf';
         $this->temps[] = $base;
@@ -136,7 +136,7 @@ final class ExamplesTest extends TestCase
     public function testArticleConvertsWithoutWarnings(): void
     {
         // Strict mode throws on anything it can't convert, so reaching the assertion means there were no warnings.
-        $bytes = Papercut::view('article', self::data('article'))->document()->toPdf(new PdfOptions(strict: true))->bytes();
+        $bytes = Quoin::view('article', self::data('article'))->document()->toPdf(new PdfOptions(strict: true))->bytes();
         self::assertStringStartsWith('%PDF', $bytes);
     }
 
@@ -151,7 +151,7 @@ final class ExamplesTest extends TestCase
 
     public function testPaperConvertsWithoutWarnings(): void
     {
-        $bytes = Papercut::view('paper', self::data('paper'))->document()->toPdf(new PdfOptions(strict: true))->bytes();
+        $bytes = Quoin::view('paper', self::data('paper'))->document()->toPdf(new PdfOptions(strict: true))->bytes();
         self::assertStringStartsWith('%PDF', $bytes);
     }
 

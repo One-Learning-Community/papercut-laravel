@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\{Tag, ThemeConfig};
+use Quoin\Laravel\{Tag, ThemeConfig};
 use Closure;
 use Illuminate\View\Component;
 use Illuminate\View\ComponentSlot;
-use Papercut\Decorator\Decorator;
-use Papercut\Exception\InvalidValue;
-use Papercut\Exception\InvalidVariant;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Style\Style;
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Rendering\{Segments, ThemeScope};
-use Papercut\Style\{Theme, ThemeOverride};
+use Quoin\Decorator\Decorator;
+use Quoin\Exception\InvalidValue;
+use Quoin\Exception\InvalidVariant;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Style\Style;
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Rendering\{Segments, ThemeScope};
+use Quoin\Style\{Theme, ThemeOverride};
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-abstract class PapercutComponent extends Component
+/** @internal Engine detail, not public API. It may change in any release. */
+abstract class QuoinComponent extends Component
 {
     final public function render(): string
     {
@@ -111,7 +111,7 @@ abstract class PapercutComponent extends Component
             throw new \InvalidArgumentException('Invalid theme ' . $where . ': ' . (is_scalar($value) ? var_export($value, true) : get_debug_type($value)) . '; expected an array such as [\'font_size\' => 11]');
         }
 
-        return ThemeConfig::override($value, $where, app(PapercutManager::class)->fontFamilies());
+        return ThemeConfig::override($value, $where, app(QuoinManager::class)->fontFamilies());
     }
 
     /** @param array<string, mixed> $data */
@@ -178,7 +178,7 @@ abstract class PapercutComponent extends Component
     /**
      * Applies style attributes and a named style (string) or Style object, tagging errors with the tag.
      *
-     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Toc|\Papercut\Image|\Papercut\QrCode|\Papercut\Equation|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
+     * @template T of \Quoin\ListNode|\Quoin\ListItem|\Quoin\View|\Quoin\Link|\Quoin\Spacer|\Quoin\Text|\Quoin\PageNumber|\Quoin\Toc|\Quoin\Image|\Quoin\QrCode|\Quoin\Equation|\Quoin\Svg|\Quoin\PdfPage|\Quoin\Table|\Quoin\TableRow|\Quoin\TableCell|\Quoin\Decorator\Decorator
      * @param T $node
      * @param array<string, mixed> $style
      * @return T
@@ -229,7 +229,7 @@ abstract class PapercutComponent extends Component
     }
 
     /**
-     * @template T of \Papercut\ListNode|\Papercut\ListItem|\Papercut\View|\Papercut\Link|\Papercut\Spacer|\Papercut\Text|\Papercut\PageNumber|\Papercut\Toc|\Papercut\Image|\Papercut\QrCode|\Papercut\Equation|\Papercut\Svg|\Papercut\PdfPage|\Papercut\Table|\Papercut\TableRow|\Papercut\TableCell|\Papercut\Decorator\Decorator
+     * @template T of \Quoin\ListNode|\Quoin\ListItem|\Quoin\View|\Quoin\Link|\Quoin\Spacer|\Quoin\Text|\Quoin\PageNumber|\Quoin\Toc|\Quoin\Image|\Quoin\QrCode|\Quoin\Equation|\Quoin\Svg|\Quoin\PdfPage|\Quoin\Table|\Quoin\TableRow|\Quoin\TableCell|\Quoin\Decorator\Decorator
      * @param T $node
      * @param array<string, mixed> $data
      * @return T
@@ -247,7 +247,7 @@ abstract class PapercutComponent extends Component
     /**
      * Like styled(), but maps the own `align` to text-align and `size` to font-size.
      *
-     * @template T of \Papercut\Text|\Papercut\PageNumber
+     * @template T of \Quoin\Text|\Quoin\PageNumber
      * @param T $node
      * @param array<string, mixed> $data
      * @return T
@@ -268,11 +268,11 @@ abstract class PapercutComponent extends Component
 
     /**
      * @param array<string, mixed> $data
-     * @return list<\Papercut\Node>
+     * @return list<\Quoin\Node>
      */
     protected function children(array $data): array
     {
-        /** @var list<\Papercut\Node> $nodes */
+        /** @var list<\Quoin\Node> $nodes */
         $nodes = $this->rawChildren($data, []);
 
         return $nodes;
@@ -295,7 +295,7 @@ abstract class PapercutComponent extends Component
     }
 
     /** @param array<string, mixed> $data */
-    protected function inlineText(array $data): \Papercut\Text
+    protected function inlineText(array $data): \Quoin\Text
     {
         return Segments::inline(app(NodeRegistry::class)->segments((string) ($data['slot'] ?? '')), $this->tag());
     }
@@ -305,7 +305,7 @@ abstract class PapercutComponent extends Component
      *
      * @param array<string, mixed> $data
      */
-    protected function slotText(array $data, string $name): ?\Papercut\Text
+    protected function slotText(array $data, string $name): ?\Quoin\Text
     {
         $slots = $this->namedSlots($data);
         if (!isset($slots[$name])) {
@@ -320,7 +320,7 @@ abstract class PapercutComponent extends Component
      *
      * @param array<string, mixed> $data
      */
-    protected function slotOrAttribute(array $data, string $name): \Papercut\Text|string|null
+    protected function slotOrAttribute(array $data, string $name): \Quoin\Text|string|null
     {
         $slot = $this->slotText($data, $name);
         if ($slot !== null) {

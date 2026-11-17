@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Papercut\Export\FontMode;
-use Papercut\Html\{FontSource, GoogleFonts, LocalFonts};
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Tests\Support\{CdnFontUrl, RegistryFonts};
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Export\FontMode;
+use Quoin\Html\{FontSource, GoogleFonts, LocalFonts};
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Tests\Support\{CdnFontUrl, RegistryFonts};
+use Quoin\Laravel\Tests\TestCase;
 
 final class HtmlFontSourcesTest extends TestCase
 {
@@ -18,22 +18,22 @@ final class HtmlFontSourcesTest extends TestCase
 
     private function page(): string
     {
-        $this->app()->forgetInstance(PapercutManager::class); // @phpstan-ignore method.notFound
+        $this->app()->forgetInstance(QuoinManager::class); // @phpstan-ignore method.notFound
 
-        return Papercut::view('pdf.hello', ['name' => 'Ann'])->html()->page()->toString();
+        return Quoin::view('pdf.hello', ['name' => 'Ann'])->html()->page()->toString();
     }
 
     /** @param array<string, mixed> $html */
     private function html(array $html): void
     {
         foreach ($html as $key => $value) {
-            config(["papercut.html.$key" => $value]);
+            config(["quoin.html.$key" => $value]);
         }
     }
 
     private function acme(): void
     {
-        config(['papercut.fonts' => ['Acme' => [400 => ['normal' => self::INTER . '/Inter-Regular.ttf']]], 'papercut.theme' => ['font_family' => 'Acme'], 'papercut.fallback_fonts' => ['Inter']]);
+        config(['quoin.fonts' => ['Acme' => [400 => ['normal' => self::INTER . '/Inter-Regular.ttf']]], 'quoin.theme' => ['font_family' => 'Acme'], 'quoin.fallback_fonts' => ['Inter']]);
     }
 
     public function test_sources_with_defaults_links_google(): void
@@ -46,9 +46,9 @@ final class HtmlFontSourcesTest extends TestCase
     public function test_fragment_imports_first_and_has_no_link(): void
     {
         $this->html(['fonts' => 'sources']);
-        $this->app()->forgetInstance(PapercutManager::class); // @phpstan-ignore method.notFound
+        $this->app()->forgetInstance(QuoinManager::class); // @phpstan-ignore method.notFound
 
-        $out = (string) Papercut::view('pdf.hello', ['name' => 'Ann'])->html();
+        $out = (string) Quoin::view('pdf.hello', ['name' => 'Ann'])->html();
 
         $this->assertStringContainsString('<style>@import url("https://fonts.googleapis.com/css2?family=Inter', $out);
         $this->assertStringNotContainsString('<link', $out);
@@ -99,23 +99,23 @@ final class HtmlFontSourcesTest extends TestCase
     public static function errors(): iterable
     {
         $s = ['fonts' => 'sources'];
-        yield 'fonts' => [['fonts' => 'bogus'], "Invalid papercut.html.fonts: 'bogus'; expected none, embed, link or sources"];
-        yield 'font_sources scalar' => [$s + ['font_sources' => 'x'], "Invalid papercut.html.font_sources: 'x'; expected a list of class names implementing Papercut\\Html\\FontSource"];
-        yield 'font_sources map' => [$s + ['font_sources' => ['a' => GoogleFonts::class]], 'Invalid papercut.html.font_sources: array; expected a list of class names implementing Papercut\\Html\\FontSource'];
-        yield 'font_sources empty' => [$s + ['font_sources' => []], 'papercut.html.fonts is sources, which needs at least one class in papercut.html.font_sources'];
-        yield 'entry not a source' => [$s + ['font_sources' => [GoogleFonts::class, \stdClass::class]], "Invalid papercut.html.font_sources.1: 'stdClass'; expected an invokable class name implementing Papercut\\Html\\FontSource"];
-        yield 'entry int' => [$s + ['font_sources' => [5]], "Invalid papercut.html.font_sources.0: 5; expected an invokable class name implementing Papercut\\Html\\FontSource"];
-        yield 'entry abstract' => [$s + ['font_sources' => [FontSource::class]], "Invalid papercut.html.font_sources.0: 'Papercut\\\\Html\\\\FontSource'; expected an invokable class name implementing Papercut\\Html\\FontSource"];
-        yield 'entry unbuildable' => [$s + ['font_sources' => [\Papercut\Laravel\Tests\Support\NeedsScalarSource::class]], "Cannot build papercut.html.font_sources.0 resolver 'Papercut\\\\Laravel\\\\Tests\\\\Support\\\\NeedsScalarSource': "];
-        yield 'host' => [$s + ['google_fonts' => ['host' => 'ftp://x']], "Invalid papercut.html.google_fonts.host: 'ftp://x'; expected an http or https URL with no query or fragment"];
-        yield 'host trailing space' => [$s + ['google_fonts' => ['host' => 'https://fonts.bunny.net ']], "Invalid papercut.html.google_fonts.host: 'https://fonts.bunny.net '; expected an http or https URL with no query or fragment"];
-        yield 'host array' => [$s + ['google_fonts' => ['host' => []]], 'Invalid papercut.html.google_fonts.host: array; expected an http or https URL with no query or fragment'];
-        yield 'display' => [$s + ['google_fonts' => ['display' => 'fast']], "Invalid papercut.html.google_fonts.display: 'fast'; expected auto, block, swap, fallback or optional"];
-        yield 'google families' => [$s + ['google_fonts' => ['families' => 'Inter']], "Invalid papercut.html.google_fonts.families: 'Inter'; expected null or a list of family names"];
-        yield 'google families item' => [$s + ['google_fonts' => ['families' => ['Inter', 5]]], 'Invalid papercut.html.google_fonts.families: array; expected null or a list of family names'];
-        yield 'local families' => [$s + ['font_sources' => [LocalFonts::class], 'local_fonts' => ['families' => 'x']], "Invalid papercut.html.local_fonts.families: 'x'; expected null or a list of family names"];
-        yield 'local mode' => [$s + ['font_sources' => [LocalFonts::class], 'local_fonts' => ['mode' => 'x']], "Invalid papercut.html.local_fonts.mode: 'x'; expected embed or link"];
-        yield 'local link needs font_url' => [$s + ['font_sources' => [LocalFonts::class], 'local_fonts' => ['mode' => 'link']], 'papercut.html.local_fonts.mode is link, which needs papercut.html.font_url'];
+        yield 'fonts' => [['fonts' => 'bogus'], "Invalid quoin.html.fonts: 'bogus'; expected none, embed, link or sources"];
+        yield 'font_sources scalar' => [$s + ['font_sources' => 'x'], "Invalid quoin.html.font_sources: 'x'; expected a list of class names implementing Quoin\\Html\\FontSource"];
+        yield 'font_sources map' => [$s + ['font_sources' => ['a' => GoogleFonts::class]], 'Invalid quoin.html.font_sources: array; expected a list of class names implementing Quoin\\Html\\FontSource'];
+        yield 'font_sources empty' => [$s + ['font_sources' => []], 'quoin.html.fonts is sources, which needs at least one class in quoin.html.font_sources'];
+        yield 'entry not a source' => [$s + ['font_sources' => [GoogleFonts::class, \stdClass::class]], "Invalid quoin.html.font_sources.1: 'stdClass'; expected an invokable class name implementing Quoin\\Html\\FontSource"];
+        yield 'entry int' => [$s + ['font_sources' => [5]], "Invalid quoin.html.font_sources.0: 5; expected an invokable class name implementing Quoin\\Html\\FontSource"];
+        yield 'entry abstract' => [$s + ['font_sources' => [FontSource::class]], "Invalid quoin.html.font_sources.0: 'Quoin\\\\Html\\\\FontSource'; expected an invokable class name implementing Quoin\\Html\\FontSource"];
+        yield 'entry unbuildable' => [$s + ['font_sources' => [\Quoin\Laravel\Tests\Support\NeedsScalarSource::class]], "Cannot build quoin.html.font_sources.0 resolver 'Quoin\\\\Laravel\\\\Tests\\\\Support\\\\NeedsScalarSource': "];
+        yield 'host' => [$s + ['google_fonts' => ['host' => 'ftp://x']], "Invalid quoin.html.google_fonts.host: 'ftp://x'; expected an http or https URL with no query or fragment"];
+        yield 'host trailing space' => [$s + ['google_fonts' => ['host' => 'https://fonts.bunny.net ']], "Invalid quoin.html.google_fonts.host: 'https://fonts.bunny.net '; expected an http or https URL with no query or fragment"];
+        yield 'host array' => [$s + ['google_fonts' => ['host' => []]], 'Invalid quoin.html.google_fonts.host: array; expected an http or https URL with no query or fragment'];
+        yield 'display' => [$s + ['google_fonts' => ['display' => 'fast']], "Invalid quoin.html.google_fonts.display: 'fast'; expected auto, block, swap, fallback or optional"];
+        yield 'google families' => [$s + ['google_fonts' => ['families' => 'Inter']], "Invalid quoin.html.google_fonts.families: 'Inter'; expected null or a list of family names"];
+        yield 'google families item' => [$s + ['google_fonts' => ['families' => ['Inter', 5]]], 'Invalid quoin.html.google_fonts.families: array; expected null or a list of family names'];
+        yield 'local families' => [$s + ['font_sources' => [LocalFonts::class], 'local_fonts' => ['families' => 'x']], "Invalid quoin.html.local_fonts.families: 'x'; expected null or a list of family names"];
+        yield 'local mode' => [$s + ['font_sources' => [LocalFonts::class], 'local_fonts' => ['mode' => 'x']], "Invalid quoin.html.local_fonts.mode: 'x'; expected embed or link"];
+        yield 'local link needs font_url' => [$s + ['font_sources' => [LocalFonts::class], 'local_fonts' => ['mode' => 'link']], 'quoin.html.local_fonts.mode is link, which needs quoin.html.font_url'];
     }
 
     /** @param array<string, mixed> $html
@@ -138,7 +138,7 @@ final class HtmlFontSourcesTest extends TestCase
     {
         $this->html(['fonts' => 'sources', 'google_fonts' => ['display' => 'fast']]);
 
-        $this->assertStringStartsWith('%PDF', Papercut::view('pdf.hello', ['name' => 'Ann'])->pdf()->toString());
+        $this->assertStringStartsWith('%PDF', Quoin::view('pdf.hello', ['name' => 'Ann'])->pdf()->toString());
     }
 
     public function test_none_mode_ignores_source_config(): void
@@ -160,7 +160,7 @@ final class HtmlFontSourcesTest extends TestCase
         $this->html(['fonts' => 'sources', 'font_sources' => [GoogleFonts::class, fn () => null]]);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid papercut.html.font_sources.1: Closure; expected an invokable class name implementing Papercut\Html\FontSource');
+        $this->expectExceptionMessage('Invalid quoin.html.font_sources.1: Closure; expected an invokable class name implementing Quoin\Html\FontSource');
         $this->page();
     }
 
@@ -168,11 +168,11 @@ final class HtmlFontSourcesTest extends TestCase
     {
         $this->html(['fonts' => 'sources', 'font_sources' => [RegistryFonts::class, GoogleFonts::class], 'google_fonts' => ['host' => 'https://fonts.bunny.net']]);
         /** @var array<string, mixed> $html */
-        $html = (array) config('papercut.html');
+        $html = (array) config('quoin.html');
         $restored = eval('return ' . var_export($html, true) . ';');
-        config(['papercut.html' => $restored]);
+        config(['quoin.html' => $restored]);
 
-        $this->assertSame(FontMode::Sources, $this->app()->make(PapercutManager::class)->htmlOptions()->fontMode());
+        $this->assertSame(FontMode::Sources, $this->app()->make(QuoinManager::class)->htmlOptions()->fontMode());
         $this->assertStringContainsString('fonts.bunny.net', $this->page());
     }
 }

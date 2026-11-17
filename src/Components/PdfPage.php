@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Exception\{InvalidValue, PdfUnreadable};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\ImagePath;
-use Papercut\Laravel\Tag;
+use Quoin\Exception\{InvalidValue, PdfUnreadable};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\ImagePath;
+use Quoin\Laravel\Tag;
 
 /**
  * <x-doc::pdf-page>: a page of an existing PDF, from src (a file under the image path) or data (its bytes).
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class PdfPage extends PapercutComponent
+final class PdfPage extends QuoinComponent
 {
     /** Blade escapes bound attributes as text, which would corrupt binary data; a constructor parameter reaches the tag as it is. */
     public function __construct(private readonly mixed $data = null)
@@ -41,7 +41,7 @@ final class PdfPage extends PapercutComponent
      *
      * @param array<string, mixed> $own
      */
-    public static function node(array $own, string $srcKey, string $dataKey, string $pageKey, string $passwordKey, string $tag): \Papercut\PdfPage
+    public static function node(array $own, string $srcKey, string $dataKey, string $pageKey, string $passwordKey, string $tag): \Quoin\PdfPage
     {
         $src = $own[$srcKey] ?? null;
         $bytes = $own[$dataKey] ?? null;
@@ -68,8 +68,8 @@ final class PdfPage extends PapercutComponent
 
         try {
             return $src !== null
-                ? \Papercut\PdfPage::file(ImagePath::resolve($src, 'PDF', PdfUnreadable::class), $page, $password)
-                : \Papercut\PdfPage::bytes((string) $bytes, $page, $password);
+                ? \Quoin\PdfPage::file(ImagePath::resolve($src, 'PDF', PdfUnreadable::class), $page, $password)
+                : \Quoin\PdfPage::bytes((string) $bytes, $page, $password);
         } catch (PdfUnreadable $e) {
             throw new PdfUnreadable($e->getMessage() . ' on ' . rtrim(Tag::of($tag), '>') . ' ' . $srcKey . '="' . $src . '">', 0, $e);
         } catch (InvalidValue $e) {

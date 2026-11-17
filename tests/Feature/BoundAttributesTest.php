@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\{Image, Link, QrCode};
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\{Image, Link, QrCode};
 
 /**
  * Blade escapes bound values on a component's attribute bag; tags must see what was bound.

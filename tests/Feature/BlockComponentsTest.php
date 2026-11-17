@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\{Column, Link, PageBreak, Spacer, Text, View};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Style\{Align, Direction};
+use Quoin\{Column, Link, PageBreak, Spacer, Text, View};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Style\{Align, Direction};
 
 final class BlockComponentsTest extends TestCase
 {
@@ -32,7 +32,7 @@ final class BlockComponentsTest extends TestCase
 
     public function test_bound_values_pass_through_typed(): void
     {
-        $node = $this->nodeFrom('<x-doc::view :padding="$p" />', ['p' => \Papercut\pt(3)]);
+        $node = $this->nodeFrom('<x-doc::view :padding="$p" />', ['p' => \Quoin\pt(3)]);
         self::assertSame(3.0, $node->style()->padding?->top->points);
     }
 
@@ -53,7 +53,7 @@ final class BlockComponentsTest extends TestCase
     public function test_link_requires_href(): void
     {
         self::assertSame('https://x.test', $this->nodeFrom('<x-doc::link href="https://x.test">go</x-doc::link>')->uri());
-        $this->expectException(\Papercut\Laravel\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Laravel\Exception\InvalidStructure::class);
         $this->nodeFrom('<x-doc::link>go</x-doc::link>');
     }
 
@@ -104,9 +104,9 @@ final class BlockComponentsTest extends TestCase
 
     public function test_named_style_and_style_object(): void
     {
-        config(['papercut.styles' => ['card' => ['padding' => '12pt']]]);
+        config(['quoin.styles' => ['card' => ['padding' => '12pt']]]);
         self::assertSame('card', $this->nodeFrom('<x-doc::view style="card" />')->styleName());
-        $node = $this->nodeFrom('<x-doc::view :style="$s" />', ['s' => \Papercut\Style\Style::fromAttributes(['padding' => '4pt'])]);
+        $node = $this->nodeFrom('<x-doc::view :style="$s" />', ['s' => \Quoin\Style\Style::fromAttributes(['padding' => '4pt'])]);
         self::assertSame(4.0, $node->style()->padding?->top->points);
     }
 

@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Decorator\CodeBlock;
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Tag;
-use Papercut\Span;
-use Papercut\Style\Style;
-use Papercut\Text;
+use Quoin\Decorator\CodeBlock;
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Tag;
+use Quoin\Span;
+use Quoin\Style\Style;
+use Quoin\Text;
 
 /**
  * Preformatted text: the slot is literal (no tags are parsed, HTML entities are decoded), so
  * `{{ $code }}` comes out exactly as the variable's value.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Pre extends PapercutComponent
+final class Pre extends QuoinComponent
 {
     /**
      * Marks the start of a pre slot. Blade trims a slot before the component sees it, which would
@@ -34,7 +34,7 @@ final class Pre extends PapercutComponent
      */
     public static function markOpeningTags(string $template): string
     {
-        $prefix = config('papercut.prefix', 'doc');
+        $prefix = config('quoin.prefix', 'doc');
         if (!is_string($prefix) || preg_match('/^[a-z][a-z0-9-]*$/', $prefix) !== 1 || !str_contains($template, '::pre')) {
             return $template;
         }
@@ -65,7 +65,7 @@ final class Pre extends PapercutComponent
      */
     public static function unmark(string $text): string
     {
-        $prefix = config('papercut.prefix', 'doc');
+        $prefix = config('quoin.prefix', 'doc');
         if (!is_string($prefix) || !str_contains($text, self::START)) {
             return $text;
         }
@@ -126,7 +126,7 @@ final class Pre extends PapercutComponent
     {
         $block = CodeBlock::make(implode("\n", $lines))
             ->language($this->scalarOwn($own['language'], 'language'))
-            ->highlighting(app(PapercutManager::class)->codeHighlighting());
+            ->highlighting(app(QuoinManager::class)->codeHighlighting());
         if (isset($own['theme'])) {
             $block = $block->theme($this->scalarOwn($own['theme'], 'theme'));
         }

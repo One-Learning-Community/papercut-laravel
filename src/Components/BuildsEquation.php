@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tag;
-use Papercut\Math\Math;
-use Papercut\Math\Node\Node as MathNode;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tag;
+use Quoin\Math\Math;
+use Quoin\Math\Node\Node as MathNode;
 
 /**
  * The shared build of the equation and math components: a `math` attribute (string or node) or a `tex` attribute (a TeX string), and no content.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 trait BuildsEquation
 {
@@ -38,16 +38,16 @@ trait BuildsEquation
                 throw new InvalidStructure("$tag needs the tex attribute to be a string of TeX");
             }
 
-            return $this->styled(\Papercut\Equation::of(Math::tex($tex)), $data);
+            return $this->styled(\Quoin\Equation::of(Math::tex($tex)), $data);
         }
         if (!is_string($math) && !$math instanceof MathNode) {
-            throw new InvalidStructure("$tag requires a math attribute (a string, or a node built with Papercut\\Math\\Math) or a tex attribute (a TeX string)");
+            throw new InvalidStructure("$tag requires a math attribute (a string, or a node built with Quoin\\Math\\Math) or a tex attribute (a TeX string)");
         }
 
         if (is_string($math) && self::isMathml($math)) {
             $math = Math::mathml($math);
         }
 
-        return $this->styled(\Papercut\Equation::of($math), $data);
+        return $this->styled(\Quoin\Equation::of($math), $data);
     }
 }

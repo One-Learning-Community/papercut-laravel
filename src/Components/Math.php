@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Rendering\NodeRegistry;
 
 /**
  * An equation inside running text: `<x-doc::math :math="$node" />`, `<x-doc::math math="x²" />` or
@@ -12,9 +12,9 @@ use Papercut\Laravel\Rendering\NodeRegistry;
  * `<x-doc::equation>`, so a lone `<x-doc::math>` is a displayed equation. Inside a text tag it takes no style
  * attributes; set size and color on the surrounding text.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Math extends PapercutComponent
+final class Math extends QuoinComponent
 {
     use BuildsEquation {
         build as private buildEquation;

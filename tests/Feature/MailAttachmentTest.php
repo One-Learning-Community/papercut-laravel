@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Mail\Mailable;
-use Papercut\{Document, Page, Text};
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\{PapercutManager, PendingDocument, PendingHtml, PendingOutput};
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\{Document, Page, Text};
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\{QuoinManager, PendingDocument, PendingHtml, PendingOutput};
+use Quoin\Laravel\Tests\TestCase;
 
 final class MailAttachmentTest extends TestCase
 {
     private function pending(): PendingDocument
     {
-        return Papercut::make(Document::make(Page::a4()->body(Text::make('Attached'))));
+        return Quoin::make(Document::make(Page::a4()->body(Text::make('Attached'))));
     }
 
     /** A mailable built the way a real one is: attach() inside build(), which runs when the mail is rendered. */
@@ -95,10 +95,10 @@ final class MailAttachmentTest extends TestCase
     public function test_naming_an_attachment_does_not_render_until_the_mail_is_built(): void
     {
         $renders = 0;
-        $pending = new PendingOutput(function () use (&$renders): \Papercut\Export\Output {
+        $pending = new PendingOutput(function () use (&$renders): \Quoin\Export\Output {
             $renders++;
 
-            return new \Papercut\Export\Output('bytes', 'text/plain', 'txt');
+            return new \Quoin\Export\Output('bytes', 'text/plain', 'txt');
         }, 'document', 'txt', 'text/plain');
 
         $attachment = $pending->toMailAttachment();
@@ -124,7 +124,7 @@ final class MailAttachmentTest extends TestCase
 
     protected function tearDown(): void
     {
-        PapercutManager::flushMacros();
+        QuoinManager::flushMacros();
         PendingDocument::flushMacros();
         PendingOutput::flushMacros();
         PendingHtml::flushMacros();
@@ -133,12 +133,12 @@ final class MailAttachmentTest extends TestCase
 
     public function test_macros_see_this_on_all_four_classes(): void
     {
-        PapercutManager::macro('whoManager', fn () => $this);
+        QuoinManager::macro('whoManager', fn () => $this);
         PendingDocument::macro('whoDocument', fn () => $this);
         PendingOutput::macro('whoOutput', fn () => $this);
         PendingHtml::macro('whoHtml', fn () => $this);
 
-        $manager = app(PapercutManager::class);
+        $manager = app(QuoinManager::class);
         $doc = $this->pending();
         $html = $doc->html();
 

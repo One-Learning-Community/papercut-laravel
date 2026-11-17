@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Tag;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\TableRow;
-use Papercut\Value\TrackList;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Tag;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\TableRow;
+use Quoin\Value\TrackList;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Table extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Table extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -21,13 +21,13 @@ final class Table extends PapercutComponent
     protected function build(array $data): object
     {
         ['own' => $own] = $this->attrs($data);
-        $table = \Papercut\Table::make();
+        $table = \Quoin\Table::make();
 
         $columns = $own['columns'] ?? null;
         if ($columns instanceof TrackList || is_string($columns)) {
             $table = $table->columns($columns);
         } elseif (is_array($columns)) {
-            /** @var list<\Papercut\Value\Length|\Papercut\Value\Percent|\Papercut\Value\Fr|\Papercut\Value\Auto> $tracks */
+            /** @var list<\Quoin\Value\Length|\Quoin\Value\Percent|\Quoin\Value\Fr|\Quoin\Value\Auto> $tracks */
             $tracks = array_values($columns);
             $table = $table->columns(...$tracks);
         }

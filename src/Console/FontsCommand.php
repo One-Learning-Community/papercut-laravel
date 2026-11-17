@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Console;
+namespace Quoin\Laravel\Console;
 
 use Illuminate\Console\Command;
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Laravel\FontConfig;
-use Papercut\Text\{FontRegistry, FontStyle};
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Laravel\FontConfig;
+use Quoin\Text\{FontRegistry, FontStyle};
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class FontsCommand extends Command
 {
-    protected $signature = 'papercut:fonts';
-    protected $description = 'List the fonts available to Papercut and check that each file loads';
+    protected $signature = 'quoin:fonts';
+    protected $description = 'List the fonts available for rendering and check that each file loads';
 
     public function handle(): int
     {

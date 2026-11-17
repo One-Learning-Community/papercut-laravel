@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\QrCode;
-use Papercut\Value\Color;
+use Quoin\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\QrCode;
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 final class QrCodeComponentTest extends TestCase
@@ -22,7 +22,7 @@ final class QrCodeComponentTest extends TestCase
         self::assertSame('https://acme.test/pay/142', $n->value());
         self::assertSame(ErrorCorrection::High, $n->level());
         self::assertSame(2, $n->quietZoneModules());
-        self::assertEqualsWithDelta(\Papercut\mm(30)->points, $n->style()->width instanceof \Papercut\Value\Length ? $n->style()->width->points : null, 1e-9);
+        self::assertEqualsWithDelta(\Quoin\mm(30)->points, $n->style()->width instanceof \Quoin\Value\Length ? $n->style()->width->points : null, 1e-9);
     }
 
     public function test_bound_values_and_default_level(): void
@@ -143,7 +143,7 @@ final class QrCodeComponentTest extends TestCase
     {
         $n = $this->nodeFrom('<x-doc::qr-code value="x" shape="rounded" gradient="#4f46e5 #0e7490" />');
         self::assertInstanceOf(QrCode::class, $n);
-        $pdf = \Papercut\Laravel\Facades\Papercut::make(\Papercut\Document::make(\Papercut\Page::a4()->body($n)))->pdf()->toString();
+        $pdf = \Quoin\Laravel\Facades\Quoin::make(\Quoin\Document::make(\Quoin\Page::a4()->body($n)))->pdf()->toString();
 
         self::assertStringStartsWith('%PDF-', $pdf);
         self::assertStringContainsString('/ShadingType', $pdf);
@@ -151,7 +151,7 @@ final class QrCodeComponentTest extends TestCase
 
     public function test_it_renders_to_pdf(): void
     {
-        $pdf = \Papercut\Laravel\Facades\Papercut::make(\Papercut\Document::make(\Papercut\Page::a4()->body(QrCode::make('x'))))->pdf()->toString();
+        $pdf = \Quoin\Laravel\Facades\Quoin::make(\Quoin\Document::make(\Quoin\Page::a4()->body(QrCode::make('x'))))->pdf()->toString();
 
         self::assertStringStartsWith('%PDF-', $pdf);
     }

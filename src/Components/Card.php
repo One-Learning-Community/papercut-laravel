@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Card extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Card extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array
@@ -16,7 +16,7 @@ final class Card extends PapercutComponent
     protected function build(array $data): object
     {
         ['own' => $own] = $this->attrs($data);
-        $card = \Papercut\Decorator\Card::make(...$this->children($data));
+        $card = \Quoin\Decorator\Card::make(...$this->children($data));
         if (isset($own['heading'])) {
             $card = $card->heading($this->headingOwn($own['heading']));
         }

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Decorator\KeyValuePair;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Tag;
+use Quoin\Decorator\KeyValuePair;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Tag;
 
 /**
  * `<x-doc::totals>` holding `<x-doc::kv>` rows; `<x-doc::kv total>` marks an emphasized row.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Totals extends PapercutComponent
+final class Totals extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array
@@ -32,6 +32,6 @@ final class Totals extends PapercutComponent
             $pairs[] = $child;
         }
 
-        return $this->styled(\Papercut\Decorator\Totals::make(...$pairs), $data);
+        return $this->styled(\Quoin\Decorator\Totals::make(...$pairs), $data);
     }
 }

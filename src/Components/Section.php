@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Section extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Section extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array
@@ -16,7 +16,7 @@ final class Section extends PapercutComponent
     protected function build(array $data): object
     {
         ['own' => $own] = $this->attrs($data);
-        $section = \Papercut\Decorator\Section::make(...$this->children($data));
+        $section = \Quoin\Decorator\Section::make(...$this->children($data));
         $title = $this->slotOrAttribute($data, 'title');
         if ($title !== null) {
             $section = $section->title($title);

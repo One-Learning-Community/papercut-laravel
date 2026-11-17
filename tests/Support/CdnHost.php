@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Support;
+namespace Quoin\Laravel\Tests\Support;
 
 final class CdnHost
 {

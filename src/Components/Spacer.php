@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Laravel\Tag;
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Value\Length;
+use Quoin\Laravel\Tag;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Value\Length;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Spacer extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Spacer extends QuoinComponent
 {
     protected function ownAttributes(): array
     {
@@ -27,7 +27,7 @@ final class Spacer extends PapercutComponent
         }
 
         if (isset($own['size']) && array_key_exists('grow', $style)) {
-            throw new \Papercut\Laravel\Exception\InvalidStructure(Tag::of('spacer') . ' takes size or grow, not both');
+            throw new \Quoin\Laravel\Exception\InvalidStructure(Tag::of('spacer') . ' takes size or grow, not both');
         }
 
         if (isset($own['size'])) {
@@ -38,7 +38,7 @@ final class Spacer extends PapercutComponent
                 throw $e->withContext('size')->within($location);
             }
 
-            return $this->applyStyle(\Papercut\Spacer::fixed($length), [], $own['style'] ?? null);
+            return $this->applyStyle(\Quoin\Spacer::fixed($length), [], $own['style'] ?? null);
         }
 
         $grow = $style['grow'] ?? 1;
@@ -47,6 +47,6 @@ final class Spacer extends PapercutComponent
             throw InvalidValue::for('number', $shown)->withContext('grow')->within($location);
         }
 
-        return $this->applyStyle(\Papercut\Spacer::flex((float) $grow), [], $own['style'] ?? null);
+        return $this->applyStyle(\Quoin\Spacer::flex((float) $grow), [], $own['style'] ?? null);
     }
 }

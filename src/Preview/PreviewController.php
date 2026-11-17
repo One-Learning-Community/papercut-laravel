@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Preview;
+namespace Quoin\Laravel\Preview;
 
 use Illuminate\Http\Response as HttpResponse;
-use Papercut\Exception\MissingExporter;
-use Papercut\Laravel\PapercutManager;
+use Quoin\Exception\MissingExporter;
+use Quoin\Laravel\QuoinManager;
 use Symfony\Component\HttpFoundation\Response;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class PreviewController
 {
-    public function __construct(private readonly PreviewRegistry $registry, private readonly PapercutManager $papercut)
+    public function __construct(private readonly PreviewRegistry $registry, private readonly QuoinManager $quoin)
     {
     }
 
     public function index(): Response
     {
         abort_unless(app()->isLocal(), 404);
-        $prefix = '/' . trim((string) config('papercut.preview.path', '_papercut'), '/');
+        $prefix = '/' . trim((string) config('quoin.preview.path', '_quoin'), '/');
         $items = '';
         foreach ($this->registry->names() as $name) {
             $e = e($name);
@@ -27,8 +27,8 @@ final class PreviewController
         }
 
         return new HttpResponse(
-            '<!doctype html><html><head><meta charset="utf-8"><title>Papercut previews</title></head><body>'
-            . '<h1>Papercut previews</h1><ul>' . $items . '</ul></body></html>',
+            '<!doctype html><html><head><meta charset="utf-8"><title>Previews</title></head><body>'
+            . '<h1>Previews</h1><ul>' . $items . '</ul></body></html>',
             200,
             ['Content-Type' => 'text/html; charset=UTF-8'],
         );
@@ -44,14 +44,14 @@ final class PreviewController
 
         if ($format === 'docx') {
             try {
-                $this->papercut->docxExporter();
+                $this->quoin->docxExporter();
             } catch (MissingExporter $e) {
                 // Not found, with the install hint: the preview is local-only, so the reason is worth showing.
                 return new HttpResponse($e->getMessage(), 404, ['Content-Type' => 'text/plain; charset=UTF-8']);
             }
         }
 
-        $pending = $this->papercut->view($view, $this->registry->data($view));
+        $pending = $this->quoin->view($view, $this->registry->data($view));
 
         return match ($format) {
             'html' => $pending->html()->toResponse(request()),

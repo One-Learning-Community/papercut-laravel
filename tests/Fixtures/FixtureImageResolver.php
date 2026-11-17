@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Fixtures;
+namespace Quoin\Laravel\Tests\Fixtures;
 
-use Papercut\Laravel\Markup\ImageResolver;
+use Quoin\Laravel\Markup\ImageResolver;
 
 /** Returns a small PNG for 'a.png' and null for anything else. */
 final class FixtureImageResolver implements ImageResolver

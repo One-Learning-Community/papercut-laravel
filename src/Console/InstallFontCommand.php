@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Console;
+namespace Quoin\Laravel\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
 
 /**
  * Downloads a family's TrueType files from Google Fonts once, so PDFs can embed them like any local font, and the
  * family's license beside them. Rendering never touches the network: the files live in the app and are registered
- * in papercut.fonts.
+ * in quoin.fonts.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class InstallFontCommand extends Command
 {
-    protected $signature = 'papercut:fonts:install
+    protected $signature = 'quoin:fonts:install
         {family : The family name as Google Fonts spells it, e.g. "Open Sans"}
         {--weights=400,700 : Comma-separated weights to download}
         {--italic : Download the italic of each weight as well}
@@ -116,7 +116,7 @@ final class InstallFontCommand extends Command
         $license = $this->saveLicense($family, $dir, $relative);
 
         $this->newLine();
-        $this->line('Add this to <comment>fonts</comment> in config/papercut.php:');
+        $this->line('Add this to <comment>fonts</comment> in config/quoin.php:');
         $this->newLine();
         $this->line($this->snippet($family, $config));
         $this->newLine();
@@ -189,7 +189,7 @@ final class InstallFontCommand extends Command
     {
         // A non-browser user agent gets one complete TrueType file per face instead of WOFF2 subsets.
         $response = Http::timeout(30)
-            ->withUserAgent('Papercut')
+            ->withUserAgent('Quoin')
             ->get(self::CSS . '?family=' . str_replace('%20', '+', rawurlencode($family)) . ':ital,wght@' . ($style === 'italic' ? 1 : 0) . ',' . $weight);
         if (!$response->successful()) {
             return null;

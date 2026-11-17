@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Preview;
+namespace Quoin\Laravel\Preview;
 
 use Closure;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class PreviewRegistry
 {
     /** @var array<string, Closure|array<string, mixed>> */

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
-use Papercut\Decorator\ChoiceOption;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Decorator\ChoiceOption;
+use Quoin\Text;
+use Quoin\View;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
-final class Choice extends PapercutComponent
+/** @internal Engine detail, not public API. It may change in any release. */
+final class Choice extends QuoinComponent
 {
     /** @return list<string> */
     protected function ownAttributes(): array

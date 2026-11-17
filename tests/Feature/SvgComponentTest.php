@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Svg;
-use Papercut\Value\Length;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Svg;
+use Quoin\Value\Length;
 
 final class SvgComponentTest extends TestCase
 {
@@ -20,11 +20,11 @@ final class SvgComponentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->dir = sys_get_temp_dir() . '/papercut-svg-' . getmypid() . '-' . bin2hex(random_bytes(3));
+        $this->dir = sys_get_temp_dir() . '/quoin-svg-' . getmypid() . '-' . bin2hex(random_bytes(3));
         mkdir($this->dir . '/img', 0777, true);
         file_put_contents($this->dir . '/img/logo.svg', self::LOGO);
         file_put_contents($this->dir . '/secret.svg', self::LOGO);
-        config(['papercut.image_path' => $this->dir . '/img']);
+        config(['quoin.image_path' => $this->dir . '/img']);
     }
 
     protected function tearDown(): void
@@ -44,7 +44,7 @@ final class SvgComponentTest extends TestCase
         self::assertInstanceOf(Svg::class, $n);
         self::assertSame(['kind' => 'file', 'value' => $this->dir . '/img/logo.svg'], $n->source());
         self::assertInstanceOf(Length::class, $n->style()->width);
-        self::assertEqualsWithDelta(\Papercut\mm(40)->points, $n->style()->width->points, 1e-9);
+        self::assertEqualsWithDelta(\Quoin\mm(40)->points, $n->style()->width->points, 1e-9);
     }
 
     public function test_alt_sets_the_alt_text(): void
@@ -139,9 +139,9 @@ final class SvgComponentTest extends TestCase
         \Illuminate\Support\Facades\View::addNamespace('svgtest', $this->dir);
         file_put_contents($this->dir . '/doc.blade.php', '<x-doc::document><x-doc::page><x-doc::svg src="logo.svg" width="40mm" /></x-doc::page></x-doc::document>');
         try {
-            $pdf = Papercut::view('svgtest::doc')->pdf()->toString();
+            $pdf = Quoin::view('svgtest::doc')->pdf()->toString();
             self::assertStringStartsWith('%PDF-', $pdf);
-            $html = (string) Papercut::view('svgtest::doc')->html();
+            $html = (string) Quoin::view('svgtest::doc')->html();
             self::assertStringContainsString('<img src="data:image/svg+xml;base64,', $html);
             self::assertStringContainsString('alt="Acme"', $html);
         } finally {

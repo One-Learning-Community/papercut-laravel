@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Decorator\{KeyValueList, Signature, Stat, Totals};
-use Papercut\Exception\InvalidValue;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\{Node, Table, Text, View};
+use Quoin\Decorator\{KeyValueList, Signature, Stat, Totals};
+use Quoin\Exception\InvalidValue;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\{Node, Table, Text, View};
 
 /** The stat, totals and signature tags, and the built-in variants. */
 final class MoreDecoratorsTest extends TestCase
@@ -91,7 +91,7 @@ final class MoreDecoratorsTest extends TestCase
 
     public function test_everything_renders_to_pdf_html_and_word(): void
     {
-        $pending = Papercut::view('pdf.more-decorators');
+        $pending = Quoin::view('pdf.more-decorators');
         self::assertStringStartsWith('%PDF', $pending->pdf()->toString());
         $html = $pending->html()->page()->toString();
         foreach (['Revenue', 'Total due', 'Jane Smith', 'Director'] as $text) {
@@ -101,7 +101,7 @@ final class MoreDecoratorsTest extends TestCase
     }
 
     /** @return list<string> */
-    private static function texts(\Papercut\Component|Node $node): array
+    private static function texts(\Quoin\Component|Node $node): array
     {
         if ($node instanceof Text) {
             $s = '';

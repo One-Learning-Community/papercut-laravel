@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel;
+namespace Quoin\Laravel;
 
 use Illuminate\Contracts\Filesystem\Factory as Filesystem;
 use Illuminate\Contracts\Mail\Attachable;
@@ -10,7 +10,7 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Mail\Attachment;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
-use Papercut\Export\Output;
+use Quoin\Export\Output;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;

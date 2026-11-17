@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Storage;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 
 final class StoreTest extends TestCase
 {
@@ -38,9 +38,9 @@ final class StoreTest extends TestCase
         parent::tearDown();
     }
 
-    private function pending(): \Papercut\Laravel\PendingDocument
+    private function pending(): \Quoin\Laravel\PendingDocument
     {
-        return Papercut::make(\Papercut\Document::make(\Papercut\Page::a4()->body(\Papercut\Text::make('Stored'))));
+        return Quoin::make(\Quoin\Document::make(\Quoin\Page::a4()->body(\Quoin\Text::make('Stored'))));
     }
 
     public function test_store_writes_pdf_to_the_default_disk(): void

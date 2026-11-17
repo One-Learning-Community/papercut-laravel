@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 
 final class BookmarksTest extends TestCase
 {
@@ -17,7 +17,7 @@ final class BookmarksTest extends TestCase
         file_put_contents($path, $blade);
         \Illuminate\Support\Facades\View::addLocation(sys_get_temp_dir());
         try {
-            $pdf = Papercut::view($view)->pdf()->toString();
+            $pdf = Quoin::view($view)->pdf()->toString();
         } finally {
             unlink($path);
         }
@@ -50,17 +50,17 @@ final class BookmarksTest extends TestCase
 
     public function test_the_config_turns_bookmarks_off(): void
     {
-        config(['papercut.bookmarks' => false]);
+        config(['quoin.bookmarks' => false]);
 
         $this->assertSame([], $this->outline('<x-doc::document><x-doc::h1>Report</x-doc::h1></x-doc::document>'));
     }
 
     public function test_an_invalid_config_value_is_rejected(): void
     {
-        config(['papercut.bookmarks' => 'yes']);
+        config(['quoin.bookmarks' => 'yes']);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid papercut.bookmarks');
-        Papercut::pdfOptions();
+        $this->expectExceptionMessage('Invalid quoin.bookmarks');
+        Quoin::pdfOptions();
     }
 }

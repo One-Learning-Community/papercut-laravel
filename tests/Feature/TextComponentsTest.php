@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\{Image, PageNumber, Text};
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\Tests\TestCase;
-use Papercut\Style\{ImageFit, TextAlign};
+use Quoin\{Image, PageNumber, Text};
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\Tests\TestCase;
+use Quoin\Style\{ImageFit, TextAlign};
 
 final class TextComponentsTest extends TestCase
 {
@@ -75,9 +75,9 @@ final class TextComponentsTest extends TestCase
 
     public function test_image_src_resolution_and_errors(): void
     {
-        $dir = $this->tempDir('papercut-img');
+        $dir = $this->tempDir('quoin-img');
         file_put_contents("$dir/logo.png", 'x');
-        config(['papercut.image_path' => $dir]);
+        config(['quoin.image_path' => $dir]);
         $img = $this->nodeFrom('<x-doc::image src="logo.png" height="12mm" fit="cover" />');
         self::assertInstanceOf(Image::class, $img);
         self::assertSame(['kind' => 'file', 'value' => "$dir/logo.png"], $img->source());

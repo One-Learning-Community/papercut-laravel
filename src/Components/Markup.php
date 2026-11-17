@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Components;
+namespace Quoin\Laravel\Components;
 
 use Illuminate\Contracts\Support\Htmlable;
-use Papercut\Laravel\Exception\InvalidStructure;
-use Papercut\Laravel\PapercutManager;
-use Papercut\Laravel\Rendering\NodeRegistry;
-use Papercut\Laravel\Tag;
-use Papercut\Markup\{BlankParagraphs, Markup as Converter, MarkupOptions, StyleMode};
+use Quoin\Laravel\Exception\InvalidStructure;
+use Quoin\Laravel\QuoinManager;
+use Quoin\Laravel\Rendering\NodeRegistry;
+use Quoin\Laravel\Tag;
+use Quoin\Markup\{BlankParagraphs, Markup as Converter, MarkupOptions, StyleMode};
 
 /**
  * `<x-doc::markup :html="$h" />`, `:text="$t"` or HTML in the slot: converts HTML or plain text to nodes.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
-final class Markup extends PapercutComponent
+final class Markup extends QuoinComponent
 {
     /**
      * html and text are constructor parameters so Blade passes them raw (bound attributes would be run through e()).
@@ -57,7 +57,7 @@ final class Markup extends PapercutComponent
 
     /**
      * The slot as HTML, or null when it holds only whitespace. It takes plain HTML and components that
-     * render to HTML; papercut tags inside would arrive as nodes, which HTML can't hold.
+     * render to HTML; document tags inside would arrive as nodes, which HTML can't hold.
      *
      * @param array<string, mixed> $data
      */
@@ -77,7 +77,7 @@ final class Markup extends PapercutComponent
     /** @param array<string, mixed> $own */
     private function options(array $own): MarkupOptions
     {
-        $manager = app(PapercutManager::class);
+        $manager = app(QuoinManager::class);
         $base = $manager->markupOptions();
         if (!isset($own['styles']) && !isset($own['blank-paragraphs']) && !isset($own['images']) && !isset($own['toc'])) {
             return $base;

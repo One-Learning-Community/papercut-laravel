@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\{ColumnBreak, View};
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\{ColumnBreak, View};
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\Tests\TestCase;
 
 final class ColumnFlowComponentTest extends TestCase
 {
@@ -143,7 +143,7 @@ final class ColumnFlowComponentTest extends TestCase
         file_put_contents($path, $blade);
         \Illuminate\Support\Facades\View::addLocation(sys_get_temp_dir());
         try {
-            $pdf = Papercut::view($view)->pdf()->toString();
+            $pdf = Quoin::view($view)->pdf()->toString();
         } finally {
             unlink($path);
         }

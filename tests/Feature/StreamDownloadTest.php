@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Laravel\Tests\Feature;
+namespace Quoin\Laravel\Tests\Feature;
 
 use Illuminate\Support\Facades\Route;
-use Papercut\Export\Output;
-use Papercut\Laravel\Facades\Papercut;
-use Papercut\Laravel\PendingOutput;
-use Papercut\Laravel\Tests\TestCase;
+use Quoin\Export\Output;
+use Quoin\Laravel\Facades\Quoin;
+use Quoin\Laravel\PendingOutput;
+use Quoin\Laravel\Tests\TestCase;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class StreamDownloadTest extends TestCase
 {
     public function test_stream_download_is_a_streamed_attachment_with_the_document(): void
     {
-        $res = Papercut::view('pdf.hello', ['name' => 'A'])->pdf()->streamDownload('hello.pdf');
+        $res = Quoin::view('pdf.hello', ['name' => 'A'])->pdf()->streamDownload('hello.pdf');
 
         self::assertInstanceOf(StreamedResponse::class, $res);
         self::assertSame('application/pdf', $res->headers->get('Content-Type'));
@@ -42,7 +42,7 @@ final class StreamDownloadTest extends TestCase
 
     public function test_names_are_cleaned_and_given_an_ascii_fallback_like_download(): void
     {
-        $pending = Papercut::view('pdf.hello', ['name' => 'A'])->docx();
+        $pending = Quoin::view('pdf.hello', ['name' => 'A'])->docx();
         $res = $pending->streamDownload('a/b Übersicht.docx');
 
         self::assertSame(
@@ -54,7 +54,7 @@ final class StreamDownloadTest extends TestCase
 
     public function test_html_pages_stream_too(): void
     {
-        $res = Papercut::view('pdf.hello', ['name' => 'A'])->html()->page()->streamDownload();
+        $res = Quoin::view('pdf.hello', ['name' => 'A'])->html()->page()->streamDownload();
 
         self::assertStringContainsString('filename=document.html', (string) $res->headers->get('Content-Disposition'));
         self::assertStringContainsString('<html', self::streamed($res));
@@ -62,7 +62,7 @@ final class StreamDownloadTest extends TestCase
 
     public function test_a_route_can_return_it(): void
     {
-        Route::get('/stream', fn () => Papercut::view('pdf.hello', ['name' => 'A'])->pdf()->streamDownload('report.pdf'));
+        Route::get('/stream', fn () => Quoin::view('pdf.hello', ['name' => 'A'])->pdf()->streamDownload('report.pdf'));
 
         $this->get('/stream')->assertOk()->assertDownload('report.pdf');
     }
