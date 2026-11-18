@@ -9,7 +9,7 @@ Blade components for [Quoin](../../README.md): `<x-doc::*>` tags compile into th
 
 **Documentation:** [one-learning-community.github.io/quoin/laravel](https://one-learning-community.github.io/quoin/laravel/)
 
-> **Status: 0.16, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
+> **Status: 0.17, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't.
 
 ## Install
 
