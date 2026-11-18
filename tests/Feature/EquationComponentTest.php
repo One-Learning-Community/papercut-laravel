@@ -8,7 +8,7 @@ use Quoin\Laravel\Exception\InvalidStructure;
 use Quoin\Laravel\Facades\Quoin;
 use Quoin\Laravel\QuoinManager;
 use Quoin\Laravel\Tests\TestCase;
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\{Equation, Text};
 
 final class EquationComponentTest extends TestCase
@@ -65,7 +65,7 @@ final class EquationComponentTest extends TestCase
         self::assertFalse(Quoin::pdfOptions()->fonts()->hasCustomMathFont());
 
         $path = sys_get_temp_dir() . '/quoin-math-font-' . uniqid() . '.ttf';
-        copy(\Quoin\Math\Math::stixTwoMathPath(), $path);
+        copy(\Phactorial\Math::stixTwoMathPath(), $path);
         try {
             config(['quoin.math_font' => $path]);
             $this->fresh();
@@ -80,15 +80,13 @@ final class EquationComponentTest extends TestCase
 
     public function test_cff_math_font_config_applied(): void
     {
-        $fira = __DIR__ . '/../../vendor/quoin/math/tests/fixtures/FiraMath-Regular.otf';
-        if (!is_file($fira)) {
-            self::markTestSkipped('the math package test fixtures are not installed');
-        }
+        $fira = __DIR__ . '/../../../core/tests/fixtures/FiraMath-Regular.otf';
+        self::assertFileExists($fira, 'the Fira Math fixture is part of the repository');
         config(['quoin.math_font' => $fira]);
         $this->fresh();
 
         self::assertSame($fira, Quoin::pdfOptions()->fonts()->mathFontPath());
-        $pdf = \Quoin\Document::make(\Quoin\Page::a4()->body(\Quoin\Equation::of(\Quoin\Math\Math::tex('\\sqrt{x^2 + 1}'))))->toPdf(Quoin::pdfOptions())->bytes();
+        $pdf = \Quoin\Document::make(\Quoin\Page::a4()->body(\Quoin\Equation::of(\Phactorial\Math::tex('\\sqrt{x^2 + 1}'))))->toPdf(Quoin::pdfOptions())->bytes();
         self::assertStringContainsString('/FontFile3', $pdf); // the CFF font program
     }
 
@@ -170,7 +168,7 @@ final class EquationComponentTest extends TestCase
     {
         $dir = base_path('quoin-math-font-test-' . uniqid());
         mkdir($dir);
-        copy(\Quoin\Math\Math::stixTwoMathPath(), $dir . '/m.ttf');
+        copy(\Phactorial\Math::stixTwoMathPath(), $dir . '/m.ttf');
         try {
             config(['quoin.math_font' => basename($dir) . '/m.ttf']);
             $this->fresh();
@@ -254,7 +252,7 @@ final class EquationComponentTest extends TestCase
         $n = $this->nodeFrom('<x-doc::equation math="<math><mtext>x &lt;b&gt; &amp; y</mtext></math>" />');
 
         self::assertEquals(Math::mathml('<math><mtext>x &lt;b&gt; &amp; y</mtext></math>'), $n->math());
-        self::assertSame('x <b> & y', \Quoin\Math\Render\TextWriter::write($n->math()));
+        self::assertSame('x <b> & y', \Phactorial\Render\TextWriter::write($n->math()));
         self::assertSame([], Math::notes($n->math()));
     }
 
@@ -271,8 +269,8 @@ final class EquationComponentTest extends TestCase
         self::assertTrue($this->containsFraction($n->math()));
         self::assertEquals(Math::tex('\frac{a}{b}'), $n->math());
         self::assertSame(
-            \Quoin\Math\Render\TextWriter::write(Math::frac('a', 'b')),
-            \Quoin\Math\Render\TextWriter::write($n->math()),
+            \Phactorial\Render\TextWriter::write(Math::frac('a', 'b')),
+            \Phactorial\Render\TextWriter::write($n->math()),
         );
     }
 
@@ -337,9 +335,9 @@ final class EquationComponentTest extends TestCase
         self::assertEquals(Math::tex('a < b & c'), $n->math());
     }
 
-    private function containsGrid(\Quoin\Math\Node\Node $node): bool
+    private function containsGrid(\Phactorial\Node\Node $node): bool
     {
-        if ($node instanceof \Quoin\Math\Node\Grid) {
+        if ($node instanceof \Phactorial\Node\Grid) {
             return true;
         }
         foreach ($node->children() as $c) {
@@ -351,9 +349,9 @@ final class EquationComponentTest extends TestCase
         return false;
     }
 
-    private function containsFraction(\Quoin\Math\Node\Node $node): bool
+    private function containsFraction(\Phactorial\Node\Node $node): bool
     {
-        if ($node instanceof \Quoin\Math\Node\Fraction) {
+        if ($node instanceof \Phactorial\Node\Fraction) {
             return true;
         }
         foreach ($node->children() as $c) {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quoin\Laravel;
 
-use Quoin\Math\Font\Font;
+use Phactorial\Font\Font;
 use Quoin\Text\FontStyle;
 
 /**

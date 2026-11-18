@@ -6,8 +6,8 @@ namespace Quoin\Laravel\Components;
 
 use Quoin\Laravel\Exception\InvalidStructure;
 use Quoin\Laravel\Tag;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node as MathNode;
+use Phactorial\Math;
+use Phactorial\Node\Node as MathNode;
 
 /**
  * The shared build of the equation and math components: a `math` attribute (string or node) or a `tex` attribute (a TeX string), and no content.
@@ -41,7 +41,7 @@ trait BuildsEquation
             return $this->styled(\Quoin\Equation::of(Math::tex($tex)), $data);
         }
         if (!is_string($math) && !$math instanceof MathNode) {
-            throw new InvalidStructure("$tag requires a math attribute (a string, or a node built with Quoin\\Math\\Math) or a tex attribute (a TeX string)");
+            throw new InvalidStructure("$tag requires a math attribute (a string, or a node built with Phactorial\\Math) or a tex attribute (a TeX string)");
         }
 
         if (is_string($math) && self::isMathml($math)) {

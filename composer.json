@@ -22,17 +22,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "quoin/core": "0.17.x-dev"
-                }
-            }
-        },
-        {
-            "type": "path",
-            "url": "../math",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "quoin/math": "0.17.x-dev"
+                    "quoin/core": "0.18.x-dev"
                 }
             }
         },
@@ -42,7 +32,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "quoin/docx": "0.17.x-dev"
+                    "quoin/docx": "0.18.x-dev"
                 }
             }
         }
@@ -55,13 +45,13 @@
         "illuminate/routing": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0",
         "illuminate/view": "^12.0|^13.0",
-        "quoin/core": "^0.17",
-        "quoin/math": "^0.17"
+        "quoin/core": "^0.18",
+        "phactorial/phactorial": "^0.18"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
         "orchestra/testbench": "^11.3",
-        "quoin/docx": "^0.17",
+        "quoin/docx": "^0.18",
         "phiki/phiki": "^2.2",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4"
